@@ -1,0 +1,3 @@
+[submodule "src_dev_build/lib/pinliner"]
+	path = src_dev_build/lib/pinliner
+	url = https://github.com/The-city-not-present/pinliner.git

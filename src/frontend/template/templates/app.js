@@ -115,7 +115,14 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       )
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        let error = `HTTP ${response.status}`
+        try {
+          const err = await response.json();
+          error = err.error
+        } catch(e) {
+          error = `HTTP ${response.status}`
+        }
+        throw new Error(error)
       }
       const data = await response.json()
       const jobId = data.jobId
@@ -129,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pollTimerId: null,
     }
     async function pendStatus() {
-      console.log('[DEBUG]: pending request status')
+      console.log('[DEBUG]: pending request status, jobId now is ',context.jobId)
       try{
         const response = await fetch(
           `/command/${context.jobId}`,
@@ -141,7 +148,14 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         )
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          let error = `HTTP ${response.status}`
+          try {
+            const err = await response.json();
+            error = err.error
+          } catch(e) {
+            error = `HTTP ${response.status}`
+          }
+          throw new Error(error)
         }
         const data = await response.json()
         context.status = data.status
@@ -160,8 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
       sendCommandPromise.then(
         result => {
           context.status = 'in-progress'
-          context.jobId = result
+          context.jobId = result.job_id
           console.log('[DEBUG]',context)
+          console.log('[DEBUG]: setting jobId to',context.jobId)
         },
         err => {reject(err)}
       )
@@ -274,8 +289,8 @@ document.addEventListener("DOMContentLoaded", () => {
       <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
         <fieldset class="mdmreport-controls">
           <div class="mdmreport-controls-group">
-            <label>COMMAND:  </label>
-            <input type="text" name="command" value="" v-model="formFields.command"></input>
+            <label style="display: none;">COMMAND:  </label>
+            <input type="text" name="command" value="" placeholder="COMMAND: " v-model="formFields.command"></input>
             <input type="button" value="Execute"></input>
           </div>
         </fieldset>
@@ -311,6 +326,8 @@ document.addEventListener("DOMContentLoaded", () => {
     props: [
       'timestamp',
       'payload',
+      'message_stdout',
+      'message_stderr',
       'source',
       'type',
     ],
@@ -318,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div :class="\`terminal-record terminal-record-status-\${type}\`">
         <span class="timestamp">{{ formatDate(timestamp) }}</span>
         <span class="status">{{ type }}</span>
-        <span class="message">{{ payload }}</span>
+        <span class="message">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></span>
       </div>
     `,
     setup() {
@@ -339,6 +356,8 @@ document.addEventListener("DOMContentLoaded", () => {
         v-for="cmd in commands"
         :timestamp="cmd.timestamp"
         :payload="cmd.payload"
+        :message_stdout="cmd.message_stdout"
+        :message_stderr="cmd.message_stderr"
         :source="cmd.source"
         :type="cmd.type">
       </terminal-record>
@@ -370,15 +389,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const repoStatus = ref({})
       const repoInitRequiresAttention = ref(false)
-      const commands = ref([{timestamp:new Date(),payload:'test-first-record','source':null,'type':'test'}])
+      // const commands = ref([{timestamp:new Date(),payload:'test-first-record',message_stdout:'test-first-record','message_stderr':'','source':null,'type':'test'}])
+      const commands = ref([])
 
       function cliCommand(args) {
         args = args || []
         args = [...args]
         const promise = cliCommandRaw(args)
+        const command_str = args.join(' ')
         const command = {
           timestamp: new Date(),
-          payload: args.join(' '),
+          message_stdout: command_str,
+          message_stderr: '',
+          payload: {'message':command_str},
           source: undefined,
           'type': 'request',
         }
@@ -388,6 +411,8 @@ document.addEventListener("DOMContentLoaded", () => {
           response => {
             const command = {
               timestamp: new Date(),
+              message_stdout: (((response||{}).payload||{}).stdout||''),
+              message_stderr: (((response||{}).payload||{}).stderr||''),
               payload: response,
               source: source_command,
               'type': 'response',
@@ -398,6 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const command = {
               timestamp: new Date(),
               payload: err,
+              message_stdout: '',
+              message_stderr: err,
               source: source_command,
               'type': 'error',
             }

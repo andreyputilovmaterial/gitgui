@@ -24,7 +24,7 @@ def worker():
                 check=False,
             )
 
-            jobs[job_id]["status"] = "finished"
+            jobs[job_id]["status"] = "done"
             jobs[job_id]["stdout"] = result.stdout
             jobs[job_id]["stderr"] = result.stderr
             jobs[job_id]["returncode"] = result.returncode
@@ -48,10 +48,10 @@ def initiate_git_command(command,config):
 
     def sanitize_command(command):
         args = [*command]
-        assert args[0]=='git', f'Error: invalid command'
-        git_dir = Path(config.get("dir_git_repo")).resolve()
+        assert args[0]=='git', f'Error: invalid command, not a git command'
+        git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
         work_tree = Path(config.get("dir_working_tree")).resolve()
-        args = [args[0],'--git-dir',git_dir,'--work-tree','work_tree','--no-pager',*args[1:]]
+        args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
         return args
 
     job_id = str(uuid.uuid4())

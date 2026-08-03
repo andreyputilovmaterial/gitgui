@@ -43,6 +43,9 @@
 .terminal-record.terminal-record-status-error .status {
   color: #990000;
 }
+.terminal-record.terminal-record-status-response .status {
+  color: #009900;
+}
 .terminal-record .message {
   background: #eee;
   display: inline-block;

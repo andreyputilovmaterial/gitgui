@@ -2,10 +2,19 @@
 import html
 from urllib.parse import urlparse, parse_qs
 import re
+import json
+import sys
+
+
 
 from .common_functions import wrap_div
 from .template.make_html import make_banner, make_meta, make_asset_jsembed, make_asset_cssembed, make_asset_jslink, make_asset_csslink, make_asset, make_section, make_html
 from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import common_css, common_js, normalize_css, app_js, vue_js
+
+
+
+
+
 
 def renderer_home(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
@@ -39,10 +48,13 @@ def renderer_home(server_instance,config={},added_data=None):
         headers = [],
     )
 
+
+
+
+
+
 def render_assets(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
-    # print(repr(server_instance))
-    # print(server_instance)
     content_type = 'text/plain'
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
@@ -50,7 +62,6 @@ def render_assets(server_instance,config={},added_data=None):
         content_type = 'text/css'
     elif re.match(r'.*\.m?js\s*$',path_parsed,flags=re.I):
         content_type = 'text/javascript'
-    print(f'To verify: requested resource: "{server_instance.path}", with path "{path_parsed}", and content-type will be set to "{content_type}"')
     # method = server_instance.command
     payload = added_data
     return WebResponse(
@@ -78,6 +89,9 @@ def render_assets_app_js(server_instance,config={},added_data=None):
 def render_assets_vue_js(server_instance,config={},added_data=None):
     payload = vue_js
     return render_assets(server_instance,config,added_data=payload)
+
+
+
 
 
 
@@ -116,6 +130,73 @@ def renderer_version(server_instance,config={},added_data=None):
         headers = [],
     )
 
+
+
+
+
 def handle_command(server_instance,config={},added_data=None):
+    def prep_paylaod(f):
+        return f
+    call_initiate_git_command = config.get("initiate_git_command")
+    call_get_git_command_status = config.get("get_git_command_status")
+    def render_initiate_new_command(server_instance):
+        # Read Content-Length header
+        length = int(server_instance.headers["Content-Length"])
+        # Read exactly that many bytes
+        body = server_instance.rfile.read(length)
+        # Convert bytes -> str -> Python object
+        payload = json.loads(body)
+        command = prep_paylaod(payload)
+        jobid = call_initiate_git_command(command,config)
+        return {
+            'ok': True,
+            'status': 'called',
+            'jobId': jobid,
+        }
+    def call_check_status(server_instance):
+        path_with_query = server_instance.path
+        path_parsed = f'{urlparse(path_with_query).path}'
+        path = path_parsed.split('/')
+        jobid = None
+        if len(path)==3 and path[0]=='' and path[1]=='command':
+            jobid = path[2]
+        else:
+            raise config.HTTP404
+        result = call_get_git_command_status(jobid,config)
+        result = {
+            'ok': True,
+            'status': result.get("status"),
+            'payload': result,
+        }
+        return result
     WebResponse = config.get("WebResponse")
-    raise Exception('Not implemented!')
+    content_type = 'application/json'
+    status_code = 200
+    path_with_query = server_instance.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    method = server_instance.command
+    renderer = None
+    payload = {}
+    try:
+        if method=='POST' and path_parsed=='/command':
+            renderer = render_initiate_new_command
+            status_code = 202 # unnecessary beaitying
+        elif method=='GET' and path_parsed.startswith('/command/'):
+            renderer = call_check_status
+        if not renderer:
+            raise Exception(f'request not recognized: {method} {path_with_query}')
+        payload = renderer(server_instance)
+    except Exception as e:
+        status_code = 400
+        payload = {
+            'ok': False,
+            'status': 'error',
+            'error': f'{e}',
+        }
+        print(e,file=sys.stderr)
+    return WebResponse(
+        status_code = status_code,
+        content_type = content_type,
+        body = json.dumps(payload),
+        headers = [],
+    )

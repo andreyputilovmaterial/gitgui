@@ -3,6 +3,7 @@
 from datetime import datetime
 import argparse
 from pathlib import Path
+import re # for endpoints
 
 
 from .webserver_engine.webserver import Webserver # a wrapper around python http.server - no flask or django
@@ -103,7 +104,7 @@ def main(*argcs,**kwargs):
         '/common.js': render_assets_common_js,
         '/vue.js': render_assets_vue_js,
         '/app.js': render_assets_app_js,
-        '/command': handle_command,
+        re.compile(r'/command\b(.*)'): handle_command,
         '/version': renderer_version,
     }
     server = Webserver(config) # a wrapper around python http.server - no flask or django

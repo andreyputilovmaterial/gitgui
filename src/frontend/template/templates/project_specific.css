@@ -16,3 +16,67 @@
   margin-top: -9px;
   margin-bottom: -9px;
 }
+
+
+
+.terminal-record {
+  display: flex; position: relative;
+  flex-direction: row;
+}
+.terminal-record .timestamp {
+  color: #aaa;
+  font-weight: 200;
+  display: block;
+  padding-right: 7px;
+  flex: 0 0 16em;
+}
+.terminal-record .status {
+  color: #666;
+  font-weight: 600;
+  display: block;
+  padding-right: 7px;
+  flex: 0 0 5em;
+}
+.terminal-record.terminal-record-status-request .status {
+  color: #335577;
+}
+.terminal-record.terminal-record-status-error .status {
+  color: #990000;
+}
+.terminal-record .message {
+  background: #eee;
+  display: inline-block;
+  padding: 5px 5px 5px 14px;
+  margin: -5px -5px -5px 0;
+  flex-grow: 100;
+}
+
+.terminal-record.terminal-record-status-error .message {
+  color: #660000;
+}
+
+.terminal-record, .terminal-record * {
+  line-height: 16px;
+}
+.terminal-record {
+  padding: 5px 0 5px;
+}
+form.mdmreport-controls {
+  display: block;
+  position: relative;
+}
+form.mdmreport-controls:first-child:before {
+  content: " ";
+  display: none;
+  position: absolute;
+  background: rgba(222,222,222,0);
+  transition: 400ms all ease;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+form.mdmreport-controls.mdmreport-form-busy:first-child:before {
+  display: block;
+  background: rgba(222,222,222,.4);
+}

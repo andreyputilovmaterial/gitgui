@@ -125,3 +125,30 @@ h3 {
 .mdm-ui-rollup.mdm-ui-rollup-condensed .mdm-ui-rollup-header:before {
   content: "▽";
 }
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  /* align-items: scs; */
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group input {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+  width: auto;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group input[type="button"] {
+  flex: 0 0 200px;
+  min-width: 200px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group label {
+  flex: 0 0 100%;
+  display: block;
+  margin-bottom: -10px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group label, .mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group label:hover {
+  border: none!important;
+  outline: none!important;
+}

@@ -425,7 +425,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             commands.value = [...commands.value,command]
           },
-          err => {
+          async err => {
+            let response = {}
+            try {
+              response = await response.json();
+            } catch(e) { }
             const command = {
               timestamp: new Date(),
               payload: err,

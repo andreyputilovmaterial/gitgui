@@ -71,11 +71,38 @@ def build_css() -> Resource:
     ]
 
 def build_js() -> Resource:
-    txt = resources.files("src.frontend.template.templates").joinpath("common.js").read_text('utf-8')
+    txt = ''
+    txt += resources.files("src.frontend.template.templates").joinpath("common.js").read_text('utf-8')
+    # txt += resources.files("src.frontend.template.templates").joinpath("app.js").read_text('utf-8')
     txt = minify_js(txt)
     return [
         Resource(
             filename = "common.js",
+            payload = txt
+        ),
+    ]
+
+def build_vue() -> Resource:
+    txt = ''
+    # uncomment for dev build
+    txt += resources.files("src.frontend.template.templates").joinpath("vue.global.js").read_text('utf-8')
+    # # uncomment for prod build
+    # txt += resources.files("src.frontend.template.templates").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
+    txt = minify_js(txt)
+    return [
+        Resource(
+            filename = "vue.js",
+            payload = txt
+        ),
+    ]
+
+def build_app_js() -> Resource:
+    txt = ''
+    txt += resources.files("src.frontend.template.templates").joinpath("app.js").read_text('utf-8')
+    txt = minify_js(txt)
+    return [
+        Resource(
+            filename = "app.js",
             payload = txt
         ),
     ]
@@ -128,6 +155,8 @@ renderers = {
     'normalize.css': build_normalize_css,
     'css': build_css,
     'js': build_js,
+    'app_js': build_app_js,
+    'vue': build_vue,
     # 'project_specific.css': build_project_specific_css,
     'make_html.py': build_py_dist,
     'src_template': build_html_template,

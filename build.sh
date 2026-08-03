@@ -24,21 +24,30 @@ python build_templates.py --program build --resource js --dest src/frontend/temp
 
 python build_templates.py --program build --resource normalize.css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
+python build_templates.py --program build --resource app_js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+
+python build_templates.py --program build --resource vue --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+
 python build_templates.py --program build --resource src_template --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "# THIS IS AUTO_GENERATED" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "# updated" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 python -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "common_css = '''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "common_css = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "normalize_css = '''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "normalize_css = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/normalize.css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "common_js = '''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "common_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "app_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/app.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "vue_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/vue.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 
 echo "Produce dist"

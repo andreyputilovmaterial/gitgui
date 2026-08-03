@@ -87,7 +87,8 @@ class Webserver:
     def _get_handler(self,endpoints):
         server = self
         class Handler(BaseHTTPRequestHandler):
-            def handle_request(self, method):
+            def handle_request(self):
+                method = self.command
                 send_body = True if not (method=='HEAD') else False
                 try:
 
@@ -95,7 +96,7 @@ class Webserver:
                     renderer = server._get_matching_endpoint(path,endpoints)
                     assert callable(renderer), 'Whoops, renderer returned from get_matching_endpoint() must be callable'
 
-                    response = renderer(self,method=method, config=server._config)
+                    response = renderer(self, config=server._config)
                     if not response.content_type:
                         response.content_type = 'text/html'
 
@@ -121,7 +122,7 @@ class Webserver:
                     content = f'Can\t find / no access: HTTP {statuscode}'
                     renderer = endpoints.get(statuscode,None)
                     if renderer and send_body:
-                        response = renderer(self, method=method, config=server._config, msg = e)
+                        response = renderer(self, config=server._config, msg = e)
                         content = response.body
 
                     self.send_response(statuscode)
@@ -164,19 +165,19 @@ class Webserver:
                             self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode())
 
             def do_GET(self):
-                self.handle_request('GET')
+                self.handle_request()
 
             def do_HEAD(self):
-                self.handle_request('HEAD')
+                self.handle_request()
 
             def do_POST(self):
-                self.handle_request('POST')
+                self.handle_request()
 
             def do_PUT(self):
-                self.handle_request('PUT')
+                self.handle_request()
 
             def do_DELETE(self):
-                self.handle_request('DELETE')
+                self.handle_request()
 
         return Handler
 

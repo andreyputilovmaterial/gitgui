@@ -10,7 +10,7 @@ from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
 from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
 from .git_proxy_caller import initiate_worker_loop, initiate_git_command, get_git_command_status
-from .frontend import renderer_home, renderer_version, handle_command, wrap_div, render_assets_common_css, render_assets_normalize_css, render_assets_common_js
+from .frontend.endpoints import renderer_home, renderer_version, handle_command, wrap_div, render_assets_common_css, render_assets_normalize_css, render_assets_common_js, render_assets_vue_js, render_assets_app_js
 from .GENERATED._VERSION import _VERSION as script_version
 from .helper_utilities import print_config
 
@@ -101,6 +101,8 @@ def main(*argcs,**kwargs):
         '/common.css': render_assets_common_css,
         '/normalize.css': render_assets_normalize_css,
         '/common.js': render_assets_common_js,
+        '/vue.js': render_assets_vue_js,
+        '/app.js': render_assets_app_js,
         '/command': handle_command,
         '/version': renderer_version,
     }

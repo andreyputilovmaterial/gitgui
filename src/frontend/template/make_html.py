@@ -80,6 +80,11 @@ def make_asset_jslink(txt):
         return f'{t}'.replace('"',r'\"')
     return f'<script src="{esc_quotes(txt)}"></script>'
 
+def make_asset_jslinkmodule(txt):
+    def esc_quotes(t):
+        return f'{t}'.replace('"',r'\"')
+    return f'<script type="module" src="{esc_quotes(txt)}"></script>'
+
 def make_asset_csslink(txt):
     def esc_quotes(t):
         return f'{t}'.replace('"',r'\"')
@@ -89,6 +94,7 @@ def make_asset(type,payload) -> str:
     renderers = {
         'js-embed': make_asset_jsembed,
         'js-link': make_asset_jslink,
+        'js-link-module': make_asset_jslinkmodule,
         'css-embed': make_asset_cssembed,
         'css-link': make_asset_csslink,
     }

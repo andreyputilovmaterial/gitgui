@@ -2,7 +2,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse # for finding handler for the endpoint - we need to know path
 import html # for sanitizing response on errors
-from .logging_helper import print_console, print_console_err, print_console_err_fulltrace, print_console_green
+import re
+from .logging_helper import print_console, print_console_err, print_console_err_fulltrace, print_console_green, string_err_fulltrace
 
 # sorry very stupid
 from .logging_helper import config as logging_helper_config
@@ -133,8 +134,34 @@ class Webserver:
                     self.end_headers()
                     print_console_err_fulltrace(e)
                     if send_body:
-                        self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode())
-                        # self.wfile.write(("<html><body>"+html.escape(str(e))+"</body></html>").encode())
+                        try:
+                            err = f'{e}'
+                            err_html = html.escape(err)
+                            try:
+                                # several more levels to capture stacktrace, format it, convert "red" colors to spans with color red... If anything fails, there is a fallback to simpler way to just show the message
+                                err_full = string_err_fulltrace(e)
+                                err_html = '<br />'.join(html.escape(err_full).splitlines())
+                                COLOR_MARKERS = {
+                                    '@STDOUT_COLOR_RED@': '<span class="err-color-red" style="color: #990000;">',
+                                    '@STDOUT_COLOR_GREEN@': '<span class="err-color-green" style="color: #009900;">',
+                                    '@STDOUT_COLOR_RESET@': '</span>',
+                                }
+                                color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
+                                err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
+                                try:
+                                    wrap_div = server._config.get("renderer_functions",{}).get("wrap_div",lambda c,m: m) # retrieve the wrapper fn
+                                    err_html = wrap_div('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
+                                except Exception as ee:
+                                    print_console_err_fulltrace(ee)
+                                    pass
+                            except Exception as ee:
+                                print_console_err_fulltrace(ee)
+                                pass
+                            self.wfile.write(("<html><body>"+err_html+"</body></html>").encode())
+                        except Exception as ee:
+                            print_console_err_fulltrace(ee)
+                            # print fallback
+                            self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode())
 
             def do_GET(self):
                 self.handle_request('GET')

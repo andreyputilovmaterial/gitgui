@@ -1,0 +1,6 @@
+beautifulsoup4>=4
+python-dotenv>=1.0
+pytest>=9
+PyYAML>=6
+rjsmin>=1
+csscompressor>=0.9

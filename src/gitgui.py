@@ -9,8 +9,8 @@ from .webserver_engine.webserver import Webserver # a wrapper around python http
 from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
 from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
-from .git_proxy_caller import git_proxy_caller
-from .frontend import renderer_home, renderer_version, handle_command
+from .git_proxy_caller import initiate_worker_loop, initiate_git_command, get_git_command_status
+from .frontend import renderer_home, renderer_version, handle_command, wrap_div, render_assets_common_css, render_assets_normalize_css, render_assets_common_js
 from .GENERATED._VERSION import _VERSION as script_version
 from .helper_utilities import print_config
 
@@ -54,8 +54,14 @@ def main(*argcs,**kwargs):
         'http_port': None,
         'http_address': None,
 
-        'git_proxy_caller': git_proxy_caller,
+        'initiate_git_command': initiate_git_command,
+        'get_git_command_status': get_git_command_status,
         'WebResponse': WebResponse,
+        'HTTP403': HTTP403,
+        'HTTP404': HTTP404,
+        'renderer_functions': {
+            'wrap_div': wrap_div,
+        },
 
     }
 
@@ -75,6 +81,10 @@ def main(*argcs,**kwargs):
         # print(f'{STDOUT_COLOR_RED}git-repo-folder not specified{STDOUT_COLOR_RESET}')
         raise Exception('git-repo-folder not specified')
 
+    print('\npreparing git cli command loop...\n')
+    initiate_worker_loop(config)
+
+    print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'
     config['http_port'] = find_free_port(start=5180)
     config['http_address'] = f'http://{config.get("http_host")}:{config.get("http_port")}'
@@ -88,6 +98,9 @@ def main(*argcs,**kwargs):
     print('\n')
     endpoints = {
         '/': renderer_home,
+        '/common.css': render_assets_common_css,
+        '/normalize.css': render_assets_normalize_css,
+        '/common.js': render_assets_common_js,
         '/command': handle_command,
         '/version': renderer_version,
     }

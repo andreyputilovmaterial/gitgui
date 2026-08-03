@@ -1,0 +1,92 @@
+
+body {
+    font-size: 14px;
+    Font-family: "Helvetica";
+}
+* {
+    box-sizing: border-box;
+}
+.clearfix:after {
+   content: " "; /* Older browser do not support empty content */
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+.error {
+    color: #cc0000;
+    font-weight: 500;
+}
+.container {
+    margin: 0 15px 0;
+}
+@media all and (min-width: 1300px) {
+    .container {
+        margin: 0 auto 0;
+        width: 1200px;
+    }
+}
+@media all and (min-width: 1650px) {
+    .container {
+        margin: 0 auto 0;
+        width: 1500px;
+    }
+}
+@media all and (min-width: 1800px) {
+    .container {
+        margin: 0 auto 0;
+        width: 1700px;
+    }
+}
+h1 {
+    font-weight: 700;
+    font-size: 32px;
+    color: #333;
+    margin: 0;
+    padding: 0px 0 30px;
+}
+h2 {
+    font-weight: 700;
+    font-size: 21px;
+    color: #222;
+    margin: 0;
+    padding: 22.5px 0 7.5px;
+}
+h3 {
+    font-weight: 700;
+    font-size: 17px;
+    color: #111;
+    margin: 0;
+    padding: 22.5px 0 7.5px;
+}
+.header {
+    padding: 15px 0 15px;
+    border-bottom: 1px solid #eee;
+}
+.footer {
+    padding: 15px 0 15px;
+    border-top: 1px solid #eee;
+}
+.main {
+    padding: 15px 0 15px;
+}
+.wrapper {
+    width: 100%; max-width: 100%; overflow-x: auto;
+}
+.mdmreport-banner {
+    display: block; position: relative; padding: 1em; margin: 0 0 1em; border: #ddd solid 1px;
+}
+.mdmreport-banners-wrapper-noborders .mdmreport-banner {
+    padding: 0;
+    border: none;
+}
+.mdmreport-banners-wrapper-noborders .mdmreport-banner h3 {
+    margin-top: 0;
+}
+.mdmreport-contentcell-fullwidth {
+    width: 100%;
+    min-width: 100%;
+}
+.mdmreport-table-dummy .mdmreport-record .mdmreport-contentcell {
+    padding: 7.5px 7.5px 7.5px 15px;
+}

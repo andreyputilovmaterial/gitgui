@@ -5,7 +5,9 @@
 # Outputs / generated artifacts
 dist/
 build/
-**/GENERATED/
+# Ignore all GENERATED and COMPILED directories everywhere
+GENERATED/
+COMPILED/
 
 # Reports generated from real data
 report.*

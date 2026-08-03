@@ -39,6 +39,13 @@ hello, world! From gitgui
     print(msg)
     return True
 
+def call_done_program(*argcs,**kwargs):
+    msg = f'''
+{STDOUT_COLOR_GREEN}done{STDOUT_COLOR_RESET}
+    '''
+    print(msg)
+    return True
+
 def call_printversion_program(*argcs,**kwargs):
     msg = gitgui_script_version
     msg = msg.strip()
@@ -51,6 +58,7 @@ def call_printversion_program(*argcs,**kwargs):
 run_programs = {
     'gitgui': call_gitgui_program,
     'test': call_test_program,
+    'done': call_done_program,
     'version': call_printversion_program,
 }
 

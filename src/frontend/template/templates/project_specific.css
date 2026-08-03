@@ -1,0 +1,18 @@
+.gitgui-page-home .header {
+  display: none;
+}
+.gitgui-page-home h1 {
+  color: #678;
+  font-size: 20px;
+  font-weight: 500;
+  padding-top: 20px;
+  padding-bottom: 12px;
+}
+.banner-global-folder-props p {
+  margin: 8px;
+  color: #666;
+}
+.banner-global-folder-props {
+  margin-top: -9px;
+  margin-bottom: -9px;
+}

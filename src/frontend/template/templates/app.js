@@ -290,8 +290,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <fieldset class="mdmreport-controls">
           <div class="mdmreport-controls-group">
             <label style="display: none;">COMMAND:  </label>
-            <input type="text" name="command" value="" placeholder="COMMAND: " v-model="formFields.command"></input>
+            <input type="text" name="command" value="" placeholder="git command: " v-model="formFields.command"></input>
             <input type="button" value="Execute"></input>
+            <p class="hint"><small>Note: every command gets --git-dir path... --work-tree path... --no-pager params appended</small></p>
           </div>
         </fieldset>
       </form>
@@ -328,6 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'payload',
       'message_stdout',
       'message_stderr',
+      'returncode',
       'source',
       'type',
     ],
@@ -335,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div :class="\`terminal-record terminal-record-status-\${type}\`">
         <span class="timestamp">{{ formatDate(timestamp) }}</span>
         <span class="status">{{ type }}</span>
+        <span class="returncode" title="returncode - %errorlevel%">{{ returncode }}</span>
         <span class="message">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></span>
       </div>
     `,
@@ -358,6 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
         :payload="cmd.payload"
         :message_stdout="cmd.message_stdout"
         :message_stderr="cmd.message_stderr"
+        :returncode="cmd.returncode"
         :source="cmd.source"
         :type="cmd.type">
       </terminal-record>
@@ -401,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
           timestamp: new Date(),
           message_stdout: command_str,
           message_stderr: '',
+          returncode: '',
           payload: {'message':command_str},
           source: undefined,
           'type': 'request',
@@ -413,6 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
               timestamp: new Date(),
               message_stdout: (((response||{}).payload||{}).stdout||''),
               message_stderr: (((response||{}).payload||{}).stderr||''),
+              returncode: (((response||{}).payload||{}).returncode||''),
               payload: response,
               source: source_command,
               'type': 'response',
@@ -425,6 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
               payload: err,
               message_stdout: '',
               message_stderr: err,
+              returncode: (((response||{}).payload||{}).returncode||''),
               source: source_command,
               'type': 'error',
             }

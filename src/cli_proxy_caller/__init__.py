@@ -44,7 +44,7 @@ def initiate_worker_loop(config):
 
 
 
-def initiate_git_command(command,config):
+def initiate_cli_command(command,config):
 
     def sanitize_command(command):
         args = [*command]
@@ -74,7 +74,7 @@ def initiate_git_command(command,config):
         "job_id": job_id
     }
 
-def get_git_command_status(job_id,config):
+def get_cli_command_status(job_id,config):
 
     HTTP404 = config.get("HTTP404")
 

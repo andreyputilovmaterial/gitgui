@@ -34,7 +34,9 @@
   flex: 0 0 2.2em;
   text-align: right;
   display: inline-block;
-  padding-right: 5px;
+  padding: 5px 5px 5px 1px;
+  margin: -5px 0 -5px 0;
+  background: #eee;
 }
 .terminal-record .status {
   color: #666;

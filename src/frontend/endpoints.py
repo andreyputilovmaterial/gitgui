@@ -137,8 +137,8 @@ def renderer_version(server_instance,config={},added_data=None):
 def handle_command(server_instance,config={},added_data=None):
     def prep_paylaod(f):
         return f
-    call_initiate_git_command = config.get("initiate_git_command")
-    call_get_git_command_status = config.get("get_git_command_status")
+    call_initiate_cli_command = config.get("initiate_cli_command")
+    call_get_cli_command_status = config.get("get_cli_command_status")
     def render_initiate_new_command(server_instance):
         # Read Content-Length header
         length = int(server_instance.headers["Content-Length"])
@@ -147,7 +147,7 @@ def handle_command(server_instance,config={},added_data=None):
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
         command = prep_paylaod(payload)
-        jobid = call_initiate_git_command(command,config)
+        jobid = call_initiate_cli_command(command,config)
         return {
             'ok': True,
             'status': 'called',
@@ -162,7 +162,7 @@ def handle_command(server_instance,config={},added_data=None):
             jobid = path[2]
         else:
             raise config.HTTP404
-        result = call_get_git_command_status(jobid,config)
+        result = call_get_cli_command_status(jobid,config)
         result = {
             'ok': True,
             'status': result.get("status"),
@@ -200,3 +200,6 @@ def handle_command(server_instance,config={},added_data=None):
         body = json.dumps(payload),
         headers = [],
     )
+
+def handle_stats(server_instance,config={},added_data=None):
+    raise Exception('not implemented')

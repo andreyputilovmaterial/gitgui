@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'repoCallbacks',
     ],
     template: `
-    <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+    <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls git-repo-gitignore-edit-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
       <h3>gitignore Setup</h3>
       <fieldset class="mdmreport-controls">
         <div class="mdmreport-controls-group">
@@ -325,11 +325,11 @@ document.addEventListener("DOMContentLoaded", () => {
       'repoCallbacks',
     ],
     template: `
-    <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+    <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls git-repo-init-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
       <h3>Init as git repo</h3>
       <fieldset class="mdmreport-controls">
         <div class="mdmreport-controls-group">
-          <input type="submit" class="init-repo-action-call-button" value="Init"></input>
+          <input type="submit" class="init-repo-action-call-button submit" value="Init git"></input>
         </div>
       </fieldset>
     </form>
@@ -369,13 +369,15 @@ document.addEventListener("DOMContentLoaded", () => {
     ],
     template: `
       <component-section-rollup header="Repo Init View" :condensed="!repoInitRequiresAttention">
-      <div class="intro-section">
-        {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
-        <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></repo-init-form>
-      </div>
-      <div class="gitignore-section">
-        <gitignore-section :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></gitignore-section>
-      </div>
+        <div class="git-repo-intro-setup-section">
+          <div class="repo-existence-section">
+            {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
+            <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></repo-init-form>
+          </div>
+          <div class="gitignore-section">
+            <gitignore-section :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></gitignore-section>
+          </div>
+        </div>
       </component-section-rollup>
     `,
     components: {
@@ -416,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="mdmreport-controls-group">
             <label style="display: none;">COMMAND:  </label>
             <input type="text" name="command" value="" placeholder="git command: " v-model="formFields.command"></input>
-            <input type="submit" value="Execute"></input>
+            <input type="submit" value="Execute" class="submit"></input>
             <p class="hint"><small>Note: every command gets --git-dir path... --work-tree path... --no-pager params appended</small></p>
           </div>
         </fieldset>

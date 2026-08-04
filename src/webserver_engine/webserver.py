@@ -3,10 +3,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse # for finding handler for the endpoint - we need to know path
 import html # for sanitizing response on errors
 import re
-from .logging_helper import print_console, print_console_err, print_console_err_fulltrace, print_console_green, string_err_fulltrace
+from .helper_logger_funcs import print_console, print_console_err, print_console_err_fulltrace, print_console_green, string_err_fulltrace
+from .helper_utility_funcs import wrap_div
 
 # sorry very stupid
-from .logging_helper import config as logging_helper_config
+from .helper_logger_funcs import config as logging_helper_config
 
 
 
@@ -150,7 +151,6 @@ class Webserver:
                                 color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
                                 err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
                                 try:
-                                    wrap_div = server._config.get("renderer_functions",{}).get("wrap_div",lambda c,m: m) # retrieve the wrapper fn
                                     err_html = wrap_div('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
                                 except Exception as ee:
                                     print_console_err_fulltrace(ee)

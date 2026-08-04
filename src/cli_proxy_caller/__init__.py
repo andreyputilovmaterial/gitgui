@@ -47,12 +47,13 @@ def initiate_worker_loop(config):
 def initiate_cli_command(command,config):
 
     def sanitize_command(command):
-        args = [*command]
-        assert args[0]=='git', f'Not a git command'
-        git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
-        work_tree = Path(config.get("dir_working_tree")).resolve()
-        args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
-        return args
+        return command
+        # args = [*command]
+        # assert args[0]=='git', f'Not a git command'
+        # git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
+        # work_tree = Path(config.get("dir_working_tree")).resolve()
+        # args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
+        # return args
 
     job_id = str(uuid.uuid4())
 

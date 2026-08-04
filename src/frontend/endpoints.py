@@ -4,6 +4,9 @@ from urllib.parse import urlparse, parse_qs
 import re
 import json
 import sys
+from pathlib import Path
+import os
+import subprocess
 
 
 
@@ -33,7 +36,7 @@ def renderer_home(server_instance,config={},added_data=None):
             'git-gui:git-work-tree-folder': config.get("dir_working_tree"),
             'git-gui:git-repo-folder': config.get("dir_git_repo"),
         },
-        assets = [('js-link','/vue.js',),('js-link-module','/app.js',),],
+        assets = [('js-link','/assets/vue.js',),('js-link-module','/assets/app.js',),],
         cssclasses = ['gitgui','gitgui-page-home',],
         banners = [
             f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
@@ -134,11 +137,18 @@ def renderer_version(server_instance,config={},added_data=None):
 
 
 
-def handle_command(server_instance,config={},added_data=None):
+def handle_git_command(server_instance,config={},added_data=None):
     def prep_paylaod(f):
         return f
     call_initiate_cli_command = config.get("initiate_cli_command")
     call_get_cli_command_status = config.get("get_cli_command_status")
+    def sanitize_command(command):
+        args = [*command]
+        assert args[0]=='git', f'Not a git command'
+        git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
+        work_tree = Path(config.get("dir_working_tree")).resolve()
+        args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
+        return args
     def render_initiate_new_command(server_instance):
         # Read Content-Length header
         length = int(server_instance.headers["Content-Length"])
@@ -147,6 +157,7 @@ def handle_command(server_instance,config={},added_data=None):
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
         command = prep_paylaod(payload)
+        command = sanitize_command(command)
         jobid = call_initiate_cli_command(command,config)
         return {
             'ok': True,
@@ -161,7 +172,7 @@ def handle_command(server_instance,config={},added_data=None):
         if len(path)==3 and path[0]=='' and path[1]=='command':
             jobid = path[2]
         else:
-            raise config.HTTP404
+            raise config.HTTP404()
         result = call_get_cli_command_status(jobid,config)
         result = {
             'ok': True,
@@ -201,5 +212,148 @@ def handle_command(server_instance,config={},added_data=None):
         headers = [],
     )
 
-def handle_stats(server_instance,config={},added_data=None):
-    raise Exception('not implemented')
+
+
+
+
+
+
+def not_implemented(*args,**argv):
+    raise NotImplementedError('not implemented')
+
+def functionality_path_gitignore(server_instance,config):
+    def read(fname):
+        if not Path(fname).is_file():
+            raise FileNotFoundError(f'{fname}": file not found"')
+        with open(fname,'r',encoding='utf-8') as f:
+            txt = f.read()
+            return txt
+    def write(fname,txt):
+        with open(file_path,'w',encoding='utf-8') as f:
+            txt = f.write(txt)
+            return txt
+    fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'exclude'
+    method = server_instance.command
+    if method=='GET':
+        return read(fname), [], 200
+    elif method=='PUT':
+        # Read Content-Length header
+        length = int(server_instance.headers["Content-Length"])
+        # Read exactly that many bytes
+        body = server_instance.rfile.read(length)
+        # Convert bytes -> str -> Python object
+        payload = json.loads(body)
+        txt = payload
+        return write(fname,txt), [], 200
+    elif method=='HEAD':
+        if not Path(fname).is_file():
+            raise FileNotFoundError(f'{fname}": file not found"')
+        fsize = os.path.getsize(fname)
+        return '', ('Content-Length',str(fsize),), 200
+    else:
+        return not_implemented()
+
+def functionality_path_gitattributes(server_instance,config):
+    def read(fname):
+        if not Path(fname).is_file():
+            raise FileNotFoundError(f'{fname}": file not found"')
+        with open(fname,'r',encoding='utf-8') as f:
+            txt = f.read()
+            return txt
+    def write(fname,txt):
+        with open(file_path,'w',encoding='utf-8') as f:
+            txt = f.write(txt)
+            return txt
+    fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'attributes'
+    method = server_instance.command
+    if method=='GET':
+        return read(fname), [], 200
+    elif method=='PUT':
+        # Read Content-Length header
+        length = int(server_instance.headers["Content-Length"])
+        # Read exactly that many bytes
+        body = server_instance.rfile.read(length)
+        # Convert bytes -> str -> Python object
+        payload = json.loads(body)
+        txt = payload
+        return write(fname,txt), [], 200
+    elif method=='HEAD':
+        if not Path(fname).is_file():
+            raise FileNotFoundError(f'{fname}": file not found"')
+        fsize = os.path.getsize(fname)
+        return '', ('Content-Length',str(fsize),), 200
+    else:
+        return not_implemented()
+
+
+def is_git_repo(server_instance,config):
+    def pend_git_repo_status():
+        def sanitize_command(command):
+            args = [*command]
+            assert args[0]=='git', f'Not a git command'
+            git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
+            work_tree = Path(config.get("dir_working_tree")).resolve()
+            args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
+            return args
+        result = subprocess.run(
+            sanitize_command(['git','rev-parse','--show-toplevel']),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        # print(f'\n\ngit rev-parse result:\n\nreturncode:\n{result.returncode}\n\nstderr:\n{result.stderr}\n\nstdout:\n{result.stdout}\n\n')
+        if result.returncode==128:
+            return False
+        elif not not result.stderr and len(result.stderr.strip())>0:
+            return False
+        elif result.returncode==0 and not not result.stdout and len(result.stdout.strip())>0:
+            return True
+        else:
+            return (result.returncode==0)
+    method = server_instance.command
+    if method=='HEAD' or method=='GET':
+        if pend_git_repo_status():
+            return '', [], 200
+        else:
+            return '', [], 400
+    else:
+        return not_implemented()
+
+
+def handle_request_functionality_endpoint(server_instance,config={},added_data=None):
+    HTTP404 = config.get("HTTP404")
+    def not_found(*args,**argv):
+        raise HTTP404()
+    functionality_paths = {
+        # for each functionality_path, we need to know: 1. which command to execute, 2. how to process results (note: command is platform-dependent)
+        'worktree': not_implemented,
+        'repodir': not_implemented,
+        'is-git-repo': is_git_repo,
+        'git-ls-tracked-files': not_implemented,
+        'gitignore': functionality_path_gitignore, # .git/info/exclude
+        'gitattributes': functionality_path_gitattributes, # .git/info/attributes
+    }
+    WebResponse = config.get("WebResponse")
+    content_type = 'application/json'
+    status_code = 200
+    path_with_query = server_instance.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    path = path_parsed.split('/')
+    jobid = None
+    if len(path)>=3 and path[0]=='':
+        functionality_path = path[2]
+        renderer = functionality_paths.get(functionality_path,not_found)
+    else:
+        renderer = not_found
+    payload, headers = None, []
+    try:
+        payload, headers, http_statuscode = renderer(server_instance,config)
+        status_code = http_statuscode
+    except FileNotFoundError:
+        raise HTTP404()
+    return WebResponse(
+        status_code = status_code,
+        content_type = content_type,
+        body = json.dumps(payload),
+        headers = headers,
+    )

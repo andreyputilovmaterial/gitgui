@@ -11,15 +11,15 @@ import traceback, sys
 if __name__ == '__main__':
     # run as a program
     from src.GENERATED._VERSION import _VERSION as gitgui_script_version
-    from src.gitgui import main as call_gitgui_program
+    from src.main_gitgui_program import main as call_gitgui_program
 elif '.' in __name__:
     # package
     from .GENERATED._VERSION import _VERSION as gitgui_script_version
-    from .gitgui import main as call_gitgui_program
+    from .main_gitgui_program import main as call_gitgui_program
 else:
     # included with no parent package
     from src.GENERATED._VERSION import _VERSION as gitgui_script_version
-    from src.gitgui import main as call_gitgui_program
+    from src.main_gitgui_program import main as call_gitgui_program
 
 
 

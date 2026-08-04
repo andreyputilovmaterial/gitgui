@@ -30,6 +30,9 @@
   padding-right: 7px;
   flex: 0 0 16em;
 }
+.terminal-record .timestamp {
+  display: none;
+}
 .terminal-record .returncode {
   flex: 0 0 2.2em;
   text-align: right;
@@ -37,6 +40,12 @@
   padding: 5px 5px 5px 1px;
   margin: -5px 0 -5px 0;
   background: #eee;
+}
+.terminal-record .returncode.returncode-status-success {
+  color: #009900;
+}
+.terminal-record .returncode.returncode-status-nonzero {
+  color: #990000;
 }
 .terminal-record .status {
   color: #666;
@@ -52,7 +61,7 @@
   color: #990000;
 }
 .terminal-record.terminal-record-status-response .status {
-  color: #009900;
+  color: #006700;
 }
 .terminal-record .message {
     white-space: pre-wrap;

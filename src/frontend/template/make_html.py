@@ -51,7 +51,7 @@ from .minify_assets import minify_js, minify_css
 
 
 load_dotenv()
-STATIC_PATH = os.getenv("ASSET_BASE_URL", "")
+STATIC_PATH = os.getenv("ASSET_BASE_URL", "/assets/")
 
 
 

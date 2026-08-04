@@ -1,7 +1,7 @@
 // import { Vue } from "./vue.js";
 document.addEventListener("DOMContentLoaded", () => {
 
-  const { createApp, ref, onMounted, onUnmounted } = Vue
+  const { createApp, ref, onMounted, onUnmounted, toRaw } = Vue
 
   const globalRepoSetup = {}
 
@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function formatDate(val) {
-    console.log('[FORMAT-DATE]: received:',val)
     const fmt = dt => {
       const formatter = new Intl.DateTimeFormat(undefined, {
           year: "numeric",
@@ -28,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const dt = /[1-9]/.test(content) ? new Date(content) : undefined;
     // const result = dt ? `original: ${content}, converted: ${dt}` : content; // for debugging
     const result = dt ? `${fmt(dt)}` : content;
-    console.log('[FORMAT-DATE]: converted:',result)
     return result
   }
 
@@ -40,23 +38,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+  class FetchError extends Error { name = 'FetchError' }
+  async function fetchWrapper(method,endpoint,payload) {
+    const response = await fetch(
+      endpoint,
+        {method: method,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: ['GET','HEAD'].includes(method) ? undefined : JSON.stringify(payload),
+      },
+    )
+    if (!response.ok) {
+      let error = `HTTP ${response.status}`
+      try {
+        const err = await response.json();
+        error = err.error
+      } catch(e) {
+        error = `HTTP ${response.status}`
+      }
+      throw new FetchError(error)
+    }
+    // const data = await response.json()
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : '';
+    return data
+  }
+
+
+
   function parseCommand(txt) {
     function tokenize(text) {
       const tokens = [];
       let current = "";
       let inQuote = false;
       let i = 0;
-
       while (i < text.length) {
         const char = text[i];
-
         // 1. Handle Escape Character
         if (char === '\\') {
           current += text[i + 1] || ""; // Grab next char if it exists
           i += 2;                       // Skip both the backslash and the next char
           continue;
         }
-
         // 2. Handle Quotes
         if (char === '"' || char === "'") {
           if (inQuote && char === inQuote) {
@@ -68,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
           i++;
           continue;
         }
-
         // 3. Handle Spaces Outside Quotes
         if (!inQuote && char === ' ') {
           if (current) {
@@ -79,17 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
           i++;
           continue;
         }
-
         // 4. Handle Normal Characters
         current += char;
         i++;
       }
-
       // Push any remaining text left at the end
       if (current) {
         tokens.push({ type: inQuote ? 'error' : 'real', value: current });
       }
-
       return tokens;
     }
     return tokenize(txt).filter(a=>a.type=='real').map(a=>a.value)
@@ -255,18 +275,123 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  const RepoInitViewGitignoreSection = {
+    props: [
+      'repoInitRequiresAttention',
+      'repoStatus',
+      'repoCallbacks',
+    ],
+    template: `
+    <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+      <h3>gitignore Setup</h3>
+      <fieldset class="mdmreport-controls">
+        <div class="mdmreport-controls-group">
+          <label>gitignore file: </label>
+          <textarea type="text" name="gitignore" value="" placeholder="" style="width: 100%;" v-model="formFields.gitignore" disabled></textarea>
+        </div>
+      </fieldset>
+    </form>
+`,
+  setup(props) {
+    const { ref, reactive, watch } = Vue
+
+    const isBusy = ref(false)
+
+    const formFields = reactive({
+      gitignore: '',
+    })
+    const handleSubmit = async () => {
+
+       try {
+         isBusy.value = true
+
+       } catch (error) {
+         console.error("Form submission failed:", error)
+       } finally {
+         isBusy.value = false
+       }
+     }
+     watch(() => props.repoStatus, () => {
+       formFields.gitignore = props.repoStatus.gitignore
+     })
+
+    return { formFields, handleSubmit, isBusy }
+    }
+  }
+
+  const RepoInitViewInitTheRepo = {
+    props: [
+      'repoStatus',
+      'repoCallbacks',
+    ],
+    template: `
+    <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+      <h3>Init as git repo</h3>
+      <fieldset class="mdmreport-controls">
+        <div class="mdmreport-controls-group">
+          <input type="submit" class="init-repo-action-call-button" value="Init"></input>
+        </div>
+      </fieldset>
+    </form>
+`,
+  setup(props) {
+    const { ref, reactive, watch } = Vue
+
+    const isBusy = ref(false)
+
+    const formFields = reactive({
+    })
+    const handleSubmit = async () => {
+
+       try {
+         isBusy.value = true
+         console.log('[DEBUG-initrepo-form-submit]: initiating "git init" command...')
+         await props.repoCallbacks.executeGitCommand(['git','init'])
+         await props.repoCallbacks.updateGitRepoExistence(),
+         await props.repoCallbacks.updateGitignore(),
+         console.log('[DEBUG-initrepo-form-submit]: after await')
+       } catch (error) {
+         console.error("Form submission failed:", error)
+       } finally {
+         isBusy.value = false
+       }
+     }
+
+    return { formFields, handleSubmit, isBusy }
+    }
+  }
+
   const RepoInitView = {
-    props: {
-      repoInitRequiresAttention: [String,Boolean],
-      repoStatus: Object,
-    },
+    props: [
+      'repoInitRequiresAttention',
+      'repoStatus',
+      'repoCallbacks',
+    ],
     template: `
       <component-section-rollup header="Repo Init View" :condensed="!repoInitRequiresAttention">
-      Hey, you project is...
+      <div class="intro-section">
+        {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
+        <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></repo-init-form>
+      </div>
+      <div class="gitignore-section">
+        <gitignore-section :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></gitignore-section>
+      </div>
       </component-section-rollup>
     `,
-    setup() {
-      return {  }
+    components: {
+      'gitignore-section': RepoInitViewGitignoreSection,
+      'repo-init-form': RepoInitViewInitTheRepo,
+    },
+    setup(props) {
+      const { ref, toRaw, watch } = Vue
+      // console.log("[debug-vue-component-RepoInitView] (setup()): props repoStatus:", props.repoStatus);
+      // console.log("[debug-vue-component-RepoInitView] (setup()): props repoStatus.repoExists:", props.repoStatus.repoExists);
+      // watch(() => props.repoStatus?.repoExists, () => {
+      //   console.log("[debug-vue-component-RepoInitView] (watch()): props repoStatus:", props.repoStatus);
+      //   console.log("[debug-vue-component-RepoInitView] (watch()): props repoStatus.repoExists:", props.repoStatus.repoExists);
+      // })
+
+      return {} // { toRaw }
     }
   }
 
@@ -283,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const TerminalSubmitForm = {
     props: [
-      'cliCommand',
+      'executeGitCommand',
     ],
     template: `
       <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
@@ -291,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="mdmreport-controls-group">
             <label style="display: none;">COMMAND:  </label>
             <input type="text" name="command" value="" placeholder="git command: " v-model="formFields.command"></input>
-            <input type="button" value="Execute"></input>
+            <input type="submit" value="Execute"></input>
             <p class="hint"><small>Note: every command gets --git-dir path... --work-tree path... --no-pager params appended</small></p>
           </div>
         </fieldset>
@@ -309,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          try {
            isBusy.value = true
-           const result = await props.cliCommand(parseCommand(formFields.command))
+           const result = await props.executeGitCommand(parseCommand(formFields.command))
 
          } catch (error) {
            console.error("Form submission failed:", error)
@@ -337,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div :class="\`terminal-record terminal-record-status-\${type}\`">
         <span class="timestamp">{{ formatDate(timestamp) }}</span>
         <span class="status">{{ type }}</span>
-        <span class="returncode" title="returncode - %errorlevel%">{{ returncode }}</span>
+        <span :class="\`returncode returncode-status-\${String(returncode)==String('0')?'success':'nonzero'}\`" title="returncode - %errorlevel%">{{ returncode }}</span>
         <span class="message">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></span>
       </div>
     `,
@@ -349,12 +474,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const TerminalSessionView = {
     props: [
       'commands',
-      'cliCommand',
+      'executeGitCommand',
     ],
     template: `
       <component-section-rollup header="Commands View" :condensed="false">
       <div class="mdm-git-gui-terminal">
-      <terminal-submit-form :cliCommand="cliCommand"></terminal-submit-form>
+      <terminal-submit-form :executeGitCommand="executeGitCommand"></terminal-submit-form>
       <terminal-record
         v-for="cmd in commands"
         :timestamp="cmd.timestamp"
@@ -379,9 +504,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const app = createApp({
     template: `
-<repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus"></repoinit-view>
+<repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></repoinit-view>
 <maingui-view></maingui-view>
-<terminalsession-view :commands="commands" :cliCommand="cliCommand"></terminalsession-view>
+<terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
 `,
     components: {
       'component-section-rollup': ComponentSectionRollUp,
@@ -391,12 +516,15 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     setup() {
 
-      const repoStatus = ref({})
+      const repoStatus = ref({
+      })
+      const repoCallbacks = ref({
+      })
       const repoInitRequiresAttention = ref(false)
       // const commands = ref([{timestamp:new Date(),payload:'test-first-record',message_stdout:'test-first-record','message_stderr':'','source':null,'type':'test'}])
       const commands = ref([])
 
-      function cliCommand(args) {
+      function executeGitCommand(args) {
         args = args || []
         args = [...args]
         const promise = cliCommandRaw(args)
@@ -412,13 +540,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const source_command = command
         commands.value = [...commands.value,command]
+        const getReturnCode = response => {
+          const returnCode = ((response||{}).payload||{}).returncode
+          if((returnCode==0)||!!returnCode) return `${returnCode}`; else return '';
+        }
         promise.then(
           response => {
             const command = {
               timestamp: new Date(),
               message_stdout: (((response||{}).payload||{}).stdout||''),
               message_stderr: (((response||{}).payload||{}).stderr||''),
-              returncode: (((response||{}).payload||{}).returncode||''),
+              returncode: getReturnCode(response),
               payload: response,
               source: source_command,
               'type': 'response',
@@ -435,24 +567,65 @@ document.addEventListener("DOMContentLoaded", () => {
               payload: err,
               message_stdout: '',
               message_stderr: err,
-              returncode: (((response||{}).payload||{}).returncode||''),
+              returncode: getReturnCode(response),
               source: source_command,
               'type': 'error',
             }
             commands.value = [...commands.value,command]
           }
         )
+        return promise
       }
+      repoCallbacks.value.executeGitCommand = executeGitCommand
+
+      async function updateGitignore() {
+        function handleResponse(response) {
+          // repoStatus.value = {...repoStatus.value,'gitignore':response}
+          repoStatus.value.gitignore = response
+          console.log('[DEBUG-vue-vars]',toRaw(repoStatus.value))
+        }
+        const response = await fetchWrapper('GET', '/functionality/gitignore',{})
+        handleResponse(response)
+        return response
+      }
+      repoCallbacks.value.gitignoreRead = updateGitignore
+
+      async function updateGitRepoExistence() {
+        function handleResponse(response) {
+          // repoStatus.value = {...repoStatus.value,'repoExists':response}
+          repoStatus.value.repoExists = response
+          console.log('[DEBUG-vue-vars]',toRaw(repoStatus.value))
+          if(!response) {
+            repoInitRequiresAttention.value = true
+          }
+        }
+        try {
+          const response = await fetchWrapper('HEAD', '/functionality/is-git-repo',{})
+          handleResponse(true)
+          return true
+        } catch (FetchError) {
+          handleResponse(false)
+          return false
+        }
+      }
+      repoCallbacks.value.updateGitRepoExistence = updateGitRepoExistence
 
       onMounted(async () => {
-        const results = cliCommand(['git','status'])
+        await Promise.all([
+          executeGitCommand(['git', 'status','--porcelain=v2','--branch']),
+          executeGitCommand(['git', 'status']),
+          executeGitCommand(['git','rev-parse','--show-toplevel']),
+          updateGitRepoExistence(),
+          updateGitignore(),
+        ])
       })
 
       return {
         repoStatus,
+        repoCallbacks,
         repoInitRequiresAttention,
         commands,
-        cliCommand,
+        executeGitCommand,
       }
 
     }

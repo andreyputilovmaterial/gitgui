@@ -10,7 +10,7 @@ import subprocess
 
 
 
-from .common_functions import wrap_div
+from .common_functions import JSONEncoder
 from .template.make_html import make_banner, make_meta, make_asset_jsembed, make_asset_cssembed, make_asset_jslink, make_asset_csslink, make_asset, make_section, make_html
 from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import common_css, common_js, normalize_css, app_js, vue_js
 
@@ -145,6 +145,8 @@ def handle_git_command(server_instance,config={},added_data=None):
     def sanitize_command(command):
         args = [*command]
         assert args[0]=='git', f'Not a git command'
+        # if len(args)>=2 and args[0]=='git' and args[1]=='error':
+        #     raise ValueError('an error for testing')
         git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
         work_tree = Path(config.get("dir_working_tree")).resolve()
         args = [
@@ -215,10 +217,15 @@ def handle_git_command(server_instance,config={},added_data=None):
             'error': f'{e}',
         }
         print(e,file=sys.stderr)
+    try:
+        if payload.get("status")=='error':
+            status_code = 400
+    except:
+        pass
     return WebResponse(
         status_code = status_code,
         content_type = content_type,
-        body = json.dumps(payload),
+        body = json.dumps(payload, cls=JSONEncoder),
         headers = [],
     )
 
@@ -364,6 +371,6 @@ def handle_request_functionality_endpoint(server_instance,config={},added_data=N
     return WebResponse(
         status_code = status_code,
         content_type = content_type,
-        body = json.dumps(payload),
+        body = json.dumps(payload, cls=JSONEncoder),
         headers = headers,
     )

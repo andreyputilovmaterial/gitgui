@@ -168,19 +168,27 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         )
         if (!response.ok) {
-          let error = `HTTP ${response.status}`
+          let errmsg = `HTTP ${response.status}`
           try {
-            const err = await response.json();
-            error = err.error
+            const data = await response.json();
+            console.log('[DEBUG-catch-error-on-git-command]: ',data,data?.error,data?.payload,data?.payload?.error)
+            errmsg = data.payload.error
           } catch(e) {
-            error = `HTTP ${response.status}`
+            errmsg = `HTTP ${response.status}`
           }
-          throw new Error(error)
-        }
+          throw new Error(errmsg)
+                  }
         const data = await response.json()
         context.status = data.status
         if( data.status=='done' )
           return context.promiseResolve(data)
+        else if( data.status=='error' ) {
+          let errmsg = data
+          try {
+            errmsg = data.error
+          } catch(e) { }
+          throw new Error(errmsg)
+        }
       } catch(e) {
         console.log('[DEBUG]: fail while pending!: ',e)
         return context.promiseReject(e)

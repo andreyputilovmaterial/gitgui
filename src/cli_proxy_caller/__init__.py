@@ -3,7 +3,7 @@ from queue import Queue
 from threading import Thread
 import subprocess
 import uuid
-from pathlib import Path
+# from pathlib import Path
 
 
 jobs = {}
@@ -15,6 +15,7 @@ def worker():
         job_id, command = job_queue.get()
 
         jobs[job_id]["status"] = "running"
+        jobs[job_id]["command"] = command
 
         try:
             result = subprocess.run(
@@ -31,7 +32,7 @@ def worker():
             jobs[job_id]["stderr"] = result.stderr
 
         except Exception as ex:
-            jobs[job_id]["status"] = "failed"
+            jobs[job_id]["status"] = "error"
             jobs[job_id]["error"] = str(ex)
 
         finally:
@@ -59,13 +60,6 @@ def initiate_cli_command(command,config):
     command = sanitize_command(command)
     job_queue.put((job_id, command))
 
-    # self.send_response(202)
-    # self.send_header("Content-Type", "application/json")
-    # self.end_headers()
-    #
-    # self.wfile.write(json.dumps({
-    #     "job_id": job_id
-    # }).encode())
     return {
         "job_id": job_id
     }

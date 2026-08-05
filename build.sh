@@ -44,25 +44,41 @@ echo -
 
 
 echo "Build templates"
+mkdir -p src/frontend/GENERATED
+echo "" >> src/frontend/GENERATED/__init__.py
 mkdir -p src/frontend/template/GENERATED
 echo "" >> src/frontend/template/GENERATED/__init__.py
 mkdir -p src/frontend/template/GENERATED/TEMPLATE_COMPILED
 echo "" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
+
 "$pythonexecutable" build_templates.py --program build --resource blank --dest src/frontend/template/GENERATED
 
 "$pythonexecutable" build_templates.py --program build --resource blank --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-"$pythonexecutable" build_templates.py --program build --resource css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource common_css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-"$pythonexecutable" build_templates.py --program build --resource js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource projectspecific_css --dest src/frontend/GENERATED
+
+"$pythonexecutable" build_templates.py --program build --resource common_js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
 "$pythonexecutable" build_templates.py --program build --resource normalize.css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-"$pythonexecutable" build_templates.py --program build --resource app_js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource app_js --dest src/frontend/GENERATED
 
 "$pythonexecutable" build_templates.py --program build --resource vue --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
 "$pythonexecutable" build_templates.py --program build --resource src_template --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+
+echo "" > src/frontend/GENERATED/ASSETS.py
+echo "# THIS IS AUTO_GENERATED" >> src/frontend/GENERATED/ASSETS.py
+echo "# updated" >> src/frontend/GENERATED/ASSETS.py
+"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/frontend/GENERATED/ASSETS.py
+echo "app_js = r'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/app.js >> src/frontend/GENERATED/ASSETS.py
+echo "'''" >> src/frontend/GENERATED/ASSETS.py
+echo "project_specific_styles_css = r'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/project-specific.css >> src/frontend/GENERATED/ASSETS.py
+echo "'''" >> src/frontend/GENERATED/ASSETS.py
 
 echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "# THIS IS AUTO_GENERATED" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
@@ -76,9 +92,6 @@ cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/normalize.css >> src/front
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "common_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "app_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/app.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "vue_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/vue.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py

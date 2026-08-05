@@ -10,7 +10,7 @@ from .minify_assets import minify_js, minify_css
 
 
 
-TEMPLATE_HTML_COPYBANNER = resources.files("src.templates").joinpath("copybanner.html").read_text('utf-8')
+# TEMPLATE_HTML_COPYBANNER = resources.files("src.templates").joinpath("copybanner.html").read_text('utf-8')
 
 TEMPLATE_HTML_TABLE_BEGIN = resources.files("src.templates").joinpath("table_begin.html").read_text('utf-8')
 
@@ -65,6 +65,6 @@ TEMPLATE_HTML_SCRIPTS = ''.join([
 TEMPLATE_HTML_BEGIN = TEMPLATE_HTML_BEGIN
 
 
-TEMPLATE_HTML_END = TEMPLATE_HTML_END.replace(
-        '{{TEMPLATE_HTML_COPYBANNER}}', TEMPLATE_HTML_COPYBANNER
-    )
+# TEMPLATE_HTML_END = TEMPLATE_HTML_END.replace(
+#         '{{TEMPLATE_HTML_COPYBANNER}}', TEMPLATE_HTML_COPYBANNER
+#     )

@@ -8,35 +8,43 @@ from pathlib import Path
 import os
 import subprocess
 
+from datetime import datetime
+
 
 
 from .common_functions import JSONEncoder
-from .template.make_html import make_banner, make_meta, make_asset_jsembed, make_asset_cssembed, make_asset_jslink, make_asset_csslink, make_asset, make_section, make_html
-from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import common_css, common_js, normalize_css, app_js, vue_js
+from .template.make_html import make_html
+from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import common_css, common_js, normalize_css, vue_js
+from .GENERATED.ASSETS import app_js, project_specific_styles_css
+from .icon import make_icon
 
 
 
 
 
-
-def renderer_home(server_instance,config={},added_data=None):
+def renderer_page_home(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
+    year = f'{datetime.now().year}'
 
     title = f'git - {html.escape(config.get("dir_working_tree"))}'
     page_h1 = f'git - {html.escape(config.get("dir_working_tree"))}'
 
     page_body = make_html(
         title = title,
-        page = 'home',
+        header_block = 'home',
+        footer_block = f'@AP 2026-{year}',
         h1 = page_h1,
-        meta = {
-            'git-gui:datetime-process-started': config.get("time_start"),
-            'git-gui:script-name': config.get("script_name"),
-            'git-gui:script-version': config.get("script_version"),
-            'git-gui:git-work-tree-folder': config.get("dir_working_tree"),
-            'git-gui:git-repo-folder': config.get("dir_git_repo"),
-        },
-        assets = [('js-link','/assets/vue.js',),('js-link-module','/assets/app.js',),],
+        assets = [
+            ('icon',(make_icon(),),),
+            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
+            ('meta',('git-gui:script-name',config.get("script_name"),)),
+            ('meta',('git-gui:script-version',config.get("script_version"),)),
+            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+            ('js-link',('/assets/vue.js',),),
+            ('js-link-module',('/assets/app.js',),),
+            ('css-link',('/assets/project-specific.css',),),
+        ],
         cssclasses = ['gitgui','gitgui-page-home',],
         banners = [
             f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
@@ -89,6 +97,10 @@ def render_assets_app_js(server_instance,config={},added_data=None):
     payload = app_js
     return render_assets(server_instance,config,added_data=payload)
 
+def render_assets_project_specific_styles_css(server_instance,config={},added_data=None):
+    payload = project_specific_styles_css
+    return render_assets(server_instance,config,added_data=payload)
+
 def render_assets_vue_js(server_instance,config={},added_data=None):
     payload = vue_js
     return render_assets(server_instance,config,added_data=payload)
@@ -99,31 +111,86 @@ def render_assets_vue_js(server_instance,config={},added_data=None):
 
 
 
-def renderer_version(server_instance,config={},added_data=None):
+def renderer_page_version(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     version = config.get("script_version")
     version = f'{version}'.strip()
+    year = f'{datetime.now().year}'
 
     title = f'git ui - version'
     page_h1 = f'git ui - version'
 
     page_body = make_html(
         title = title,
-        page = 'Version page',
+        header_block = 'version',
+        footer_block = f'@AP 2026-{year}',
         h1 = page_h1,
-        meta = {
-            'git-gui:datetime-process-started': config.get("time_start"),
-            'git-gui:script-name': config.get("script_name"),
-            'git-gui:script-version': config.get("script_version"),
-            'git-gui:git-work-tree-folder': config.get("dir_working_tree"),
-            'git-gui:git-repo-folder': config.get("dir_git_repo"),
-        },
-        assets = [],
+        assets = [
+            ('icon',(make_icon(),),),
+            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
+            ('meta',('git-gui:script-name',config.get("script_name"),)),
+            ('meta',('git-gui:script-version',config.get("script_version"),)),
+            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+        ],
         cssclasses = ['gitgui','gitgui-page-version',],
         banners = [
             f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
         ],
         sections = [f'<div class="container"><span>Version: <span class="version-string">{version}</span></span></div>'],
+    )
+
+    return WebResponse(
+        status_code = 200,
+        content_type = 'text/html',
+        body = page_body,
+        headers = [],
+    )
+
+
+
+def renderer_page_about(server_instance,config={},added_data=None):
+    WebResponse = config.get("WebResponse")
+    version = config.get("script_version")
+    version = f'{version}'.strip()
+    year = f'{datetime.now().year}'
+    myname = 'Andrey.Putilov@materialplus.io'
+
+    title = f'git ui - about'
+    page_h1 = f'git ui - about'
+
+    page_body = make_html(
+        title = title,
+        header_block = 'about',
+        footer_block = f'@AP 2026-{year}',
+        h1 = page_h1,
+        assets = [
+            ('icon',(make_icon(),),),
+            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
+            ('meta',('git-gui:script-name',config.get("script_name"),)),
+            ('meta',('git-gui:script-version',config.get("script_version"),)),
+            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+        ],
+        cssclasses = ['gitgui','gitgui-page-about',],
+        banners = [
+            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+        ],
+        sections = [
+            f'''
+<div class="container">
+    <div>
+        {html.escape(myname)}
+    </div>
+    <div>
+        Version: <span class="version-string">{html.escape(version)}</span>
+    </div>
+    <div>
+        @ 2026-{html.escape(year)}
+    </div>
+</div>
+'''
+        ],
     )
 
     return WebResponse(

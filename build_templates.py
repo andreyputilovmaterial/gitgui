@@ -57,11 +57,11 @@ def build_normalize_css() -> Resource:
         ),
     ]
 
-def build_css() -> Resource:
+def build_common_css() -> Resource:
     txt = ''
     txt += resources.files("src.frontend.template.templates").joinpath("common.css").read_text('utf-8')
     txt += resources.files("src.frontend.template.templates").joinpath("common_tables.css").read_text('utf-8')
-    txt += resources.files("src.frontend.template.templates").joinpath("project_specific.css").read_text('utf-8')
+    # txt += resources.files("src.frontend.template.templates").joinpath("project_specific.css").read_text('utf-8')
     txt = minify_css(txt)
     return [
         Resource(
@@ -70,7 +70,18 @@ def build_css() -> Resource:
         ),
     ]
 
-def build_js() -> Resource:
+def build_projectspecific_css() -> Resource:
+    txt = ''
+    txt += resources.files("src.frontend.app_js").joinpath("project_specific.css").read_text('utf-8')
+    txt = minify_css(txt)
+    return [
+        Resource(
+            filename = "project-specific.css",
+            payload = txt
+        ),
+    ]
+
+def build_common_js() -> Resource:
     txt = ''
     txt += resources.files("src.frontend.template.templates").joinpath("common.js").read_text('utf-8')
     # txt += resources.files("src.frontend.template.templates").joinpath("app.js").read_text('utf-8')
@@ -98,7 +109,7 @@ def build_vue() -> Resource:
 
 def build_app_js() -> Resource:
     txt = ''
-    txt += resources.files("src.frontend.template.templates").joinpath("app.js").read_text('utf-8')
+    txt += resources.files("src.frontend.app_js").joinpath("app.js").read_text('utf-8')
     txt = minify_js(txt)
     return [
         Resource(
@@ -110,15 +121,15 @@ def build_app_js() -> Resource:
 
 def build_py_dist() -> Resource:
     raise Exception(f'Producing make_html.py: this should not be handled by build.py, call pinliner instead')
-    return [
-        Resource(
-            filename = "make_html.py",
-            payload = sanitize(txt)
-        ),
-    ]
+    # return [
+    #     Resource(
+    #         filename = "make_html.py",
+    #         payload = sanitize(txt)
+    #     ),
+    # ]
 
 def build_html_template() -> Resource:
-    TEMPLATE_HTML_COPYBANNER = resources.files("src.frontend.template.templates").joinpath("copybanner.html").read_text('utf-8')
+    # TEMPLATE_HTML_COPYBANNER = resources.files("src.frontend.template.templates").joinpath("copybanner.html").read_text('utf-8')
     TEMPLATE_HTML_TABLE_BEGIN = resources.files("src.frontend.template.templates").joinpath("table_begin.html").read_text('utf-8')
     TEMPLATE_HTML_TABLE_END = resources.files("src.frontend.template.templates").joinpath("table_end.html").read_text('utf-8')
     TEMPLATE_HTML_BEGIN = resources.files("src.frontend.template.templates").joinpath("html_begin.html").read_text('utf-8')
@@ -126,9 +137,10 @@ def build_html_template() -> Resource:
     f = ''
     f += '\n\n'
     f += 'TEMPLATE_HTML_BEGIN = r"""\n'+sanitize(TEMPLATE_HTML_BEGIN)+'\n"""\n\n'
-    f += 'TEMPLATE_HTML_END = r"""\n'+sanitize(TEMPLATE_HTML_END.replace(
-            '{{TEMPLATE_HTML_COPYBANNER}}', TEMPLATE_HTML_COPYBANNER
-        ))+'\n"""\n\n'
+    # f += 'TEMPLATE_HTML_END = r"""\n'+sanitize(TEMPLATE_HTML_END.replace(
+    #         '{{TEMPLATE_HTML_COPYBANNER}}', TEMPLATE_HTML_COPYBANNER
+    #     ))+'\n"""\n\n'
+    f += 'TEMPLATE_HTML_END = r"""\n'+sanitize(TEMPLATE_HTML_END)+'\n"""\n\n'
     f += 'TEMPLATE_HTML_TABLE_BEGIN = r"""\n'+sanitize(TEMPLATE_HTML_TABLE_BEGIN)+'\n"""\n\n'
     f += 'TEMPLATE_HTML_TABLE_END = r"""\n'+sanitize(TEMPLATE_HTML_TABLE_END)+'\n"""\n\n'
     return [
@@ -153,8 +165,9 @@ def build_blank() -> Resource:
 renderers = {
     'blank': build_blank,
     'normalize.css': build_normalize_css,
-    'css': build_css,
-    'js': build_js,
+    'common_css': build_common_css,
+    'projectspecific_css': build_projectspecific_css,
+    'common_js': build_common_js,
     'app_js': build_app_js,
     'vue': build_vue,
     # 'project_specific.css': build_project_specific_css,

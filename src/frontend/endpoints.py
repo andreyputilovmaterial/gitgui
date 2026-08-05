@@ -147,7 +147,17 @@ def handle_git_command(server_instance,config={},added_data=None):
         assert args[0]=='git', f'Not a git command'
         git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
         work_tree = Path(config.get("dir_working_tree")).resolve()
-        args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
+        args = [
+            args[0],
+            '--git-dir'
+            ,git_dir,
+            '--work-tree',
+            work_tree,
+            '--no-pager',
+            '-c',
+            'i18n.logOutputEncoding=utf-8',
+            *args[1:]
+        ]
         return args
     def render_initiate_new_command(server_instance):
         # Read Content-Length header
@@ -229,7 +239,7 @@ def functionality_path_gitignore(server_instance,config):
             txt = f.read()
             return txt
     def write(fname,txt):
-        with open(file_path,'w',encoding='utf-8') as f:
+        with open(fname,'w',encoding='utf-8') as f:
             txt = f.write(txt)
             return txt
     fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'exclude'
@@ -261,7 +271,7 @@ def functionality_path_gitattributes(server_instance,config):
             txt = f.read()
             return txt
     def write(fname,txt):
-        with open(file_path,'w',encoding='utf-8') as f:
+        with open(fname,'w',encoding='utf-8') as f:
             txt = f.write(txt)
             return txt
     fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'attributes'

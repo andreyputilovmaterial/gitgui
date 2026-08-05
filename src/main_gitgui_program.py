@@ -11,7 +11,7 @@ from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
 from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status
 from .GENERATED._VERSION import _VERSION as script_version
-from .helper_utilities import print_config
+from .helper_utilities import prettyprint_config
 
 from .endpoints import endpoints
 
@@ -94,11 +94,12 @@ def main(*argcs,**kwargs):
     config['http_address'] = f'http://{config.get("http_host")}:{config.get("http_port")}'
 
     print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
-    print(f'CONFIG:\n{print_config({
+    cfg_to_print_verify = {
         "working-tree-folder":config.get("dir_working_tree"),
         "git-repo-folder":config.get("dir_git_repo"),
         "http address":config.get("http_address"),
-    })}')
+    }
+    print(f'CONFIG:\n{prettyprint_config(cfg_to_print_verify)}')
     print('\n')
     server = Webserver(config) # a wrapper around python http.server - no flask or django
     server.assign_handlers(endpoints)

@@ -1,11 +1,31 @@
 #!/usr/bin/env bash
 set -e
 
+
+echo "Prep python"
+python -m venv .venv
+if [ -x ".venv/Scripts/python.exe" ]; then
+    pythonexecutable=".venv/Scripts/python.exe"
+elif [ -x ".venv/bin/python" ]; then
+    pythonexecutable=".venv/bin/python"
+else
+    echo "No Python virtual environment found"
+    exit 1
+fi
+"$pythonexecutable" -m pip install -r requirements.txt
+echo "done"
+echo -
+echo -
+
+
 echo "Update program version"
+mkdir -p src/GENERATED
+echo "" >> src/GENERATED/__init__.py
+git fetch --tags
 echo "" > src/GENERATED/_VERSION.py
 echo "# THIS IS AUTO_GENERATED" >> src/GENERATED/_VERSION.py
 echo "# updated" >> src/GENERATED/_VERSION.py
-python -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/_VERSION.py
+"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/_VERSION.py
 echo "_VERSION = '''" >> src/GENERATED/_VERSION.py
 git describe >> src/GENERATED/_VERSION.py
 echo "'''" >> src/GENERATED/_VERSION.py
@@ -14,26 +34,31 @@ echo -
 echo -
 
 
-python build_templates.py --program build --resource blank --dest src/frontend/template/GENERATED
+echo "Build templates"
+mkdir -p src/frontend/template/GENERATED
+echo "" >> src/frontend/template/GENERATED/__init__.py
+mkdir -p src/frontend/template/GENERATED/TEMPLATE_COMPILED
+echo "" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
+"$pythonexecutable" build_templates.py --program build --resource blank --dest src/frontend/template/GENERATED
 
-python build_templates.py --program build --resource blank --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource blank --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-python build_templates.py --program build --resource css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-python build_templates.py --program build --resource js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-python build_templates.py --program build --resource normalize.css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource normalize.css --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-python build_templates.py --program build --resource app_js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource app_js --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-python build_templates.py --program build --resource vue --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource vue --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-python build_templates.py --program build --resource src_template --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource src_template --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
 echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "# THIS IS AUTO_GENERATED" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "# updated" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-python -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "common_css = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
@@ -49,11 +74,15 @@ echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "vue_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/vue.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+echo "done"
+echo -
+echo -
 
 echo "Produce dist"
+mkdir -p dist
 echo "" > dist/gitgui_bundle.py
 echo "Calling pinliner..."
-python "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o dist/gitgui_bundle.py
+"$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o dist/gitgui_bundle.py
 echo "done"
 echo "Patching gitgui_bundle.py..."
 echo "# ..." >> "dist/gitgui_bundle.py"
@@ -66,4 +95,4 @@ echo "# print('out of gitgui_bundle')" >> "dist/gitgui_bundle.py"
 echo "done"
 echo -
 echo -
-python dist/gitgui_bundle.py --program done
+"$pythonexecutable" dist/gitgui_bundle.py --program done

@@ -30,7 +30,7 @@ echo -
 echo "Update program version"
 mkdir -p src/GENERATED
 echo "" >> src/GENERATED/__init__.py
-git fetch --tags
+git fetch --tags || true
 echo "" > src/GENERATED/_VERSION.py
 echo "# THIS IS AUTO_GENERATED" >> src/GENERATED/_VERSION.py
 echo "# updated" >> src/GENERATED/_VERSION.py

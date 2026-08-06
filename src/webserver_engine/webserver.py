@@ -51,26 +51,6 @@ class Webserver:
     def assign_handlers(self,endpoints:dict={}):
         self.endpoints = {**self.endpoints,**endpoints}
 
-    # def setup(self,cfg):
-    #     def set_bind_host(value):
-    #         self.bind_host = value
-    #     def set_port(value):
-    #         self.port = value
-    #     def set_script_name(value):
-    #         config['script_name'] = value
-    #     known = {
-    #         'bind_host': set_bind_host,
-    #         'port': set_port,
-    #         'script_name': set_script_name,
-    #     }
-    #     for key, value in cfg.items():
-    #         if key in known:
-    #             handler = known.get(key,lambda v: _err(f'webserve: Can\t parse config: [{key}] = {repr(value)}'))
-    #             handler(value)
-    #         else:
-    #             pass
-    #             # raise Exception(f'Unrecognized config field: {key}')
-
     def run(self):
         try:
             self.port = int(self.port)
@@ -164,20 +144,10 @@ class Webserver:
                             # print fallback
                             self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode())
 
-            def do_GET(self):
-                self.handle_request()
-
-            def do_HEAD(self):
-                self.handle_request()
-
-            def do_POST(self):
-                self.handle_request()
-
-            def do_PUT(self):
-                self.handle_request()
-
-            def do_DELETE(self):
-                self.handle_request()
+            def __getattr__(self, name):
+                if name.startswith("do_"):
+                    return self.handle_request
+                raise AttributeError(name)
 
         return Handler
 

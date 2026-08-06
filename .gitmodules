@@ -1,3 +1,6 @@
 [submodule "src_dev_build/lib/pinliner"]
 	path = src_dev_build/lib/pinliner
 	url = https://github.com/The-city-not-present/pinliner.git
+[submodule "src/frontend/bundler_engine/lib/py_js_bundler"]
+	path = src/frontend/bundler_engine/lib/py_js_bundler
+	url = https://github.com/The-city-not-present/py_js_bundler.git

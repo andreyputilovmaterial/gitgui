@@ -14,18 +14,23 @@ from pathlib import Path
 
 
 
+
+
 if __name__ == '__main__':
     # run as a program
     from src.helper_utilities import sanitize
     from src.frontend.template.minify_assets import minify_js, minify_css
+    from src.frontend.bundler_engine.lib.py_js_bundler.pack import process as pack_js
 elif '.' in __name__:
     # package
     from .src.helper_utilities import sanitize
     from .src.frontend.template.minify_assets import minify_js, minify_css
+    from .src.frontend.bundler_engine.lib.py_js_bundler.pack import process as pack_js
 else:
     # included with no parent package
     from src.helper_utilities import sanitize
     from src.frontend.template.minify_assets import minify_js, minify_css
+    from src.frontend.bundler_engine.lib.py_js_bundler.pack import process as pack_js
 
 
 
@@ -99,6 +104,8 @@ def build_vue() -> Resource:
     txt += resources.files("src.frontend.template.templates").joinpath("vue.global.js").read_text('utf-8')
     # # uncomment for prod build
     # txt += resources.files("src.frontend.template.templates").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
+    # txt = pack_js('./src/frontend/template/templates/vue.global.js')
+    # # txt = pack_js('./src/frontend/template/templates/vue.runtime.global.prod.js')
     txt = minify_js(txt)
     return [
         Resource(
@@ -108,8 +115,9 @@ def build_vue() -> Resource:
     ]
 
 def build_app_js() -> Resource:
-    txt = ''
-    txt += resources.files("src.frontend.app_js").joinpath("app.js").read_text('utf-8')
+    # txt = ''
+    # txt += resources.files("src.frontend.app_js").joinpath("app.js").read_text('utf-8')
+    txt = pack_js('./src/frontend/app_js/app.js')
     txt = minify_js(txt)
     return [
         Resource(

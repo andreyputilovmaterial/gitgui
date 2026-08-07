@@ -19,8 +19,54 @@
 
 
 
+
+
+.error-banner {
+  display: block;
+  position: relative;
+  /* background: #fff; */
+}
+.error-banner.error-banner-nonempty {
+  margin-bottom: 28px;
+}
+.mdm-ui-error-record {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+}
+.mdm-ui-error-record .timestamp {
+  color: #aaa;
+  font-weight: 200;
+  display: block;
+  padding-right: 7px;
+  flex: 0 0 16em;
+}
+.mdm-ui-error-record .label {
+  display: block;
+  padding-left: 14px;
+  padding-right: .5em;
+  font-weight: 200;
+  text-align: right;
+  color: #bb0000;
+}
+.mdm-ui-error-record .errorbody {
+  display: block;
+  font-weight: 500;
+  color: #940000;
+}
+@media all and (max-width: 400px) {
+  .mdm-ui-error-record {
+    flex-direction: column;
+  }
+}
+
+
+
+
+
 .terminal-record {
-  display: flex; position: relative;
+  display: flex;
+  position: relative;
   flex-direction: row;
 }
 .terminal-record .timestamp {
@@ -84,25 +130,8 @@
 .terminal-record {
   padding: 5px 0 5px;
 }
-form.mdmreport-controls {
-  display: block;
-  position: relative;
-}
-form.mdmreport-controls:first-child:before {
-  content: " ";
-  display: none;
-  position: absolute;
-  background: rgba(222,222,222,0);
-  transition: 400ms all ease;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-}
-form.mdmreport-controls.mdmreport-form-busy:first-child:before {
-  display: block;
-  background: rgba(222,222,222,.4);
-}
+
+
 
 
 .mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group {

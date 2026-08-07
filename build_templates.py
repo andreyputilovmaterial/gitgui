@@ -77,6 +77,7 @@ def build_common_css() -> Resource:
 
 def build_projectspecific_css() -> Resource:
     txt = ''
+    txt += resources.files("src.frontend.app_js").joinpath("components.css").read_text('utf-8')
     txt += resources.files("src.frontend.app_js").joinpath("project_specific.css").read_text('utf-8')
     txt = minify_css(txt)
     return [

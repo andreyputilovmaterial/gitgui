@@ -1,0 +1,83 @@
+
+
+
+
+
+form.mdmreport-controls {
+  display: block;
+  position: relative;
+}
+form.mdmreport-controls:first-child:before {
+  content: " ";
+  display: none;
+  position: absolute;
+  background: rgba(222,222,222,0);
+  transition: 400ms all ease;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+form.mdmreport-controls.mdmreport-form-busy:first-child:before {
+  display: block;
+  background: rgba(222,222,222,.4);
+}
+
+
+
+
+
+
+
+
+
+.mdm-ui-modals-site .mdm-ui-modals-background {
+  display: none;
+  position: fixed;
+  background: rgba(255,255,255,0);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 101;
+  transition: all 600ms ease;
+}
+.mdm-ui-modals-site.mdm-ui-modals-site-active .mdm-ui-modals-background {
+  display: block;
+  background: rgba(192,192,192,.6);
+}
+.mdm-ui-modals-site .mdm-git-ui-modal-wrapper {
+  display: block;
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 28px;
+  z-index: 1001;
+  left: 50%;
+  top: 80px;
+  width: 80%;
+  transform: translateX(-50%);
+  padding: 28px;
+}
+.mdm-ui-modals-site .mdm-git-ui-modal-wrapper .mdm-git-ui-modal-dismiss {
+  position: absolute;
+  display: block;
+  z-index: 99999;
+  right: 14px;
+  top: 14px;
+  line-height: 14px;
+  text-align: center;
+  transform: translateX(-50%) translateY(-50%);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  font-size: 28px;
+  font-weight: 800;
+  color: #777;
+}
+.mdm-ui-modals-site .mdm-git-ui-modal-wrapper .mdm-git-ui-modal-dismiss:hover {
+  color: #990000;
+}
+.mdm-ui-modals-site .mdm-git-ui-modal-wrapper .mdm-git-ui-modal-dismiss:before {
+  content: "×";
+}

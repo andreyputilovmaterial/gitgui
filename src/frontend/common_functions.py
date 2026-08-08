@@ -4,6 +4,7 @@ import sys # for checking pinliner
 import re
 from pathlib import Path
 import json
+from datetime import datetime
 
 
 
@@ -44,5 +45,6 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Path):
             return f'{obj}'
+        if isinstance(obj, datetime):
+            return obj.isoformat()
         return super().default(obj)
-

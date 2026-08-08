@@ -99,19 +99,33 @@ def build_common_js() -> Resource:
         ),
     ]
 
-def build_vue() -> Resource:
-    txt = ''
+def build_vendorlibs() -> Resource:
+    txt_vue = ''
     # uncomment for dev build
-    txt += resources.files("src.frontend.template.templates").joinpath("vue.global.js").read_text('utf-8')
+    txt_vue += resources.files("src.frontend.template.vendor").joinpath("vue.global.js").read_text('utf-8')
     # # uncomment for prod build
-    # txt += resources.files("src.frontend.template.templates").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
-    # txt = pack_js('./src/frontend/template/templates/vue.global.js')
-    # # txt = pack_js('./src/frontend/template/templates/vue.runtime.global.prod.js')
-    txt = minify_js(txt)
+    # txt_vue += resources.files("src.frontend.template.vendor").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
+    # txt_vue = pack_js('./src/frontend/template/vendor/vue.global.js')
+    # # txt_vue = pack_js('./src/frontend/template/vendor/vue.runtime.global.prod.js')
+    txt_vue = minify_js(txt_vue)
+    txt_marked = ''
+    txt_marked += resources.files("src.frontend.template.vendor").joinpath("marked.umd.min.js").read_text('utf-8')
+    txt_marked = minify_js(txt_marked)
+    txt_dompurify = ''
+    txt_dompurify += resources.files("src.frontend.template.vendor").joinpath("purify.min.js").read_text('utf-8')
+    txt_dompurify = minify_js(txt_dompurify)
     return [
         Resource(
-            filename = "vue.js",
-            payload = txt
+            filename = "vendorlibs-vue.js",
+            payload = txt_vue
+        ),
+        Resource(
+            filename = "vendorlibs-marked.js",
+            payload = txt_marked
+        ),
+        Resource(
+            filename = "vendorlibs-dompurify.js",
+            payload = txt_dompurify
         ),
     ]
 
@@ -178,7 +192,7 @@ renderers = {
     'projectspecific_css': build_projectspecific_css,
     'common_js': build_common_js,
     'app_js': build_app_js,
-    'vue': build_vue,
+    'vendor-libs': build_vendorlibs,
     # 'project_specific.css': build_project_specific_css,
     'make_html.py': build_py_dist,
     'src_template': build_html_template,

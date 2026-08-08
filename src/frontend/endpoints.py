@@ -14,12 +14,31 @@ from datetime import datetime
 
 from .common_functions import JSONEncoder
 from .template.make_html import make_html
-from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import common_css, common_js, normalize_css, vue_js
+from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import \
+    common_css, \
+    common_js, \
+    normalize_css, \
+    vendorlibs_vue_js, \
+    vendorlibs_marked_js, \
+    vendorlibs_dompurify_js
 from .GENERATED.ASSETS import app_js, project_specific_styles_css
 from .icon import make_icon
 
 
 
+block_html_page_navigatation_block = '''
+<div class="gitgui-html-page-header">
+    <div class="gitgui-html-pagename">%PAGENAME%</div>
+    <div class="gitgui-html-page-navigation">
+        <ul>
+            <li navigation-role="home"><a href="/" target="_blank">Home</a></li>
+            <li navigation-role="about"><a href="/about" target="_blank">About</a></li>
+            <li navigation-role="version"><a href="/version" target="_blank">Version</a></li>
+            <li navigation-role="help"><a href="/help" target="_blank">Help</a></li>
+        </ul>
+    </div>
+</div>
+'''
 
 
 def renderer_page_home(server_instance,config={},added_data=None):
@@ -31,8 +50,8 @@ def renderer_page_home(server_instance,config={},added_data=None):
 
     page_body = make_html(
         title = title,
-        header_block = 'home',
-        footer_block = f'@AP 2026-{year}',
+        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','git-gui app'),
+        footer_block = f'@AP 2026-{html.escape(year)}',
         h1 = page_h1,
         assets = [
             ('icon',(make_icon(),),),
@@ -41,7 +60,7 @@ def renderer_page_home(server_instance,config={},added_data=None):
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
-            ('js-link',('/assets/vue.js',),),
+            ('js-link',('/assets/vendorlibs-vue.js',),),
             ('js-link-module',('/assets/app.js',),),
             ('css-link',('/assets/project-specific.css',),),
         ],
@@ -50,6 +69,174 @@ def renderer_page_home(server_instance,config={},added_data=None):
             f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
         ],
         sections = ['<div class="container"><div id="gitui_app"></div></div>'],
+    )
+
+    return WebResponse(
+        status_code = 200,
+        content_type = 'text/html',
+        body = page_body,
+        headers = [],
+    )
+
+
+
+def renderer_page_version(server_instance,config={},added_data=None):
+    WebResponse = config.get("WebResponse")
+    version = config.get("script_version")
+    version = f'{version}'.strip()
+    year = f'{datetime.now().year}'
+
+    title = f'git ui - version'
+    page_h1 = f'git ui - version'
+
+    page_body = make_html(
+        title = title,
+        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','Version'),
+        footer_block = f'@AP 2026-{html.escape(year)}',
+        h1 = page_h1,
+        assets = [
+            ('icon',(make_icon(),),),
+            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
+            ('meta',('git-gui:script-name',config.get("script_name"),)),
+            ('meta',('git-gui:script-version',config.get("script_version"),)),
+            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+        ],
+        cssclasses = ['gitgui','gitgui-page-version',],
+        banners = [
+            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+        ],
+        sections = [f'<div class="container"><span>Version: <span class="version-string">{version}</span></span></div>'],
+    )
+
+    return WebResponse(
+        status_code = 200,
+        content_type = 'text/html',
+        body = page_body,
+        headers = [],
+    )
+
+
+
+def renderer_page_about(server_instance,config={},added_data=None):
+    WebResponse = config.get("WebResponse")
+    version = config.get("script_version")
+    version = f'{version}'.strip()
+    year = f'{datetime.now().year}'
+    myname = 'Andrey.Putilov@materialplus.io'
+
+    title = f'git ui - about'
+    page_h1 = f'git ui - about'
+
+    page_body = make_html(
+        title = title,
+        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','About'),
+        footer_block = f'@AP 2026-{html.escape(year)}',
+        h1 = page_h1,
+        assets = [
+            ('icon',(make_icon(),),),
+            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
+            ('meta',('git-gui:script-name',config.get("script_name"),)),
+            ('meta',('git-gui:script-version',config.get("script_version"),)),
+            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+        ],
+        cssclasses = ['gitgui','gitgui-page-about',],
+        banners = [
+            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+        ],
+        sections = [
+            f'''
+<div class="container">
+    <div>
+        {html.escape(myname)}
+    </div>
+    <div>
+        Version: <span class="version-string">{html.escape(version)}</span>
+    </div>
+    <div>
+        @ 2026-{html.escape(year)}
+    </div>
+</div>
+'''
+        ],
+    )
+
+    return WebResponse(
+        status_code = 200,
+        content_type = 'text/html',
+        body = page_body,
+        headers = [],
+    )
+
+
+
+def renderer_page_help(server_instance,config={},added_data=None):
+    WebResponse = config.get("WebResponse")
+    version = config.get("script_version")
+    version = f'{version}'.strip()
+    year = f'{datetime.now().year}'
+    myname = 'Andrey.Putilov@materialplus.io'
+
+    title = f'git ui - help'
+    page_h1 = f'git ui - help'
+
+    page_body = make_html(
+        title = title,
+        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','Help'),
+        footer_block = f'@AP 2026-{html.escape(year)}',
+        h1 = page_h1,
+        assets = [
+            ('icon',(make_icon(),),),
+            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
+            ('meta',('git-gui:script-name',config.get("script_name"),)),
+            ('meta',('git-gui:script-version',config.get("script_version"),)),
+            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+            ('js-link',('/assets/vendorlibs-marked.js',),),
+            ('js-link',('/assets/vendorlibs-dompurify.js',),),
+        ],
+        cssclasses = ['gitgui','gitgui-page-about',],
+        banners = [
+            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+        ],
+        sections = [
+            f'''
+<div class="container">
+    <div>
+        <div id="help" class="helppage-fetch-content">Loading, please wait...</div>
+''' + '''
+        <style>.helppage-fetch-content { margin: 56px 0 56px; }</style>
+        <script>
+(async function() {
+    try {
+        async function fetchHelpPage() {
+            const response = await fetch('/functionality/config');
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            const config = await response.json();
+            return config.help;
+        };
+        const targetEl = document.querySelector('#help');
+        const help_text_md = await fetchHelpPage();
+        const helpFormatted = DOMPurify.sanitize(marked.parse(help_text_md));
+        targetEl.innerHTML = helpFormatted;
+    } catch(e) {
+        const targetEl = document.querySelector('#help');
+        targetEl.innerHTML = '<div class="error"></div>';
+        targetEl.querySelector('.error').textContent = `${e}`;
+    }
+})();
+        </script>
+''' + f'''
+    </div>
+    <div>
+        @ 2026-{html.escape(year)}
+    </div>
+</div>
+'''
+        ],
     )
 
     return WebResponse(
@@ -101,104 +288,17 @@ def render_assets_project_specific_styles_css(server_instance,config={},added_da
     payload = project_specific_styles_css
     return render_assets(server_instance,config,added_data=payload)
 
-def render_assets_vue_js(server_instance,config={},added_data=None):
-    payload = vue_js
+def render_assets_vendorlibs_vue_js(server_instance,config={},added_data=None):
+    payload = vendorlibs_vue_js
+    return render_assets(server_instance,config,added_data=payload)
+def render_assets_vendorlibs_marked_js(server_instance,config={},added_data=None):
+    payload = vendorlibs_marked_js
+    return render_assets(server_instance,config,added_data=payload)
+def render_assets_vendorlibs_dompurify_js(server_instance,config={},added_data=None):
+    payload = vendorlibs_dompurify_js
     return render_assets(server_instance,config,added_data=payload)
 
 
-
-
-
-
-
-def renderer_page_version(server_instance,config={},added_data=None):
-    WebResponse = config.get("WebResponse")
-    version = config.get("script_version")
-    version = f'{version}'.strip()
-    year = f'{datetime.now().year}'
-
-    title = f'git ui - version'
-    page_h1 = f'git ui - version'
-
-    page_body = make_html(
-        title = title,
-        header_block = 'version',
-        footer_block = f'@AP 2026-{year}',
-        h1 = page_h1,
-        assets = [
-            ('icon',(make_icon(),),),
-            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
-            ('meta',('git-gui:script-name',config.get("script_name"),)),
-            ('meta',('git-gui:script-version',config.get("script_version"),)),
-            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
-            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
-        ],
-        cssclasses = ['gitgui','gitgui-page-version',],
-        banners = [
-            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
-        ],
-        sections = [f'<div class="container"><span>Version: <span class="version-string">{version}</span></span></div>'],
-    )
-
-    return WebResponse(
-        status_code = 200,
-        content_type = 'text/html',
-        body = page_body,
-        headers = [],
-    )
-
-
-
-def renderer_page_about(server_instance,config={},added_data=None):
-    WebResponse = config.get("WebResponse")
-    version = config.get("script_version")
-    version = f'{version}'.strip()
-    year = f'{datetime.now().year}'
-    myname = 'Andrey.Putilov@materialplus.io'
-
-    title = f'git ui - about'
-    page_h1 = f'git ui - about'
-
-    page_body = make_html(
-        title = title,
-        header_block = 'about',
-        footer_block = f'@AP 2026-{year}',
-        h1 = page_h1,
-        assets = [
-            ('icon',(make_icon(),),),
-            ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
-            ('meta',('git-gui:script-name',config.get("script_name"),)),
-            ('meta',('git-gui:script-version',config.get("script_version"),)),
-            ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
-            ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
-        ],
-        cssclasses = ['gitgui','gitgui-page-about',],
-        banners = [
-            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
-        ],
-        sections = [
-            f'''
-<div class="container">
-    <div>
-        {html.escape(myname)}
-    </div>
-    <div>
-        Version: <span class="version-string">{html.escape(version)}</span>
-    </div>
-    <div>
-        @ 2026-{html.escape(year)}
-    </div>
-</div>
-'''
-        ],
-    )
-
-    return WebResponse(
-        status_code = 200,
-        content_type = 'text/html',
-        body = page_body,
-        headers = [],
-    )
 
 
 
@@ -369,6 +469,41 @@ def functionality_path_gitattributes(server_instance,config):
     else:
         return not_implemented()
 
+def functionality_path_config(server_instance,config):
+    def json_prepare(obj, path="root"):
+        if isinstance(obj, Path):
+            return str(obj)
+
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+
+        if isinstance(obj, dict):
+            return {
+                key: json_prepare(value, f"{path}.{key}")
+                for key, value in obj.items()
+            }
+
+        if isinstance(obj, (list, tuple)):
+            return [
+                json_prepare(value, f"{path}[{index}]")
+                for index, value in enumerate(obj)
+            ]
+
+        if (
+            obj is None
+            or isinstance(obj, (str, int, float, bool))
+        ):
+            return obj
+
+        if callable(obj):
+            return '[ callable ]';
+
+        raise TypeError(
+            f"Object of type {type(obj).__name__} "
+            f"is not JSON serializable at {path}"
+        )
+    config_sanitized = json.loads(json.dumps(json_prepare(config),cls=JSONEncoder))
+    return config_sanitized, [], 200
 
 def is_git_repo(server_instance,config):
     def pend_git_repo_status():
@@ -416,6 +551,7 @@ def handle_request_functionality_endpoint(server_instance,config={},added_data=N
         'git-ls-tracked-files': not_implemented,
         'gitignore': functionality_path_gitignore, # .git/info/exclude
         'gitattributes': functionality_path_gitattributes, # .git/info/attributes
+        'config': functionality_path_config,
     }
     WebResponse = config.get("WebResponse")
     content_type = 'application/json'

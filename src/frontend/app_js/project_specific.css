@@ -1,5 +1,5 @@
 .gitgui-page-home .header {
-  display: none;
+  /* display: none; */
 }
 .gitgui-page-home h1 {
   color: #678;
@@ -29,6 +29,7 @@
 .error-banner.error-banner-nonempty {
   margin-bottom: 28px;
 }
+
 .mdm-ui-error-record {
   display: flex;
   position: relative;
@@ -58,6 +59,51 @@
   .mdm-ui-error-record {
     flex-direction: column;
   }
+}
+
+
+
+
+
+
+
+.gitgui-html-page-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.gitgui-html-page-header .gitgui-html-pagename {
+  margin-right: auto;
+}
+.gitgui-html-page-header .gitgui-html-pagename {
+  color: #888;
+  font-weight: 100;
+  font-size: 20px;
+  padding-top: 20px;
+  padding-bottom: 12px;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: true;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li {
+  margin: 0; padding: 0; list-style-type: none;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul > li {
+  padding: .5em;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul > li a, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:hover, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:visited, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:link, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:active {
+  color: #6670bb;
+  text-decoration: none;
+  transition: all 600ms ease;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:hover {
+  color: #99a0f0;
+}
+.gitgui-page-home .gitgui-html-page-header .gitgui-html-page-navigation [navigation-role="home"] {
+  display: none;
 }
 
 
@@ -183,4 +229,8 @@
 .git-repo-intro-setup-section .git-repo-init-form .init-repo-action-call-button:hover {
   color: #111;
   background: #dfefdf;
+}
+.git-repo-intro-setup-section .git-repo-gitignore-edit-form textarea {
+  min-height: 85px;
+  height: 140px;
 }

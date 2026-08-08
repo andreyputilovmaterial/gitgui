@@ -263,6 +263,10 @@ td.mdmreport-contentcell label {
 .mdmreport-controls label:hover {
     border: 1px solid #ddd;
 }
+.mdmreport-controls textarea {
+  resize: vertical;
+  width: 100%;
+}
 .mdmreport-controls label input[type="checkbox"] {
     display: inline-block;
     width: 0;

@@ -60,7 +60,7 @@ const RepoInitViewGitignoreSection = {
     <fieldset class="mdmreport-controls">
       <div class="mdmreport-controls-group">
         <label>gitignore file: </label>
-        <textarea type="text" name="gitignore" value="" placeholder="" style="width: 100%;" v-model="formFields.gitignore" disabled></textarea>
+        <textarea name="gitignore" placeholder="" v-model="formFields.gitignore" readonly disabled></textarea>
       </div>
     </fieldset>
   </form>
@@ -122,7 +122,7 @@ setup(props) {
        console.log('[DEBUG-initrepo-form-submit]: initiating "git init" command...')
        await props.repoCallbacks.executeGitCommand(['git','init'])
        await props.repoCallbacks.updateGitRepoExistence(),
-       await props.repoCallbacks.updateGitignore(),
+       await props.repoCallbacks.gitignoreRead(),
        console.log('[DEBUG-initrepo-form-submit]: after await')
      } catch (error) {
        if(error instanceof Error) {

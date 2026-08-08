@@ -11,6 +11,7 @@ from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
 from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status
 from .GENERATED._VERSION import _VERSION as script_version
+from .GENERATED._HELP import _MD as help_md
 from .helper_utilities import prettyprint_config
 
 from .endpoints import endpoints
@@ -53,7 +54,8 @@ def main(*argcs,**kwargs):
     config = {
         'time_start': time_start,
         'script_name': script_name,
-        'script_version': script_version,
+        'script_version': f'{script_version}'.strip(),
+        'help': help_md,
 
         'dir_working_tree': None,
         'dir_git_repo': None,

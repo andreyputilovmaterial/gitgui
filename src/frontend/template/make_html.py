@@ -136,7 +136,7 @@ def make_html(
     result += template.TEMPLATE_HTML_BEGIN.replace(
         '{{INS_TITLE}}', html.escape(title)
     ).replace(
-        '{{INS_HEADER_BLOCK}}', html.escape(header_block)
+        '{{INS_HEADER_BLOCK}}', header_block # html.escape(header_block)
     ).replace(
         '{{INS_HEADING}}', html.escape(h1)
     ).replace(
@@ -160,6 +160,6 @@ def make_html(
     )
     result += ''.join([make_section(m) for m in sections])
     result += template.TEMPLATE_HTML_END.replace(
-        '{{INS_FOOTER_BLOCK}}', html.escape(footer_block)
+        '{{INS_FOOTER_BLOCK}}', footer_block # html.escape(footer_block)
     )
     return result

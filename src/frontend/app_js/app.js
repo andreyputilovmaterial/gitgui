@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       repoCallbacks.value.executeGitCommand = executeGitCommand;
 
-      async function updateGitignore() {
+      async function gitignoreRead() {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'gitignore':response}
           repoStatus.value.gitignore = response
@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
-      repoCallbacks.value.gitignoreRead = updateGitignore;
+      repoCallbacks.value.gitignoreRead = gitignoreRead;
 
       async function updateGitRepoExistence() {
         function handleResponse(response) {
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
           executeGitCommand(['git', 'status']),
           executeGitCommand(['git','rev-parse','--show-toplevel']),
           updateGitRepoExistence(),
-          updateGitignore(),
+          gitignoreRead(),
         ])
       })
 

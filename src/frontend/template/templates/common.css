@@ -59,6 +59,26 @@ h3 {
     margin: 0;
     padding: 22.5px 0 7.5px;
 }
+ul, ol {
+  padding: 0 0 0 14px;
+  margin: 2px 0 14px;
+  list-style-type: "–  ";
+}
+p + ul, p + ol {
+  margin-top: -1em;
+}
+ul > li, ol > li {
+  padding: 2px 0;
+}
+table tr td {
+  padding: 6px;
+}
+table tr td:first-child {
+  padding-left: 0;
+}
+table tr td:last-child {
+  padding-right: 0;
+}
 .header {
     padding: 15px 0 15px;
     border-bottom: 1px solid #eee;

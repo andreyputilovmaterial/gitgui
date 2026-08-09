@@ -49,6 +49,7 @@ STDOUT_COLOR_GREEN = "\033[32m"
 class Resource:
     filename: str
     payload: str
+    is_binary = False
 
 
 
@@ -111,32 +112,42 @@ def build_common_js() -> Resource:
     ]
 
 def build_vendorlibs() -> Resource:
-    txt_vue = ''
-    # uncomment for dev build
-    txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.global.js").read_text('utf-8')
-    # # uncomment for prod build
-    # txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
-    # txt_vue = pack_js('./src/frontend/template/vendor/vue.global.js')
-    # # txt_vue = pack_js('./src/frontend/template/vendor/vue.runtime.global.prod.js')
-    txt_vue = minify_js(txt_vue)
-    txt_marked = ''
-    txt_marked += resources.files("src.frontend.assets_vendor_libs").joinpath("marked.umd.min.js").read_text('utf-8')
-    txt_marked = minify_js(txt_marked)
-    txt_dompurify = ''
-    txt_dompurify += resources.files("src.frontend.assets_vendor_libs").joinpath("purify.min.js").read_text('utf-8')
-    txt_dompurify = minify_js(txt_dompurify)
+    def build_resource_vue():
+        txt_vue = ''
+        # uncomment for dev build
+        txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.global.js").read_text('utf-8')
+        # # uncomment for prod build
+        # txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
+        # txt_vue = pack_js('./src/frontend/template/vendor/vue.global.js')
+        # # txt_vue = pack_js('./src/frontend/template/vendor/vue.runtime.global.prod.js')
+        txt_vue = minify_js(txt_vue)
+        return txt_vue
+    def build_resource_marked():
+        txt_marked = ''
+        txt_marked += resources.files("src.frontend.assets_vendor_libs").joinpath("marked.umd.min.js").read_text('utf-8')
+        txt_marked = minify_js(txt_marked)
+        return txt_marked
+    def build_resource_dompurify():
+        txt_dompurify = ''
+        txt_dompurify += resources.files("src.frontend.assets_vendor_libs").joinpath("purify.min.js").read_text('utf-8')
+        txt_dompurify = minify_js(txt_dompurify)
+        return txt_dompurify
+    def build_resource_fonts_ibmplexsans():
+        return None
+    def build_resource_fonts_ibmplexmono():
+        return None
     return [
         Resource(
             filename = "vendorlibs-vue.js",
-            payload = txt_vue
+            payload = build_resource_vue()
         ),
         Resource(
             filename = "vendorlibs-marked.js",
-            payload = txt_marked
+            payload = build_resource_marked()
         ),
         Resource(
             filename = "vendorlibs-dompurify.js",
-            payload = txt_dompurify
+            payload = build_resource_dompurify()
         ),
     ]
 
@@ -270,7 +281,7 @@ def call_build_program(*argcs,**kwargs):
     for result in results:
         result_fname = Path(out_path) / result.filename
         print('{script_name}: saving as "{fname}"'.format(fname=result_fname,script_name=script_name))
-        with open(result_fname, "w",encoding='utf-8') as outfile:
+        with open(result_fname, 'wb' if result.is_binary else 'w', encoding=None if result.is_binary else 'utf-8') as outfile:
             outfile.write(result.payload)
 
     time_finish = datetime.now()

@@ -78,7 +78,9 @@ echo "" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
 
 "$pythonexecutable" build_templates.py --program build --resource app_js --dest src/frontend/GENERATED
 
-"$pythonexecutable" build_templates.py --program build --resource vendor-libs --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
+"$pythonexecutable" build_templates.py --program build --resource app_css --dest src/frontend/GENERATED
+
+"$pythonexecutable" build_templates.py --program build --resource vendor-libs --dest src/frontend/GENERATED
 
 "$pythonexecutable" build_templates.py --program build --resource src_template --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
@@ -89,8 +91,20 @@ echo "# updated" >> src/frontend/GENERATED/ASSETS.py
 echo "app_js = r'''" >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/app.js >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
+echo "app_css = r'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/app.css >> src/frontend/GENERATED/ASSETS.py
+echo "'''" >> src/frontend/GENERATED/ASSETS.py
 echo "project_specific_styles_css = r'''" >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/project-specific.css >> src/frontend/GENERATED/ASSETS.py
+echo "'''" >> src/frontend/GENERATED/ASSETS.py
+echo "vendorlibs_vue_js = r'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs-vue.js >> src/frontend/GENERATED/ASSETS.py
+echo "'''" >> src/frontend/GENERATED/ASSETS.py
+echo "vendorlibs_marked_js = r'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs-marked.js >> src/frontend/GENERATED/ASSETS.py
+echo "'''" >> src/frontend/GENERATED/ASSETS.py
+echo "vendorlibs_dompurify_js = r'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs-dompurify.js >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
 
 echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
@@ -105,15 +119,6 @@ cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/normalize.css >> src/front
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "common_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "vendorlibs_vue_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/vendorlibs-vue.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "vendorlibs_marked_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/vendorlibs-marked.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "vendorlibs_dompurify_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/vendorlibs-dompurify.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "done"
 echo -

@@ -75,10 +75,21 @@ def build_common_css() -> Resource:
         ),
     ]
 
-def build_projectspecific_css() -> Resource:
+def build_app_css() -> Resource:
     txt = ''
     txt += resources.files("src.frontend.app_js").joinpath("components.css").read_text('utf-8')
-    txt += resources.files("src.frontend.app_js").joinpath("project_specific.css").read_text('utf-8')
+    txt += resources.files("src.frontend.app_js").joinpath("app.css").read_text('utf-8')
+    txt = minify_css(txt)
+    return [
+        Resource(
+            filename = "app.css",
+            payload = txt
+        ),
+    ]
+
+def build_projectspecific_css() -> Resource:
+    txt = ''
+    txt += resources.files("src.frontend").joinpath("project_specific.css").read_text('utf-8')
     txt = minify_css(txt)
     return [
         Resource(
@@ -102,17 +113,17 @@ def build_common_js() -> Resource:
 def build_vendorlibs() -> Resource:
     txt_vue = ''
     # uncomment for dev build
-    txt_vue += resources.files("src.frontend.template.vendor").joinpath("vue.global.js").read_text('utf-8')
+    txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.global.js").read_text('utf-8')
     # # uncomment for prod build
-    # txt_vue += resources.files("src.frontend.template.vendor").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
+    # txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
     # txt_vue = pack_js('./src/frontend/template/vendor/vue.global.js')
     # # txt_vue = pack_js('./src/frontend/template/vendor/vue.runtime.global.prod.js')
     txt_vue = minify_js(txt_vue)
     txt_marked = ''
-    txt_marked += resources.files("src.frontend.template.vendor").joinpath("marked.umd.min.js").read_text('utf-8')
+    txt_marked += resources.files("src.frontend.assets_vendor_libs").joinpath("marked.umd.min.js").read_text('utf-8')
     txt_marked = minify_js(txt_marked)
     txt_dompurify = ''
-    txt_dompurify += resources.files("src.frontend.template.vendor").joinpath("purify.min.js").read_text('utf-8')
+    txt_dompurify += resources.files("src.frontend.assets_vendor_libs").joinpath("purify.min.js").read_text('utf-8')
     txt_dompurify = minify_js(txt_dompurify)
     return [
         Resource(
@@ -190,10 +201,10 @@ renderers = {
     'normalize.css': build_normalize_css,
     'common_css': build_common_css,
     'projectspecific_css': build_projectspecific_css,
+    'app_css': build_app_css,
     'common_js': build_common_js,
     'app_js': build_app_js,
     'vendor-libs': build_vendorlibs,
-    # 'project_specific.css': build_project_specific_css,
     'make_html.py': build_py_dist,
     'src_template': build_html_template,
 }

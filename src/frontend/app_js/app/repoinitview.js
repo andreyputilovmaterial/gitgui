@@ -82,7 +82,9 @@ setup(props) {
        isBusy.value = false
      }
    }
-   watch(() => props.repoStatus, () => {
+   
+   // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
+   watch(() => props.repoStatus.gitignore, () => {
      formFields.gitignore = props.repoStatus.gitignore
    })
 
@@ -138,6 +140,11 @@ setup(props) {
      }
    }
 
+   // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
+   watch(() => props.repoStatus.gitignore, () => {
+     formFields.gitignore = props.repoStatus.gitignore
+   })
+
   return { formFields, handleSubmit, isBusy }
   }
 }
@@ -166,14 +173,6 @@ export  const RepoInitView = {
     'repo-init-form': RepoInitViewInitTheRepo,
   },
   setup(props) {
-    const { ref, toRaw, watch } = Vue
-    // console.log("[debug-vue-component-RepoInitView] (setup()): props repoStatus:", props.repoStatus);
-    // console.log("[debug-vue-component-RepoInitView] (setup()): props repoStatus.repoExists:", props.repoStatus.repoExists);
-    // watch(() => props.repoStatus?.repoExists, () => {
-    //   console.log("[debug-vue-component-RepoInitView] (watch()): props repoStatus:", props.repoStatus);
-    //   console.log("[debug-vue-component-RepoInitView] (watch()): props repoStatus.repoExists:", props.repoStatus.repoExists);
-    // })
-
-    return {} // { toRaw }
+    return {}
   }
 }

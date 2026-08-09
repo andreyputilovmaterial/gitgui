@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="mdm-git-ui-app">
   <errorbanner :errors="errors"></errorbanner>
   <repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></repoinit-view>
-  <maingui-view></maingui-view>
+  <maingui-view :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
   <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
@@ -207,9 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       onMounted(async () => {
         await Promise.all([
-          executeGitCommand(['git', 'status','--porcelain=v2','--branch']),
           executeGitCommand(['git', 'status']),
-          executeGitCommand(['git','rev-parse','--show-toplevel']),
           updateGitRepoExistence(),
           gitignoreRead(),
           setIsOnlineTimer(),

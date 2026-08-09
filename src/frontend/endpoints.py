@@ -237,7 +237,7 @@ def renderer_page_help(server_instance,config={},added_data=None):
 <div>
 <div id="id_help_placeholder_7256347265" class="helppage-fetch-content gitgui-fetched-content">Loading, please wait...</div>
 ''' + '''
-<style>.helppage-fetch-content { margin: 56px 0 56px; }</style>
+<style>.helppage-fetch-content { /* margin: 56px 0 56px; */ }</style>
 <script>
 (async function() {
 try {

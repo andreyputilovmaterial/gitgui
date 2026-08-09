@@ -7,6 +7,7 @@ import { RepoInitView } from './app/repoinitview';
 import { MainView } from './app/mainview';
 import { TerminalSessionView } from './app/terminalview';
 import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
+import AppOnlineIndicator from './app/onlineindicator';
 import { ErrorView } from './app/errorview';
 import { __access_errorSite } from './error_logger/setup';
 
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
+  <online-indicator :isonline="isOnline"></online-indicator>
 </div>
 `, // <modals></modals>
     components: {
@@ -35,14 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
       'terminalsession-view': TerminalSessionView,
       'modals': ModalsSite,
       'nav-links-manipulate-dummy-wrapper': ManipulateNavLinksDummyWrapper,
+      'online-indicator': AppOnlineIndicator,
     },
     setup() {
 
-      const repoStatus = ref({
-      })
-      const repoCallbacks = ref({
-      })
-      const errors = ref([])
+      const repoStatus = ref({ });
+      const repoCallbacks = ref({ });
+      const errors = ref([]);
+      const isOnline = ref(true);
+      const isOnlinePollingTimer = ref(undefined);
       const repoInitRequiresAttention = ref(false)
       // const commands = ref([{timestamp:new Date(),payload:'test-first-record',message_stdout:'test-first-record','message_stderr':'','source':null,'type':'test'}])
       const commands = ref([])
@@ -176,12 +179,31 @@ document.addEventListener("DOMContentLoaded", () => {
             handleResponse(false)
             return false
           } else {
-            reportError(e);
+            logError(e);
             return;
           }
         }
       }
       repoCallbacks.value.updateGitRepoExistence = updateGitRepoExistence
+
+      async function setIsOnlineTimer() {
+        const fn = async function () {
+          try {
+            const response = await fetchWrapper('HEAD', '/functionality/isup.txt',{})
+            isOnline.value = true
+            return true
+          } catch (e) {
+            if( e instanceof FetchError) {
+              isOnline.value = false
+              return false
+            } else {
+              isOnline.value = false
+              return false
+            }
+          }
+        }
+        isOnlinePollingTimer = setInterval(fn,7850);
+      }
 
       onMounted(async () => {
         await Promise.all([
@@ -190,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
           executeGitCommand(['git','rev-parse','--show-toplevel']),
           updateGitRepoExistence(),
           gitignoreRead(),
+          setIsOnlineTimer(),
         ])
       })
 
@@ -197,6 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errors,
         repoStatus,
         repoCallbacks,
+        isOnline,
         repoInitRequiresAttention,
         commands,
         executeGitCommand,

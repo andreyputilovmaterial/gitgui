@@ -74,7 +74,7 @@ export const ModalsSite = {
   props: [
   ],
   template: `
-<div class="mdm-ui-modals-site"
+<div
 :class="{
   'mdm-ui-modals-site': true,
   'mdm-ui-modals-site-active': modals.length>0

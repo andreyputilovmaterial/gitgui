@@ -600,6 +600,13 @@ def functionality_path_config(server_instance,config):
     config_sanitized = json.loads(json.dumps(json_prepare(config),cls=JSONEncoder))
     return config_sanitized, [], 200
 
+def functionality_path_isup(server_instance,config):
+    method = server_instance.command
+    if method=='HEAD':
+        return '', [], 200
+    else:
+        return '', [], 400
+
 def is_git_repo(server_instance,config):
     def pend_git_repo_status():
         def sanitize_command(command):
@@ -647,6 +654,7 @@ def handle_request_functionality_endpoint(server_instance,config={},added_data=N
         'gitignore': functionality_path_gitignore, # .git/info/exclude
         'gitattributes': functionality_path_gitattributes, # .git/info/attributes
         'config': functionality_path_config,
+        'isup.txt': functionality_path_isup,
     }
     WebResponse = config.get("WebResponse")
     content_type = 'application/json'

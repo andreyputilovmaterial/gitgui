@@ -110,3 +110,8 @@ table tr td:last-child {
 .mdmreport-table-dummy .mdmreport-record .mdmreport-contentcell {
     padding: 7.5px 7.5px 7.5px 15px;
 }
+iframe {
+  width: 100%;
+  border: none;
+  height: 70vh;
+}

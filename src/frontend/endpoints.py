@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 import os
 import subprocess
+import random
 
 from datetime import datetime
 
@@ -65,6 +66,21 @@ def render_block_html_page_navigatation_block(pagename,config):
 '''
 
 
+def check_query_string_flag(server_instance,param_name):
+    parsed = urlparse(server_instance.path)
+    params = parse_qs(parsed.query)
+    flag = params.get(param_name, ["0"])[0]
+    flag = flag.strip()
+    if re.match(r'^\s*\d+\s*$',flag):
+        return not not int(flag)
+    elif re.match(r'^\s*(?:yes|true)\s*$',flag,flags=re.I):
+        return True
+    elif re.match(r'^\s*(?:no|false)\s*$',flag,flags=re.I):
+        return False
+    else:
+        return not not flag
+
+
 def renderer_page_home(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     year = f'{datetime.now().year}'
@@ -89,7 +105,7 @@ def renderer_page_home(server_instance,config={},added_data=None):
             ('js-link-module',('/assets/app.js',),),
             ('css-link',('/assets/app.css',),),
         ],
-        cssclasses = ['gitgui','gitgui-page-home',],
+        cssclasses = ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -112,7 +128,7 @@ def renderer_page_version(server_instance,config={},added_data=None):
     year = f'{datetime.now().year}'
 
     title = f'git ui - version'
-    page_h1 = f'git ui - version'
+    page_h1 = f'Version'
 
     page_body = make_html(
         title = title,
@@ -128,7 +144,7 @@ def renderer_page_version(server_instance,config={},added_data=None):
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
             ('css-link',('/assets/project-specific.css',),),
         ],
-        cssclasses = ['gitgui','gitgui-page-version',],
+        cssclasses = ['gitgui','gitgui-page-version','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -152,7 +168,7 @@ def renderer_page_about(server_instance,config={},added_data=None):
     myname = 'Andrey.Putilov@materialplus.io'
 
     title = f'git ui - about'
-    page_h1 = f'git ui - about'
+    page_h1 = f'About'
 
     page_body = make_html(
         title = title,
@@ -168,7 +184,7 @@ def renderer_page_about(server_instance,config={},added_data=None):
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
             ('css-link',('/assets/project-specific.css',),),
         ],
-        cssclasses = ['gitgui','gitgui-page-about',],
+        cssclasses = ['gitgui','gitgui-page-about','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -206,7 +222,45 @@ def renderer_page_help(server_instance,config={},added_data=None):
     myname = 'Andrey.Putilov@materialplus.io'
 
     title = f'git ui - help'
-    page_h1 = f'git ui - help'
+    page_h1 = f'Help'
+
+    block_main_section = f'''
+<div class="container">
+<div>
+<div id="id_help_placeholder_7256347265" class="helppage-fetch-content gitgui-fetched-content">Loading, please wait...</div>
+''' + '''
+<style>.helppage-fetch-content { margin: 56px 0 56px; }</style>
+<script>
+(async function() {
+try {
+async function fetchHelpPage() {
+    const response = await fetch('/functionality/config');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const config = await response.json();
+    return config.help_pages;
+};
+const targetEl = document.querySelector('#id_help_placeholder_7256347265');
+const help_text_md = await fetchHelpPage();
+const helpFormatted = DOMPurify.sanitize(marked.parse(help_text_md));
+targetEl.innerHTML = helpFormatted;
+} catch(e) {
+const targetEl = document.querySelector('#id_help_placeholder_7256347265');
+targetEl.innerHTML = '<div class="error"></div>';
+targetEl.querySelector('.error').textContent = `${e}`;
+}
+})();
+</script>
+''' + f'''
+</div>
+</div>
+'''
+    def id_char():
+        chardict = 'abcdefghigklmnopqrstuvwxwz_0123456789'
+        return random.choice(chardict)
+    id = 'id_help_placeholder_ran_'+''.join([id_char() for _ in range(0,10)])
+    block_main_section = block_main_section.replace('id_help_placeholder_7256347265',id)
 
     page_body = make_html(
         title = title,
@@ -224,43 +278,12 @@ def renderer_page_help(server_instance,config={},added_data=None):
             ('js-link',('/assets/vendorlibs-dompurify.js',),),
             ('css-link',('/assets/project-specific.css',),),
         ],
-        cssclasses = ['gitgui','gitgui-page-about',],
+        cssclasses = ['gitgui','gitgui-page-help','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
         sections = [
-            f'''
-<div class="container">
-    <div>
-        <div id="help" class="helppage-fetch-content">Loading, please wait...</div>
-''' + '''
-        <style>.helppage-fetch-content { margin: 56px 0 56px; }</style>
-        <script>
-(async function() {
-    try {
-        async function fetchHelpPage() {
-            const response = await fetch('/functionality/config');
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-            const config = await response.json();
-            return config.help_pages;
-        };
-        const targetEl = document.querySelector('#help');
-        const help_text_md = await fetchHelpPage();
-        const helpFormatted = DOMPurify.sanitize(marked.parse(help_text_md));
-        targetEl.innerHTML = helpFormatted;
-    } catch(e) {
-        const targetEl = document.querySelector('#help');
-        targetEl.innerHTML = '<div class="error"></div>';
-        targetEl.querySelector('.error').textContent = `${e}`;
-    }
-})();
-        </script>
-''' + f'''
-    </div>
-</div>
-'''
+            block_main_section,
         ],
     )
 

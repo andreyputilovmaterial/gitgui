@@ -25,6 +25,15 @@
 
 
 
+.gitui-embed {
+  header, footer {
+    display: none;
+  }
+}
+
+
+
+
 
 
 .gitgui-html-page-header {

@@ -6,6 +6,7 @@ import { ModalsSite } from './common_components/modals';
 import { RepoInitView } from './app/repoinitview';
 import { MainView } from './app/mainview';
 import { TerminalSessionView } from './app/terminalview';
+import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
 import { ErrorView } from './app/errorview';
 import { __access_errorSite } from './error_logger/setup';
 
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <maingui-view></maingui-view>
   <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   <modals></modals>
+  <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
 </div>
 `, // <modals></modals>
     components: {
@@ -32,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'maingui-view': MainView,
       'terminalsession-view': TerminalSessionView,
       'modals': ModalsSite,
+      'nav-links-manipulate-dummy-wrapper': ManipulateNavLinksDummyWrapper,
     },
     setup() {
 

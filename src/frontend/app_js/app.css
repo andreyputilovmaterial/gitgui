@@ -172,3 +172,28 @@
   min-height: 85px;
   height: 140px;
 }
+
+
+
+.gitgui-ajax-pageview-form .gitgui-fetched-content {
+  min-height: 300px;
+}
+.gitgui-ajax-pageview-form .gitgui-button-modal-close {
+  display: block;
+  min-width: 200px;
+  max-width: 600px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 7px;
+  border-color: ##678;
+  margin: 14px auto 0 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: #555;
+  transition: 600ms all ease;
+}
+.gitgui-ajax-pageview-form .gitgui-button-modal-close:hover{
+  /* background: #e0e0e0; */
+  b/* order-color: #000; */
+  color: #000;
+}

@@ -1,7 +1,7 @@
 
 
 import { createModal } from '../common_components/modals';
-import logError from '../error_logger/errors';
+import logError from '../error_logger/logError';
 
 
 

@@ -1,4 +1,3 @@
-# Git-gui
 
 <!--
 This file is displayed as help page within program.

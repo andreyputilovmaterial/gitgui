@@ -1,10 +1,12 @@
 # Git-gui
 
+## What is this
+
 <!--
 For now, I have the same text here and in help.md that is displayed as help pages in the program
 -->
 
-## What is this tool doing?
+### What is this tool doing?
 It helps you manage previous versions of your scripts.
 
 It is simply a graphical wrapper that executes Git. It is launched as a Python app, and the GUI is shown in a browser at localhost. No network connection or internet access is needed.
@@ -19,14 +21,14 @@ Basically, it is the same thing you normally get from Git, however:
 - This means: do not run Git commands directly without this tool. You can, if you know what you are doing and are able to add `--work-tree` and `--git-dir` manually. If you add these CLI parameters, everything is fine; this is just normal Git.
 - You can also use the full power of Git, such as branching and merging changes from different versions in different branches. For this, you can use the command-terminal pane in the app. Or, just run Git commands directly in the terminal if you are able to add those `--work-tree` and `--git-dir` parameters to your CLI calls.
 
-## Why is this based on Git?
+### Why is this based on Git?
 Because, what else? Git is designed for this, with certain limitations.
 
 By "limitations" I mean that Git's possibilities are unlimited, but Git is great when working with text files and loses some of its advantages when working with binary data files. It can handle them, but it loses many of its benefits. See the more detailed answer in the dedicated section below.
 
 Git is basically the industry standard for version control. There are 8 billion people in the world, and roughly all of them use Git when they need to manage the history of their scripts.
 
-## What will be tracked? Scripts only? Full backups?
+### What will be tracked? Scripts only? Full backups?
 There is some very basic configuration for the "gitignore" file that defines tracked and ignored files. This is super important because we don't want to have backups of everything.
 
 So, you have to decide carefully what you want to have tracked. But the app will guide you through this.
@@ -41,7 +43,7 @@ When working with binary files:
 - There is no diffing or comparison (generally, but this can be implemented for certain file types through textconv).
 - There is no easy way to delete some older backups. Rewriting history is technically possible, and orphaned older versions will eventually be purged, but there is no straightforward way to do this.
 
-## Simple guide on what to have and to not have tracked
+### Simple guide on what to have and to not have tracked
 | | | |
 |---|---|---|
 | (yes) | Your scripts | perfectly tracked |
@@ -55,5 +57,18 @@ When working with binary files:
 Can this be configured in a more detailed way? Like, globally exclude DDF but store certain P-data files?
 - Definitely, yes. Just search for "gitignore" and get hints on the formatting rules.
 
-## When are snapshots captured?
+### When are snapshots captured?
 Only when you make a "commit". Press a button and write a description — that becomes the version name in the history log. However, since it's a CLI command, it can be fully automated, like on Sundays with the week number.
+
+## How to use
+Download the BAT file and the python distributable script from [Releases](../../releases/latest).
+
+1. Configure paths to work tree (your working folder with scripts) and to git directory (that's where git keeps its stuff and where all history is stored) in a BAT file
+2. start that BAT file
+
+That's it. Easy.
+
+Please note python script should be always running while you use this tool. If you close the window, the tool will show that you are offline. If you start the python script again, you are online again.
+
+## Build process
+There is a build.sh script - all steps are configured in the inside. If you are on windows and can't run .sh scripts - you in fact can. Just use the git bash shell.

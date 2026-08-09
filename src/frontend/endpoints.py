@@ -17,26 +17,50 @@ from .template.make_html import make_html
 from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import \
     common_css, \
     common_js, \
-    normalize_css, \
+    normalize_css
+from .GENERATED.ASSETS import \
+    app_js, \
+    app_css, \
+    project_specific_styles_css, \
     vendorlibs_vue_js, \
     vendorlibs_marked_js, \
     vendorlibs_dompurify_js
-from .GENERATED.ASSETS import app_js, project_specific_styles_css
 from .icon import make_icon
 
 
 
-block_html_page_navigatation_block = '''
-<div class="gitgui-html-page-header">
-    <div class="gitgui-html-pagename">%PAGENAME%</div>
-    <div class="gitgui-html-page-navigation">
-        <ul>
-            <li navigation-role="home"><a href="/" target="_blank">Home</a></li>
-            <li navigation-role="about"><a href="/about" target="_blank">About</a></li>
-            <li navigation-role="version"><a href="/version" target="_blank">Version</a></li>
-            <li navigation-role="help"><a href="/help" target="_blank">Help</a></li>
-        </ul>
+def render_block_banner_config_git_folders(config):
+    return f'''
+<div class="banner-global-folder-props">
+    <p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p>
+    <p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p>
+</div>
+'''
+
+
+def render_block_header_nav():
+    return '''
+<div class="gitgui-html-page-navigation">
+    <ul>
+        <li navigation-role="home"><a href="/" target="_blank">Home</a></li>
+        <li navigation-role="about"><a href="/about" target="_blank">About</a></li>
+        <li navigation-role="version"><a href="/version" target="_blank">Version</a></li>
+        <li navigation-role="help"><a href="/help" target="_blank">Help</a></li>
+    </ul>
+</div>
+'''
+
+
+def render_block_html_page_navigatation_block(pagename,config):
+    banner_gitguiapp_folders_config = render_block_banner_config_git_folders(config)
+    nav = render_block_header_nav()
+    return f'''
+<div class="gitgui-html-page-header-outer">
+    <div class="gitgui-html-page-header">
+        <div class="gitgui-html-pagename">{pagename}</div>
+        {nav}
     </div>
+    {banner_gitguiapp_folders_config}
 </div>
 '''
 
@@ -50,7 +74,7 @@ def renderer_page_home(server_instance,config={},added_data=None):
 
     page_body = make_html(
         title = title,
-        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','git-gui app'),
+        header_block = render_block_html_page_navigatation_block(pagename='git-gui app', config=config),
         footer_block = f'@AP 2026-{html.escape(year)}',
         h1 = page_h1,
         assets = [
@@ -61,12 +85,13 @@ def renderer_page_home(server_instance,config={},added_data=None):
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
             ('js-link',('/assets/vendorlibs-vue.js',),),
-            ('js-link-module',('/assets/app.js',),),
             ('css-link',('/assets/project-specific.css',),),
+            ('js-link-module',('/assets/app.js',),),
+            ('css-link',('/assets/app.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-home',],
         banners = [
-            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+            # render_block_banner_config_git_folders(config),
         ],
         sections = ['<div class="container"><div id="gitui_app"></div></div>'],
     )
@@ -91,7 +116,7 @@ def renderer_page_version(server_instance,config={},added_data=None):
 
     page_body = make_html(
         title = title,
-        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','Version'),
+        header_block = render_block_html_page_navigatation_block(pagename='Version', config=config),
         footer_block = f'@AP 2026-{html.escape(year)}',
         h1 = page_h1,
         assets = [
@@ -101,10 +126,11 @@ def renderer_page_version(server_instance,config={},added_data=None):
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+            ('css-link',('/assets/project-specific.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-version',],
         banners = [
-            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+            # render_block_banner_config_git_folders(config),
         ],
         sections = [f'<div class="container"><span>Version: <span class="version-string">{version}</span></span></div>'],
     )
@@ -130,7 +156,7 @@ def renderer_page_about(server_instance,config={},added_data=None):
 
     page_body = make_html(
         title = title,
-        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','About'),
+        header_block = render_block_html_page_navigatation_block(pagename='About', config=config),
         footer_block = f'@AP 2026-{html.escape(year)}',
         h1 = page_h1,
         assets = [
@@ -140,22 +166,23 @@ def renderer_page_about(server_instance,config={},added_data=None):
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+            ('css-link',('/assets/project-specific.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-about',],
         banners = [
-            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+            # render_block_banner_config_git_folders(config),
         ],
         sections = [
             f'''
 <div class="container">
     <div>
-        {html.escape(myname)}
+        <p>{html.escape(myname)}</p>
     </div>
     <div>
-        Version: <span class="version-string">{html.escape(version)}</span>
+        <p>Version: <span class="version-string">{html.escape(version)}</span></p>
     </div>
     <div>
-        @ 2026-{html.escape(year)}
+        <p>@ 2026-{html.escape(year)}</p>
     </div>
 </div>
 '''
@@ -183,7 +210,7 @@ def renderer_page_help(server_instance,config={},added_data=None):
 
     page_body = make_html(
         title = title,
-        header_block = block_html_page_navigatation_block.replace('%PAGENAME%','Help'),
+        header_block = render_block_html_page_navigatation_block(pagename='Help', config=config),
         footer_block = f'@AP 2026-{html.escape(year)}',
         h1 = page_h1,
         assets = [
@@ -195,10 +222,11 @@ def renderer_page_help(server_instance,config={},added_data=None):
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
             ('js-link',('/assets/vendorlibs-marked.js',),),
             ('js-link',('/assets/vendorlibs-dompurify.js',),),
+            ('css-link',('/assets/project-specific.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-about',],
         banners = [
-            f'<div class="banner-global-folder-props"><p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p><p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p></div>',
+            # render_block_banner_config_git_folders(config),
         ],
         sections = [
             f'''
@@ -216,7 +244,7 @@ def renderer_page_help(server_instance,config={},added_data=None):
               throw new Error(`HTTP ${response.status}`);
             }
             const config = await response.json();
-            return config.help;
+            return config.help_pages;
         };
         const targetEl = document.querySelector('#help');
         const help_text_md = await fetchHelpPage();
@@ -230,9 +258,6 @@ def renderer_page_help(server_instance,config={},added_data=None):
 })();
         </script>
 ''' + f'''
-    </div>
-    <div>
-        @ 2026-{html.escape(year)}
     </div>
 </div>
 '''
@@ -282,6 +307,10 @@ def render_assets_common_js(server_instance,config={},added_data=None):
 
 def render_assets_app_js(server_instance,config={},added_data=None):
     payload = app_js
+    return render_assets(server_instance,config,added_data=payload)
+
+def render_assets_app_css(server_instance,config={},added_data=None):
+    payload = app_css
     return render_assets(server_instance,config,added_data=payload)
 
 def render_assets_project_specific_styles_css(server_instance,config={},added_data=None):

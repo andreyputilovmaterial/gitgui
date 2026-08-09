@@ -55,7 +55,7 @@ def main(*argcs,**kwargs):
         'time_start': time_start,
         'script_name': script_name,
         'script_version': f'{script_version}'.strip(),
-        'help': help_md,
+        'help_pages': help_md,
 
         'dir_working_tree': None,
         'dir_git_repo': None,

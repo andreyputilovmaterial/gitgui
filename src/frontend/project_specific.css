@@ -1,0 +1,67 @@
+
+
+.gitgui-page-home .header {
+  /* display: none; */
+}
+.gitgui-page-home h1 {
+  color: #678;
+  font-size: 20px;
+  font-weight: 500;
+  padding-top: 20px;
+  padding-bottom: 12px;
+}
+.banner-global-folder-props p {
+  margin: 8px;
+  color: #666;
+}
+.banner-global-folder-props {
+  margin-top: -9px;
+  margin-bottom: -9px;
+}
+.gitgui-html-page-header-outer .banner-global-folder-props p {
+  margin-left: 0;
+}
+
+
+
+
+
+
+.gitgui-html-page-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.gitgui-html-page-header .gitgui-html-pagename {
+  margin-right: auto;
+}
+.gitgui-html-page-header .gitgui-html-pagename {
+  color: #888;
+  font-weight: 100;
+  font-size: 20px;
+  padding-top: 20px;
+  padding-bottom: 12px;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: true;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li {
+  margin: 0; padding: 0; list-style-type: none;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul > li {
+  padding: .5em;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul > li a, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:hover, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:visited, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:link, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:active {
+  color: #6670bb;
+  text-decoration: none;
+  transition: all 600ms ease;
+}
+.gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:hover {
+  color: #99a0f0;
+}
+.gitgui-page-home .gitgui-html-page-header .gitgui-html-page-navigation [navigation-role="home"] {
+  display: none;
+}

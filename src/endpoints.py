@@ -15,7 +15,8 @@ from .frontend.endpoints import \
     render_assets_vendorlibs_vue_js, \
     render_assets_vendorlibs_marked_js, \
     render_assets_vendorlibs_dompurify_js, \
-    render_assets_app_js
+    render_assets_app_js, \
+    render_assets_app_css
 
 
 
@@ -32,6 +33,7 @@ endpoints = {
     '/assets/vendorlibs-marked.js': render_assets_vendorlibs_marked_js,
     '/assets/vendorlibs-dompurify.js': render_assets_vendorlibs_dompurify_js,
     '/assets/app.js': render_assets_app_js,
+    '/assets/app.css': render_assets_app_css,
     '/assets/project-specific.css': render_assets_project_specific_styles_css,
     re.compile(r'/command\b(.*)'): handle_git_command,
     re.compile(r'/functionality\b(.*)'): handle_request_functionality_endpoint,

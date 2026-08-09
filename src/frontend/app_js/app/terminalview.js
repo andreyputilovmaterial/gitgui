@@ -173,7 +173,7 @@ const TerminalRecord = {
       <span class="timestamp">{{ formatDate(timestamp) }}</span>
       <span class="status">{{ type }}</span>
       <span :class="\`returncode returncode-status-\${String(returncode)==String('0')?'success':'nonzero'}\`" title="returncode - %errorlevel%">{{ returncode }}</span>
-      <span class="message">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></span>
+      <code class="message">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></code>
     </div>
   `,
   setup() {

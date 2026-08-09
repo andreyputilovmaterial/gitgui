@@ -98,14 +98,16 @@ echo "project_specific_styles_css = r'''" >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/project-specific.css >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
 echo "vendorlibs_vue_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/vendorlibs-vue.js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/vue.js >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
 echo "vendorlibs_marked_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/vendorlibs-marked.js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/marked.js >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
 echo "vendorlibs_dompurify_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/vendorlibs-dompurify.js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/dompurify.js >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-sans/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-mono/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 
 echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 echo "# THIS IS AUTO_GENERATED" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py

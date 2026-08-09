@@ -25,7 +25,9 @@ from .GENERATED.ASSETS import \
     project_specific_styles_css, \
     vendorlibs_vue_js, \
     vendorlibs_marked_js, \
-    vendorlibs_dompurify_js
+    vendorlibs_dompurify_js, \
+    _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS, \
+    _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
 from .icon import make_icon
 
 
@@ -100,7 +102,9 @@ def renderer_page_home(server_instance,config={},added_data=None):
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
-            ('js-link',('/assets/vendorlibs-vue.js',),),
+            ('js-link',('/assets/vendorlibs/vue.js',),),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
             ('css-link',('/assets/project-specific.css',),),
             ('js-link-module',('/assets/app.js',),),
             ('css-link',('/assets/app.css',),),
@@ -142,6 +146,8 @@ def renderer_page_version(server_instance,config={},added_data=None):
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
             ('css-link',('/assets/project-specific.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-version','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
@@ -182,6 +188,8 @@ def renderer_page_about(server_instance,config={},added_data=None):
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
             ('css-link',('/assets/project-specific.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-about','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
@@ -274,8 +282,10 @@ targetEl.querySelector('.error').textContent = `${e}`;
             ('meta',('git-gui:script-version',config.get("script_version"),)),
             ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
             ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
-            ('js-link',('/assets/vendorlibs-marked.js',),),
-            ('js-link',('/assets/vendorlibs-dompurify.js',),),
+            ('js-link',('/assets/vendorlibs/marked.js',),),
+            ('js-link',('/assets/vendorlibs/dompurify.js',),),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
+            ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
             ('css-link',('/assets/project-specific.css',),),
         ],
         cssclasses = ['gitgui','gitgui-page-help','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
@@ -299,7 +309,7 @@ targetEl.querySelector('.error').textContent = `${e}`;
 
 
 
-def render_assets(server_instance,config={},added_data=None):
+def render_assets(server_instance,config={},added_data=None,is_binary=False):
     WebResponse = config.get("WebResponse")
     content_type = 'text/plain'
     path_with_query = server_instance.path
@@ -315,6 +325,7 @@ def render_assets(server_instance,config={},added_data=None):
         content_type = content_type, #'text/css',
         body = payload,
         headers = [],
+        is_binary=is_binary,
     )
 def render_assets_common_css(server_instance,config={},added_data=None):
     payload = common_css
@@ -349,6 +360,38 @@ def render_assets_vendorlibs_marked_js(server_instance,config={},added_data=None
 def render_assets_vendorlibs_dompurify_js(server_instance,config={},added_data=None):
     payload = vendorlibs_dompurify_js
     return render_assets(server_instance,config,added_data=payload)
+def render_assets_vendorlibs_font_ibmplexsans(server_instance,config={},added_data=None):
+    payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS
+    def err():
+        HTTP404 = config.get("HTTP404")
+        raise HTTP404()
+    payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
+    path_with_query = server_instance.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    path = '/'.join((path_parsed.split('/'))[5:])
+    payload = payload_dict.get(path) if path in payload_dict else err(path)
+    return render_assets(
+        server_instance,
+        config,
+        added_data = payload,
+        is_binary = True,
+    )
+def render_assets_vendorlibs_font_ibmplexmono(server_instance,config={},added_data=None):
+    payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
+    def err():
+        HTTP404 = config.get("HTTP404")
+        raise HTTP404()
+    payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
+    path_with_query = server_instance.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    path = '/'.join((path_parsed.split('/'))[5:])
+    payload = payload_dict.get(path) if path in payload_dict else err(path)
+    return render_assets(
+        server_instance,
+        config,
+        added_data = payload,
+        is_binary = True,
+    )
 
 
 

@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse # for finding handler for the endpoint - we need to know path
 import html # for sanitizing response on errors
 import re
+from dataclasses import dataclass
 from .helper_logger_funcs import print_console, print_console_err, print_console_err_fulltrace, print_console_green, string_err_fulltrace
 from .helper_utility_funcs import wrap_div
 
@@ -20,20 +21,14 @@ class HTTP403(Exception):
     """For HTTP 404"""
 
 
-
+@dataclass
 class WebResponse:
-    def __init__(
-        self,
-        status_code: int,
-        content_type: str,
-        body: str,
-        headers: list[tuple[str,str]],
-        # cookies, # can be passed in headers
-    ):
-        self.status_code = status_code
-        self.content_type = content_type
-        self.body = body
-        self.headers = headers
+    status_code: int
+    content_type: str
+    body: str
+    headers: list[tuple[str,str]]
+    # cookies # can be passed in headers
+    is_binary: bool = False
 
 
 
@@ -87,10 +82,16 @@ class Webserver:
                     self.send_response(response.status_code)
                     for header_name, header_value in response.headers:
                         self.send_header(header_name,header_value)
-                    self.send_header(f"Content-type", f"{response.content_type}; charset=utf-8")
+                    if response.is_binary:
+                        self.send_header(f"Content-type", f"{response.content_type}")
+                    else:
+                        self.send_header(f"Content-type", f"{response.content_type}; charset=utf-8")
                     self.end_headers()
                     if send_body:
-                        self.wfile.write(response.body.encode("utf-8"))
+                        if response.is_binary:
+                            self.wfile.write(response.body)
+                        else:
+                            self.wfile.write(response.body.encode("utf-8"))
                 except (HTTP404,HTTP403) as e:
                     statuscode = 503
                     if isinstance(e,HTTP404):
@@ -100,17 +101,18 @@ class Webserver:
                     content_type = 'text/html' if not (self.headers.get("Accept",None) == "application/json") else 'application/json'
                     if not content_type:
                         content_type = 'text/html'
-                    content = f'Can\t find / no access: HTTP {statuscode}'
+                    content = f'Can\t find / no access: HTTP {statuscode}'.encode("utf-8")
                     renderer = endpoints.get(statuscode,None)
                     if renderer and send_body:
                         response = renderer(self, config=server._config, msg = e)
                         content = response.body
-
+                        if not response.is_binary:
+                            content = content.encode("utf-8")
+                            self.send_header(f"Content-type", f"{content_type}; charset=utf-8")
                     self.send_response(statuscode)
-                    self.send_header(f"Content-type", f"{content_type}; charset=utf-8")
                     self.end_headers()
                     if send_body:
-                        self.wfile.write(content.encode("utf-8"))
+                        self.wfile.write(content)
                 except Exception as e:
                     self.send_response(500)
                     self.end_headers()
@@ -138,11 +140,11 @@ class Webserver:
                             except Exception as ee:
                                 print_console_err_fulltrace(ee)
                                 pass
-                            self.wfile.write(("<html><body>"+err_html+"</body></html>").encode())
+                            self.wfile.write(("<html><body>"+err_html+"</body></html>").encode("utf-8"))
                         except Exception as ee:
                             print_console_err_fulltrace(ee)
                             # print fallback
-                            self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode())
+                            self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode("utf-8"))
 
             def __getattr__(self, name):
                 if name.startswith("do_"):

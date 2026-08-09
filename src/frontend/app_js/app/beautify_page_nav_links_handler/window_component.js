@@ -58,6 +58,7 @@ const Window = {
       const html = await response.text();
       content.value = html
     } catch(e) {
+      content.value = ' ';
       error.value = e;
       throw e;
     }

@@ -49,7 +49,44 @@ STDOUT_COLOR_GREEN = "\033[32m"
 class Resource:
     filename: str
     payload: str
-    is_binary = False
+    is_binary: bool = False
+
+
+
+
+
+def scan_folder(path,is_binary=False):
+    """Use this to generate the test_program_files_data """
+    root = Path(path)
+    excluded = {".git", "__pycache__",".DS_Store"}
+
+    files_data = []
+
+
+    for path in root.rglob("*"):
+        if path.is_file():
+            if any(part in excluded for part in path.parts):
+                continue
+            try:
+                rel_path = path.relative_to(root)
+                content = None
+                try:
+                    if not is_binary:
+                        content = path.read_text(encoding="utf-8")
+                    else:
+                        with open(path,'rb') as f:
+                            content = f.read()
+                except Exception as e:
+                    print(f'Failed reading {path}: {e}',file=sys.stdout)
+                    content = None
+
+                files_data.append((str(rel_path), content))
+            except Exception as e:
+                print(f'Failed processing {path}: {e}',file=sys.stdout)
+                raise e
+
+    return files_data
+
 
 
 
@@ -133,23 +170,54 @@ def build_vendorlibs() -> Resource:
         txt_dompurify = minify_js(txt_dompurify)
         return txt_dompurify
     def build_resource_fonts_ibmplexsans():
-        return None
+        src = None
+        dt = datetime.now()
+        with resources.as_file(resources.files("src.frontend.assets_vendor_libs")) as f:
+            src = Path(f) / 'fonts' / 'ibm-plex-sans'
+            src = f'{src}'
+            files = scan_folder(src,is_binary=True)
+        result = []
+        return [] \
+            + [
+                    Resource(filename=Path('vendorlibs/fonts/ibm-plex-sans') / file[0],payload=file[1],is_binary=True) \
+                for file in files
+            ] \
+            + [
+                Resource(filename="vendorlibs/fonts/ibm-plex-sans/_ASSETS_BUNDLED_PY.py",payload=f"\n\n# auto-generated: {dt}\n\n_ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS = {repr(files)}\n")
+            ]
     def build_resource_fonts_ibmplexmono():
-        return None
-    return [
+        src = None
+        dt = datetime.now()
+        with resources.as_file(resources.files("src.frontend.assets_vendor_libs")) as f:
+            src = Path(f) / 'fonts' / 'ibm-plex-mono'
+            src = f'{src}'
+            files = scan_folder(src,is_binary=True)
+        result = []
+        return [] \
+            + [
+                    Resource(filename=Path('vendorlibs/fonts/ibm-plex-mono') / file[0],payload=file[1],is_binary=True) \
+                for file in files
+            ] \
+            + [
+                Resource(filename="vendorlibs/fonts/ibm-plex-mono/_ASSETS_BUNDLED_PY.py",payload=f"\n\n# auto-generated: {dt}\n\n_ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO = {repr(files)}\n")
+            ]
+    result = [
         Resource(
-            filename = "vendorlibs-vue.js",
+            filename = "vendorlibs/vue.js",
             payload = build_resource_vue()
         ),
         Resource(
-            filename = "vendorlibs-marked.js",
+            filename = "vendorlibs/marked.js",
             payload = build_resource_marked()
         ),
         Resource(
-            filename = "vendorlibs-dompurify.js",
+            filename = "vendorlibs/dompurify.js",
             payload = build_resource_dompurify()
         ),
     ]
+    result += build_resource_fonts_ibmplexsans()
+    result += build_resource_fonts_ibmplexmono()
+    return result
 
 def build_app_js() -> Resource:
     # txt = ''
@@ -279,10 +347,19 @@ def call_build_program(*argcs,**kwargs):
         raise e
 
     for result in results:
-        result_fname = Path(out_path) / result.filename
-        print('{script_name}: saving as "{fname}"'.format(fname=result_fname,script_name=script_name))
-        with open(result_fname, 'wb' if result.is_binary else 'w', encoding=None if result.is_binary else 'utf-8') as outfile:
-            outfile.write(result.payload)
+        try:
+            result_fname = Path(out_path) / result.filename
+            print('{script_name}: saving as "{fname}"'.format(fname=result_fname,script_name=script_name))
+            result_fname.parent.mkdir(parents=True, exist_ok=True)
+            with open(result_fname, 'wb' if result.is_binary else 'w', encoding=None if result.is_binary else 'utf-8') as outfile:
+                outfile.write(result.payload)
+        except Exception as e:
+            print(f'{STDOUT_COLOR_RED}processing resource failed!{STDOUT_COLOR_RESET}',file=sys.stdout)
+            print(f'{STDOUT_COLOR_RED}file: {result.filename}{STDOUT_COLOR_RESET}',file=sys.stdout)
+            print(f'{STDOUT_COLOR_RED}path: {result_fname}{STDOUT_COLOR_RESET}',file=sys.stdout)
+            print(f'{STDOUT_COLOR_RED}is_binary: {result.is_binary}{STDOUT_COLOR_RESET}',file=sys.stdout)
+            print(f'repr: {repr(result.payload)}',file=sys.stdout)
+            raise e
 
     time_finish = datetime.now()
     print('{script_name}: finished at {dt} (elapsed {duration})'.format(dt=time_finish,duration=time_finish-time_start,script_name=script_name))

@@ -1,4 +1,14 @@
 
+/* set fonts here */
+body {
+  font-family: 'IBM Plex Sans';
+}
+code, pre, samp, kbd {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 90%;
+}
+
+
 
 .gitgui-page-home .header {
   /* display: none; */

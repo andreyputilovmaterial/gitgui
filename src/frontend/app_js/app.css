@@ -102,8 +102,11 @@
   padding: 5px 5px 5px 14px;
   margin: -5px -5px -5px 0;
   flex-grow: 100;
+  font-size: 80%;
 }
-
+.terminal-record .message .error {
+  font-weight: normal;
+}
 .terminal-record.terminal-record-status-error .message {
   color: #660000;
 }

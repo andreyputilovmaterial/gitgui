@@ -14,6 +14,7 @@ const Window = {
     <fieldset class="mdmreport-controls">
       <div class="mdmreport-controls-group">
         <div class="gitgui-fetched-content">
+          <div class="error" style="color: #990000;">{{ error }}</div>
           <iframe :srcdoc="content"></iframe>
         </div>
         <div><input type="submit" value="Close" class="gitgui-button-modal-close"></input></div>
@@ -26,6 +27,7 @@ const Window = {
     const { ref, reactive, onMounted } = Vue
     const isBusy = ref(false)
     const content = ref('Content is loading, please wait...');
+    const error = ref('')
     const formFields = reactive({ })
 
     const handleSubmit = async () => {
@@ -56,7 +58,7 @@ const Window = {
       const html = await response.text();
       content.value = html
     } catch(e) {
-      content.value = e;
+      error.value = e;
       throw e;
     }
   }
@@ -67,7 +69,7 @@ const Window = {
     ])
   })
 
-  return { formFields, handleSubmit, isBusy, content }
+  return { formFields, handleSubmit, isBusy, content, error }
 }
 }
 export default Window;

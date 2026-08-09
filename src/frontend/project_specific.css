@@ -65,3 +65,11 @@
 .gitgui-page-home .gitgui-html-page-header .gitgui-html-page-navigation [navigation-role="home"] {
   display: none;
 }
+
+
+
+.gitgui-md-list-marker {
+  display: inline-block;
+  padding-right: 0.3em;
+  min-width: 6em;
+}

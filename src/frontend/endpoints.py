@@ -32,8 +32,8 @@ from .icon import make_icon
 def render_block_banner_config_git_folders(config):
     return f'''
 <div class="banner-global-folder-props">
-    <p class="mdmreport-prop-row">{html.escape("git-work-tree-folder: "+config.get("dir_working_tree"))}</p>
-    <p class="mdmreport-prop-row">{html.escape("git-repo-folder: "+config.get("dir_git_repo"))}</p>
+    <p class="mdmreport-prop-row">Git work tree folder: <code>{html.escape(""+config.get("dir_working_tree"))}</code></p>
+    <p class="mdmreport-prop-row">Git repo folder: <code>{html.escape(""+config.get("dir_git_repo"))}</code></p>
 </div>
 '''
 

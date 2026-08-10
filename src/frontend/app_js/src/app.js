@@ -1,4 +1,10 @@
+
 // import { Vue } from "./vue.js";
+import { createApp, ref, onMounted, onUnmounted, toRaw } from 'vue'
+
+import './components.css';
+import './app.css';
+
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw } from './common_defs/cli';
 import { ComponentSectionRollUp } from './common_components/rollable_sections';
@@ -15,7 +21,9 @@ import { __access_errorSite } from './error_logger/setup';
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const { createApp, ref, onMounted, onUnmounted, toRaw } = Vue
+  // const { createApp, ref, onMounted, onUnmounted, toRaw } = Vue
+
+
 
   const app = createApp({
     template: `

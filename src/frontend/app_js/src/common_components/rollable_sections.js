@@ -1,5 +1,7 @@
 
-// const { ref, watch } = Vue
+
+import { ref, watch } from 'vue';
+
 
 
 
@@ -43,7 +45,8 @@ export const ComponentSectionRollUp = {
 </div>
 `,
   setup(props) {
-    const {ref,watch} = Vue
+    // const {ref,watch} = Vue
+
     const determineInitialState = () => {
       return props.condensed === 'true' || props.condensed === true
     }

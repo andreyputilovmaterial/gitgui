@@ -1,4 +1,7 @@
 
+
+import { ref, reactive, onMounted } from 'vue';
+
 import safetyUrlCheck from './safetycheck';
 
 
@@ -24,7 +27,8 @@ const Window = {
 </div>
 `,
   setup(props) {
-    const { ref, reactive, onMounted } = Vue
+    // const { ref, reactive, onMounted } = Vue
+
     const isBusy = ref(false)
     const content = ref('Content is loading, please wait...');
     const error = ref('')

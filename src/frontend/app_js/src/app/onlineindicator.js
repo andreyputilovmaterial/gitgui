@@ -9,7 +9,7 @@ const Monitor = {
   'mdm-ui-isonline-monitor': true,
   'online': !!isonline
 }"
-><div class="description">Backend is offline, please check if the python script is still running...</div></div>
+><div class="description">Backend is offline, please check if python script is still running...</div></div>
 `,
   setup() {
     return {};

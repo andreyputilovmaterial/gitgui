@@ -113,18 +113,6 @@ def build_common_css() -> Resource:
         ),
     ]
 
-def build_app_css() -> Resource:
-    txt = ''
-    txt += resources.files("src.frontend.app_js").joinpath("components.css").read_text('utf-8')
-    txt += resources.files("src.frontend.app_js").joinpath("app.css").read_text('utf-8')
-    txt = minify_css(txt)
-    return [
-        Resource(
-            filename = "app.css",
-            payload = txt
-        ),
-    ]
-
 def build_projectspecific_css() -> Resource:
     txt = ''
     txt += resources.files("src.frontend").joinpath("project_specific.css").read_text('utf-8')
@@ -151,12 +139,14 @@ def build_common_js() -> Resource:
 def build_vendorlibs() -> Resource:
     def build_resource_vue():
         txt_vue = ''
+        # # uncomment for dev build
+        # txt_vue += resources.files("src.frontend.assets_vendor_libs.vue").joinpath("vue.global.js").read_text('utf-8')
+        # # # uncomment for prod build
+        # # txt_vue += resources.files("src.frontend.assets_vendor_libs.vue").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
+        # # txt_vue = pack_js('./src/frontend/template/vendor/vue/vue.global.js')
+        # # # txt_vue = pack_js('./src/frontend/template/vendor/vue/vue.runtime.global.prod.js')
         # uncomment for dev build
-        txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.global.js").read_text('utf-8')
-        # # uncomment for prod build
-        # txt_vue += resources.files("src.frontend.assets_vendor_libs").joinpath("vue.runtime.global.prod.js").read_text('utf-8')
-        # txt_vue = pack_js('./src/frontend/template/vendor/vue.global.js')
-        # # txt_vue = pack_js('./src/frontend/template/vendor/vue.runtime.global.prod.js')
+        txt_vue += resources.files("src.frontend.assets_vendor_libs.vue").joinpath("vue.esm-browser.js").read_text('utf-8')
         txt_vue = minify_js(txt_vue)
         return txt_vue
     def build_resource_marked():
@@ -219,10 +209,12 @@ def build_vendorlibs() -> Resource:
     result += build_resource_fonts_ibmplexmono()
     return result
 
+
+
 def build_app_js() -> Resource:
     # txt = ''
     # txt += resources.files("src.frontend.app_js").joinpath("app.js").read_text('utf-8')
-    txt = pack_js('./src/frontend/app_js/app.js')
+    txt = pack_js('./src/frontend/app_js/src/app.js')
     txt = minify_js(txt)
     return [
         Resource(
@@ -230,6 +222,20 @@ def build_app_js() -> Resource:
             payload = txt
         ),
     ]
+
+def build_app_css() -> Resource:
+    txt = ''
+    txt += resources.files("src.frontend.app_js.src").joinpath("components.css").read_text('utf-8')
+    txt += resources.files("src.frontend.app_js.src").joinpath("app.css").read_text('utf-8')
+    txt = minify_css(txt)
+    return [
+        Resource(
+            filename = "app.css",
+            payload = txt
+        ),
+    ]
+
+
 
 
 def build_py_dist() -> Resource:

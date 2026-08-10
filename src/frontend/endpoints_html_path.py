@@ -71,7 +71,6 @@ def make_default_assets_list(config):
         ('meta',('git-gui:script-version',config.get("script_version"),)),
         ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
         ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
-        ('js-link',('/assets/vendorlibs/vue.js',),),
         ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
         ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
         ('css-link',('/assets/project-specific.css',),),
@@ -93,6 +92,8 @@ def renderer_page_home(server_instance,config={},added_data=None):
         assets = [] + \
             make_default_assets_list(config) + \
             [
+                ('tag-any',('script',{'type':'importmap'},'{ "imports": { "vue": "./assets/vendorlibs/vue.js" } }',),),
+                # ('js-link',('/assets/vendorlibs/vue.js',),),
                 ('js-link-module',('/assets/app.js',),),
                 ('css-link',('/assets/app.css',),),
             ],

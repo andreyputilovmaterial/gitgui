@@ -1,6 +1,9 @@
 
 
 
+import {ref,onMounted,markRaw} from 'vue';
+
+
 
 const appContext = {
   modalsSitePromiseResolve: () => { throw new Error('Promise not inited'); },
@@ -102,7 +105,8 @@ export const ModalsSite = {
   },
   setup() {
     try{
-    const {ref,onMounted,markRaw} = Vue
+    // const {ref,onMounted,markRaw} = Vue
+
     const modals = ref([])
 
     const createModal = (Component,promiseVars) => {

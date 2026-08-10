@@ -1,4 +1,8 @@
 
+
+import {defineComponent,h,markRaw,onMounted} from 'vue';
+
+
 import { createModal } from '../../common_components/modals';
 import logError from '../../error_logger/logError';
 import Window from './window_component';
@@ -9,7 +13,7 @@ import safetyUrlCheck from './safetycheck';
 
 const init = (Vue) => {
 
-  const {defineComponent,h} = Vue;
+  // const {defineComponent,h} = Vue
 
   const readUrl = linkEl => {
     const urlRaw = linkEl.getAttribute('href');
@@ -71,7 +75,8 @@ const DummyWrapper = {
   props: [],
   template: `<span class="gitgui-navlinks-manipulate-component"></span>`, // empty is raising warning
   setup() {
-    const {defineComponent,h,markRaw,onMounted} = Vue;
+    // const {defineComponent,h,markRaw,onMounted} = Vue
+
     onMounted(async () => {
       await Promise.all([
         (function(){

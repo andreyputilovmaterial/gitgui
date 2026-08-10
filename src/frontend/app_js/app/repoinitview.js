@@ -59,7 +59,7 @@ const RepoInitViewGitignoreSection = {
     <h3>gitignore Setup</h3>
     <fieldset class="mdmreport-controls">
       <div class="mdmreport-controls-group">
-        <label>gitignore file: </label>
+        <label>gitignore file: <span class="help"><a href="#!" @click.prevent="showHelp">Show help</a></span></label>
         <textarea name="gitignore" placeholder="" v-model="formFields.gitignore" readonly disabled></textarea>
       </div>
     </fieldset>
@@ -71,6 +71,7 @@ setup(props) {
   const formFields = reactive({
     gitignore: '',
   })
+
   const handleSubmit = async () => {
 
      try {
@@ -81,14 +82,18 @@ setup(props) {
      } finally {
        isBusy.value = false
      }
-   }
-   
+   };
+
+   const showHelp = () => {
+     throw new Error('Not implemented');
+   };
+
    // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
    watch(() => props.repoStatus.gitignore, () => {
      formFields.gitignore = props.repoStatus.gitignore
    })
 
-  return { formFields, handleSubmit, isBusy }
+  return { formFields, handleSubmit, isBusy, showHelp }
   }
 }
 

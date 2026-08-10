@@ -3,16 +3,16 @@ from bs4 import BeautifulSoup
 import re
 
 
-def sanitize_classname(s):
-    def err(i):
-        raise Exception(f'Not valid class name: {i}')
-    s = f'{s}'.split()
-    return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
 
 
+def sanitize_dom(classname, txt) -> str:
+    def sanitize_classname(s):
+        def err(i):
+            raise Exception(f'Not valid class name: {i}')
+        s = f'{s}'.split()
+        return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
 
 
-def wrap_div(classname, txt) -> str:
     soup = BeautifulSoup("<div></div>", "html.parser")
     div = soup.div
 

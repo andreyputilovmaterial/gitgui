@@ -2,8 +2,14 @@
 from bs4 import BeautifulSoup
 import sys # for checking pinliner
 import re
+import hashlib
+from pathlib import Path
 
 import yaml
+
+
+
+
 
 def prettyprint_config(data):
     return yaml.dump(data,sort_keys=False)
@@ -24,6 +30,30 @@ def is_in_pinliner():
         except:
             pass
     return False
+
+
+
+
+
+def make_hash(working_tree_folder,git_repo_folder):
+    working_tree_folder = f'{working_tree_folder}'
+    git_repo_folder = f'{git_repo_folder}'
+    if '\0' in working_tree_folder or '\0' in git_repo_folder:
+        raise Exception('Zero char in config paths: it\'s illegal')
+    working_tree_folder = Path(working_tree_folder).resolve()
+    git_repo_folder = Path(git_repo_folder).resolve()
+    s = '\0'.join(
+        (
+            str(Path(working_tree_folder).resolve()),
+            str(Path(git_repo_folder).resolve()),
+        )
+    ).encode('utf-8')
+    h = hashlib.sha1(s).hexdigest()
+    return h
+
+
+
+
 
 def sanitize(input):
     return f'{input}'.replace(r'"""',r'\"""')

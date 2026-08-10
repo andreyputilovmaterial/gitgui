@@ -5,7 +5,8 @@ import html # for sanitizing response on errors
 import re
 from dataclasses import dataclass
 from .helper_logger_funcs import print_console, print_console_err, print_console_err_fulltrace, print_console_green, string_err_fulltrace
-from .helper_utility_funcs import wrap_div
+from .helper_utility_funcs import sanitize_dom
+from .match_endpoints import get_matching_endpoint
 
 # sorry very stupid
 from .helper_logger_funcs import config as logging_helper_config
@@ -69,7 +70,7 @@ class Webserver:
                 try:
 
                     path = urlparse(self.path).path
-                    renderer = server._get_matching_endpoint(path,endpoints)
+                    renderer = get_matching_endpoint(path,endpoints)
                     assert callable(renderer), 'Whoops, renderer returned from get_matching_endpoint() must be callable'
 
                     response = renderer(self, config=server._config)
@@ -133,7 +134,7 @@ class Webserver:
                                 color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
                                 err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
                                 try:
-                                    err_html = wrap_div('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
+                                    err_html = sanitize_dom('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
                                 except Exception as ee:
                                     print_console_err_fulltrace(ee)
                                     pass
@@ -152,36 +153,3 @@ class Webserver:
                 raise AttributeError(name)
 
         return Handler
-
-    @staticmethod
-    def _get_matching_endpoint(path,endpoints):
-        def not_found(*args,**argv):
-            raise HTTP404(f'{path} was not found on the server')
-
-        def check_if_pattern_matches(path, pattern):
-            if callable(pattern):
-                if pattern(f'{path}'):
-                    return f'{path}'
-            elif isinstance(pattern, str):
-                if f'{path}' == f'{pattern}':
-                    return f'{path} ' # let's add a space to increase returned piece length, that is the priority for exact match
-            elif isinstance(pattern, re.Pattern):
-                matches = re.match(pattern,f'{path}')
-                if matches:
-                    return f'{matches[0]}'
-            return None
-
-        # longest matching
-        best_match = None
-        best_length = -1
-
-        for pattern, renderer in endpoints.items():
-            matching_str = check_if_pattern_matches(path,pattern)
-            if matching_str is not None:
-                if len(matching_str) > best_length:
-                    best_match = renderer
-                    best_length = len(matching_str)
-        if best_match:
-            return best_match
-
-        return not_found

@@ -127,7 +127,7 @@ def make_html(
     footer_block: str,
     h1: str,
     assets: list[tuple[str,Any]] = [],
-    cssclasses: list = [],
+    body_css_classes: list = [],
     banners: list = [],
     sections: list = [],
 ) -> str:
@@ -156,7 +156,7 @@ def make_html(
             + assets
         ])
     ).replace(
-        '{{INS_ADDEDCLASSES}}', f' {" ".join([sanitize_classname(m) for m in cssclasses])}'
+        '{{INS_ADDEDCLASSES}}', f' {" ".join([sanitize_classname(m) for m in body_css_classes])}'
     )
     result += ''.join([make_section(m) for m in sections])
     result += template.TEMPLATE_HTML_END.replace(

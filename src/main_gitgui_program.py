@@ -12,7 +12,7 @@ from .webserver_engine.launch_browser import launch_browser
 from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status
 from .GENERATED._VERSION import _VERSION as script_version
 from .GENERATED._HELP import _MD as help_md
-from .helper_utilities import prettyprint_config
+from .helper_utilities import prettyprint_config, make_hash
 
 from .endpoints import endpoints
 
@@ -22,9 +22,6 @@ from .endpoints import endpoints
 STDOUT_COLOR_RED = "\033[31m"
 STDOUT_COLOR_RESET = "\033[0m"
 STDOUT_COLOR_GREEN = "\033[32m"
-
-
-
 
 
 
@@ -59,6 +56,7 @@ def main(*argcs,**kwargs):
 
         'dir_working_tree': None,
         'dir_git_repo': None,
+        'git_paths_hash': None,
 
         'http_host': None,
         'http_port': None,
@@ -86,6 +84,8 @@ def main(*argcs,**kwargs):
     else:
         # print(f'{STDOUT_COLOR_RED}git-repo-folder not specified{STDOUT_COLOR_RESET}')
         raise Exception('git-repo-folder not specified')
+
+    config['git_paths_hash'] = make_hash(working_tree_folder,git_repo_folder)
 
     print('\npreparing git cli command loop...\n')
     initiate_worker_loop(config)

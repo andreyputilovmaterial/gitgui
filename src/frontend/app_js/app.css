@@ -203,6 +203,25 @@
   min-height: 85px;
   height: 140px;
 }
+.git-repo-intro-setup-section .gitignore-section .help > a {
+  display: inline-block;
+  margin-left: 30px;
+  padding: 1px 14px;
+  line-height: normal;
+  border-radius: 3px;
+  border: 1px solid #d0d0d0;
+  color: #111;
+  transition: all 600ms ease;
+
+}
+.git-repo-intro-setup-section .gitignore-section .help > a, .git-repo-intro-setup-section .gitignore-section .help > a:active, .git-repo-intro-setup-section .gitignore-section .help > a:hover, .git-repo-intro-setup-section .gitignore-section .help > a:link {
+  text-decoration: none;
+}
+.git-repo-intro-setup-section .gitignore-section .help > a:hover {
+  border: 1px solid #d0d0ff;
+  color: #000;
+}
+
 
 
 

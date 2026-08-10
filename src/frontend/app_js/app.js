@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
         }
-        isOnlinePollingTimer = setInterval(fn,7850);
+        isOnlinePollingTimer.value = setInterval(fn,7850);
       }
 
       onMounted(async () => {

@@ -78,7 +78,7 @@ echo "" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
 
 "$pythonexecutable" build_templates.py --program build --resource app_js --dest src/frontend/GENERATED
 
-"$pythonexecutable" build_templates.py --program build --resource app_css --dest src/frontend/GENERATED
+# "$pythonexecutable" build_templates.py --program build --resource app_css --dest src/frontend/GENERATED
 
 "$pythonexecutable" build_templates.py --program build --resource vendor-libs --dest src/frontend/GENERATED
 
@@ -91,9 +91,9 @@ echo "# updated" >> src/frontend/GENERATED/ASSETS.py
 echo "app_js = r'''" >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/app.js >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py
-echo "app_css = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/app.css >> src/frontend/GENERATED/ASSETS.py
-echo "'''" >> src/frontend/GENERATED/ASSETS.py
+# echo "app_css = r'''" >> src/frontend/GENERATED/ASSETS.py
+# cat src/frontend/GENERATED/app.css >> src/frontend/GENERATED/ASSETS.py
+# echo "'''" >> src/frontend/GENERATED/ASSETS.py
 echo "project_specific_styles_css = r'''" >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/project-specific.css >> src/frontend/GENERATED/ASSETS.py
 echo "'''" >> src/frontend/GENERATED/ASSETS.py

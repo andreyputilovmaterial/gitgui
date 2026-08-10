@@ -223,17 +223,17 @@ def build_app_js() -> Resource:
         ),
     ]
 
-def build_app_css() -> Resource:
-    txt = ''
-    txt += resources.files("src.frontend.app_js.src").joinpath("components.css").read_text('utf-8')
-    txt += resources.files("src.frontend.app_js.src").joinpath("app.css").read_text('utf-8')
-    txt = minify_css(txt)
-    return [
-        Resource(
-            filename = "app.css",
-            payload = txt
-        ),
-    ]
+# def build_app_css() -> Resource:
+#     txt = ''
+#     txt += resources.files("src.frontend.app_js.src").joinpath("components.css").read_text('utf-8')
+#     txt += resources.files("src.frontend.app_js.src").joinpath("app.css").read_text('utf-8')
+#     txt = minify_css(txt)
+#     return [
+#         Resource(
+#             filename = "app.css",
+#             payload = txt
+#         ),
+#     ]
 
 
 
@@ -286,9 +286,9 @@ renderers = {
     'normalize.css': build_normalize_css,
     'common_css': build_common_css,
     'projectspecific_css': build_projectspecific_css,
-    'app_css': build_app_css,
     'common_js': build_common_js,
     'app_js': build_app_js,
+    # 'app_css': build_app_css,
     'vendor-libs': build_vendorlibs,
     'make_html.py': build_py_dist,
     'src_template': build_html_template,

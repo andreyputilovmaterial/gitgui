@@ -6,19 +6,21 @@ import re # to set content-type based on file type
 
 from .common_functions import get_matching_endpoint
 from .template.make_html import make_html
-from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import \
-    common_css, \
-    common_js, \
-    normalize_css
-from .GENERATED.ASSETS import \
-    app_js, \
-    app_css, \
-    project_specific_styles_css, \
-    vendorlibs_vue_js, \
-    vendorlibs_marked_js, \
-    vendorlibs_dompurify_js, \
-    _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS, \
-    _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
+from .template.GENERATED.TEMPLATE_COMPILED.ASSETS import (
+    common_css,
+    common_js,
+    normalize_css,
+)
+from .GENERATED.ASSETS import (
+    app_js,
+    # app_css,
+    project_specific_styles_css,
+    vendorlibs_vue_js,
+    vendorlibs_marked_js,
+    vendorlibs_dompurify_js,
+    _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS,
+    _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO,
+)
 
 
 
@@ -62,9 +64,9 @@ def render_assets_app_js(server_instance,config={},added_data=None):
     payload = app_js
     return render_payload(server_instance,config,added_data=payload)
 
-def render_assets_app_css(server_instance,config={},added_data=None):
-    payload = app_css
-    return render_payload(server_instance,config,added_data=payload)
+# def render_assets_app_css(server_instance,config={},added_data=None):
+#     payload = app_css
+#     return render_payload(server_instance,config,added_data=payload)
 
 def render_assets_project_specific_styles_css(server_instance,config={},added_data=None):
     payload = project_specific_styles_css
@@ -123,7 +125,7 @@ endpoints = {
     re.compile('^/vendorlibs/fonts/ibm-plex-sans/.*'): render_assets_vendorlibs_font_ibmplexsans,
     re.compile('^/vendorlibs/fonts/ibm-plex-mono/.*'): render_assets_vendorlibs_font_ibmplexmono,
     '/app.js': render_assets_app_js,
-    '/app.css': render_assets_app_css,
+    # '/app.css': render_assets_app_css,
     '/project-specific.css': render_assets_project_specific_styles_css,
 }
 

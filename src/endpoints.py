@@ -1,24 +1,27 @@
 
 import re
 
-from .frontend.endpoints import \
-    renderer_page_home, \
-    renderer_page_version, \
-    renderer_page_about, \
-    renderer_page_help, \
-    renderer_assets, \
-    handle_git_command, \
-    handle_request_functionality_endpoint, \
-    handle_request_files_endpoint
+from .frontend.endpoints import (
+    render_page_home,
+    render_page_version,
+    render_page_about,
+    render_page_help,
+    render_page_test,
+    renderer_assets,
+    handle_git_command,
+    handle_request_functionality_endpoint,
+    handle_request_files_endpoint,
+)
 
 
 
 
 endpoints = {
-    '/': renderer_page_home,
-    '/version': renderer_page_version,
-    '/about': renderer_page_about,
-    '/help': renderer_page_help,
+    '/': render_page_home,
+    '/version': render_page_version,
+    '/about': render_page_about,
+    '/help': render_page_help,
+    '/testpage': render_page_test,
 
     re.compile('^/assets/.*'): renderer_assets,
 

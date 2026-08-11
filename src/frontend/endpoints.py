@@ -1,9 +1,10 @@
 
 from .endpoints_html_paths import (
-    renderer_page_home,
-    renderer_page_version,
-    renderer_page_about,
-    renderer_page_help,
+    render_page_home,
+    render_page_version,
+    render_page_about,
+    render_page_help,
+    render_page_test,
 )
 from .endpoints_assets_delivery_path import (
     renderer_assets,

@@ -28,6 +28,7 @@ def render_block_header_nav():
         <li navigation-role="about"><a href="/about" target="_blank">About</a></li>
         <li navigation-role="version"><a href="/version" target="_blank">Version</a></li>
         <li navigation-role="help"><a href="/help" target="_blank">Help</a></li>
+        <li navigation-role="help"><a href="/testpage" target="_blank">Test page</a></li>
     </ul>
 </div>
 '''
@@ -79,7 +80,7 @@ def make_default_assets_list(config):
     ]
 
 
-def renderer_page_home(server_instance,config={},added_data=None):
+def render_page_home(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     year = config.get("credentials:year")
 
@@ -114,7 +115,7 @@ def renderer_page_home(server_instance,config={},added_data=None):
 
 
 
-def renderer_page_version(server_instance,config={},added_data=None):
+def render_page_version(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -148,7 +149,7 @@ def renderer_page_version(server_instance,config={},added_data=None):
 
 
 
-def renderer_page_about(server_instance,config={},added_data=None):
+def render_page_about(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -197,7 +198,7 @@ def renderer_page_about(server_instance,config={},added_data=None):
 
 
 
-def renderer_page_help(server_instance,config={},added_data=None):
+def render_page_help(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -298,6 +299,29 @@ try {
         ],
     )
 
+    return WebResponse(
+        status_code = 200,
+        content_type = 'text/html',
+        body = page_body,
+        headers = [],
+    )
+
+def render_page_test(server_instance,config={},added_data=None):
+    WebResponse = config.get("WebResponse")
+    page_body = '''
+<!doctype html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; }
+  </style>
+</head>
+<body>
+  <h1>Test</h1>
+  <p>Hello.</p>
+</body>
+</html>
+'''
     return WebResponse(
         status_code = 200,
         content_type = 'text/html',

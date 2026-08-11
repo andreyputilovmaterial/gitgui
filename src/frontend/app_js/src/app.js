@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
-  <online-indicator :isonline="isOnline"></online-indicator>
+  <online-indicator :isonline="isOnline" :repoCallbacks="repoCallbacks" :config="config"></online-indicator>
 </div>
 `, // <modals></modals>
     components: {
@@ -49,8 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     setup() {
 
-      const repoStatus = ref({ });
-      const repoCallbacks = ref({ });
+      const repoStatus = ref({});
+      const repoCallbacks = ref({});
+      const config = ref({});
       const errors = ref([]);
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
@@ -226,6 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errors,
         repoStatus,
         repoCallbacks,
+        config,
         isOnline,
         repoInitRequiresAttention,
         commands,

@@ -1,7 +1,9 @@
 
 const Monitor = {
   props: [
-    'isonline'
+    'isonline',
+    'config',
+    'repoCallbacks',
   ],
   template: `
 <div

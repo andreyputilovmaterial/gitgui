@@ -1,6 +1,6 @@
 
 // import { Vue } from "./vue.js";
-import { createApp, ref, onMounted, onUnmounted, toRaw } from 'vue'
+import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 
 import './components.css';
 import './app.css';
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
-  <online-indicator :isonline="isOnline" :repoCallbacks="repoCallbacks" :config="config"></online-indicator>
+  <online-indicator :isonline="isOnline" :repoCallbacks="repoCallbacks" :config="config" :configPathsFirstCaptured="configPathsFirstCaptured" :configPathsMismatch="configPathsMismatch"></online-indicator>
 </div>
 `, // <modals></modals>
     components: {
@@ -52,6 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const repoStatus = ref({});
       const repoCallbacks = ref({});
       const config = ref({});
+      const configPathsFirstCaptured = ref({dir_working_tree:null,dir_git_repo:null,git_paths_hash:null});
+      const configPathsMismatch = ref(false);
       const errors = ref([]);
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
@@ -170,6 +172,34 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       repoCallbacks.value.gitignoreRead = gitignoreRead;
 
+      async function configAskFor() {
+        function handleResponse(response) {
+          config.value = response
+          // const configPathsFirstCaptured = ref({dir_working_tree:null,dir_git_repo:null,git_paths_hash:null});
+          if(!configPathsFirstCaptured.value.dir_working_tree)
+            configPathsFirstCaptured.value.dir_working_tree = response.dir_working_tree
+          if(!configPathsFirstCaptured.value.dir_git_repo)
+            configPathsFirstCaptured.value.dir_git_repo = response.dir_git_repo
+          if(!configPathsFirstCaptured.value.git_paths_hash)
+            configPathsFirstCaptured.value.git_paths_hash = response.git_paths_hash
+          if(
+               ( !!configPathsFirstCaptured.value.dir_working_tree && !(configPathsFirstCaptured.value.dir_working_tree==response.dir_working_tree) )
+            || ( !!configPathsFirstCaptured.value.dir_git_repo && !(configPathsFirstCaptured.value.dir_git_repo==response.dir_git_repo) )
+            || ( !!configPathsFirstCaptured.value.git_paths_hash && !(configPathsFirstCaptured.value.git_paths_hash==response.git_paths_hash) )
+
+          )
+            configPathsMismatch.value = true
+        }
+        try {
+          const response = await fetchWrapper('GET', '/functionality/config',{})
+          handleResponse(response)
+          return response
+        } catch (e) {
+          logError(e);
+        }
+      }
+      repoCallbacks.value.configAskFor = configAskFor;
+
       async function updateGitRepoExistence() {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'repoExists':response}
@@ -218,16 +248,26 @@ document.addEventListener("DOMContentLoaded", () => {
         await Promise.all([
           executeGitCommand(['git', 'status']),
           updateGitRepoExistence(),
+          configAskFor(),
           gitignoreRead(),
           setIsOnlineTimer(),
         ])
       })
 
+      // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
+      watch(isOnline, (newValue, oldValue) => {
+        if (!oldValue && !!newValue) {
+          // triggered specifically on false → true
+          configAskFor()
+        }
+      })
       return {
         errors,
         repoStatus,
         repoCallbacks,
         config,
+        configPathsFirstCaptured,
+        configPathsMismatch,
         isOnline,
         repoInitRequiresAttention,
         commands,

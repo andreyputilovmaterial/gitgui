@@ -3,6 +3,8 @@
 from datetime import datetime
 import argparse
 from pathlib import Path
+from dotenv import load_dotenv # for loading .env
+import os # for loading .env
 
 
 from .webserver_engine.webserver import Webserver # a wrapper around python http.server - no flask or django
@@ -10,12 +12,18 @@ from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
 from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
 from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status
-from .GENERATED._VERSION import _VERSION as script_version
-from .GENERATED._HELP import _MD as help_md
-from .helper_utilities import prettyprint_config, make_hash
+from .GENERATED.VERSION import _VERSION as script_version
+from .GENERATED.HELP import _MD as help_md
+from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner
 
 from .endpoints import endpoints
 
+if is_in_pinliner():
+    from .GENERATED.HARDCODED import _CREDENTIALS_STR as CREDENTIALS_STR
+    CREDENTIALS_STR = CREDENTIALS_STR.strip()
+else:
+    load_dotenv()
+    CREDENTIALS_STR = os.getenv("CREDENTIALS", "-")
 
 
 
@@ -25,6 +33,8 @@ script_version = f'{script_version}'.strip()
 STDOUT_COLOR_RED = "\033[31m"
 STDOUT_COLOR_RESET = "\033[0m"
 STDOUT_COLOR_GREEN = "\033[32m"
+
+
 
 
 
@@ -56,7 +66,7 @@ def main(*argcs,**kwargs):
         'script_name': script_name,
         'script_version': script_version,
         'credentials:year': f'{datetime.now().year}',
-        'credentials:name': 'Andrey.Putilov@materialplus.io',
+        'credentials:name': CREDENTIALS_STR,
         'credentials:version': script_version,
 
         'help_pages': help_md,

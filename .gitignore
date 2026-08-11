@@ -23,6 +23,9 @@ __pycache__/
 *.pyc
 .venv/
 
+# --- Exclude environment variables file ---
+.env
+
 # --- Editor files ---
 .vscode/*
 !.vscode/extensions.json

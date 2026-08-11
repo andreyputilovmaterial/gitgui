@@ -10,15 +10,15 @@ import traceback, sys
 # necessary adjustment for pinliner, as how I am using it
 if __name__ == '__main__':
     # run as a program
-    from src.GENERATED._VERSION import _VERSION as gitgui_script_version
+    from src.GENERATED.VERSION import _VERSION as gitgui_script_version
     from src.main_gitgui_program import main as call_gitgui_program
 elif '.' in __name__:
     # package
-    from .GENERATED._VERSION import _VERSION as gitgui_script_version
+    from .GENERATED.VERSION import _VERSION as gitgui_script_version
     from .main_gitgui_program import main as call_gitgui_program
 else:
     # included with no parent package
-    from src.GENERATED._VERSION import _VERSION as gitgui_script_version
+    from src.GENERATED.VERSION import _VERSION as gitgui_script_version
     from src.main_gitgui_program import main as call_gitgui_program
 
 

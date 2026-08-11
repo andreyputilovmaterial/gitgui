@@ -71,7 +71,8 @@ ul > li, ol > li {
   padding: 2px 0;
 }
 table tr td {
-  padding: 6px;
+  padding: 7px;
+  vertical-align: top;
 }
 table tr td:first-child {
   padding-left: 0;

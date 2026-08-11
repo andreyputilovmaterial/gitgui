@@ -21,6 +21,8 @@ class HTTP404(Exception):
 class HTTP403(Exception):
     """For HTTP 404"""
 
+def raise_err_404_not_found(*args,**argv):
+    raise HTTP404('404 not found')
 
 @dataclass
 class WebResponse:
@@ -70,7 +72,7 @@ class Webserver:
                 try:
 
                     path = urlparse(self.path).path
-                    renderer = get_matching_endpoint(path,endpoints)
+                    renderer = get_matching_endpoint(path,endpoints) or raise_err_404_not_found
                     assert callable(renderer), 'Whoops, renderer returned from get_matching_endpoint() must be callable'
 
                     response = renderer(self, config=server._config)
@@ -102,7 +104,7 @@ class Webserver:
                     content_type = 'text/html' if not (self.headers.get("Accept",None) == "application/json") else 'application/json'
                     if not content_type:
                         content_type = 'text/html'
-                    content = f'Can\t find / no access: HTTP {statuscode}'.encode("utf-8")
+                    content = f'Can\'t find / no access: HTTP {statuscode}'.encode("utf-8")
                     renderer = endpoints.get(statuscode,None)
                     if renderer and send_body:
                         response = renderer(self, config=server._config, msg = e)

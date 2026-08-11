@@ -18,6 +18,9 @@ from .endpoints import endpoints
 
 
 
+
+script_version = f'{script_version}'.strip()
+
 # STDOUT_COLOR_RED = "\033[91m"
 STDOUT_COLOR_RED = "\033[31m"
 STDOUT_COLOR_RESET = "\033[0m"
@@ -51,7 +54,11 @@ def main(*argcs,**kwargs):
     config = {
         'time_start': time_start,
         'script_name': script_name,
-        'script_version': f'{script_version}'.strip(),
+        'script_version': script_version,
+        'credentials:year': f'{datetime.now().year}',
+        'credentials:name': 'Andrey.Putilov@materialplus.io',
+        'credentials:version': script_version,
+
         'help_pages': help_md,
 
         'dir_working_tree': None,

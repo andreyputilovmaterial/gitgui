@@ -3,7 +3,6 @@ import html # for escaping
 from urllib.parse import urlparse, parse_qs # to detect ?embed=1
 import re # to detect ?embed=1 flag
 import random # to print #help to container with random id - should not be needed because of proper design and isolation via iframe, but we have it for now
-from datetime import datetime # to print @ 2026 year in page
 
 
 
@@ -68,9 +67,12 @@ def make_default_assets_list(config):
         ('icon',(make_icon(),),),
         ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
         ('meta',('git-gui:script-name',config.get("script_name"),)),
-        ('meta',('git-gui:script-version',config.get("script_version"),)),
+        ('meta',('git-gui:script-version',config.get("credentials:version"),)),
         ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
         ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+        ('meta',('app:author',config.get("credentials:name"),)),
+        ('meta',('app:version',config.get("credentials:version"),)),
+        ('meta',('keywords','git gui',)),
         ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
         ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
         ('css-link',('/assets/project-specific.css',),),
@@ -79,7 +81,7 @@ def make_default_assets_list(config):
 
 def renderer_page_home(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
-    year = f'{datetime.now().year}'
+    year = config.get("credentials:year")
 
     title = f'git - {html.escape(config.get("dir_working_tree"))}'
     page_h1 = f'git - {html.escape(config.get("dir_working_tree"))}'
@@ -95,7 +97,6 @@ def renderer_page_home(server_instance,config={},added_data=None):
                 ('tag-any',('script',{'type':'importmap'},'{ "imports": { "vue": "./assets/vendorlibs/vue.js" } }',),),
                 # ('js-link',('/assets/vendorlibs/vue.js',),),
                 ('js-link-module',('/assets/app.js',),),
-                ('css-link',('/assets/app.css',),),
             ],
         body_css_classes= ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
         banners = [
@@ -115,9 +116,9 @@ def renderer_page_home(server_instance,config={},added_data=None):
 
 def renderer_page_version(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
-    version = config.get("script_version")
+    version = config.get("credentials:version")
     version = f'{version}'.strip()
-    year = f'{datetime.now().year}'
+    year = config.get("credentials:year")
 
     title = f'git ui - version'
     page_h1 = f'Version'
@@ -149,10 +150,10 @@ def renderer_page_version(server_instance,config={},added_data=None):
 
 def renderer_page_about(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
-    version = config.get("script_version")
+    version = config.get("credentials:version")
     version = f'{version}'.strip()
-    year = f'{datetime.now().year}'
-    myname = 'Andrey.Putilov@materialplus.io'
+    year = config.get("credentials:year")
+    myname = config.get("credentials:name")
 
     title = f'git ui - about'
     page_h1 = f'About'
@@ -198,9 +199,9 @@ def renderer_page_about(server_instance,config={},added_data=None):
 
 def renderer_page_help(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
-    version = config.get("script_version")
+    version = config.get("credentials:version")
     version = f'{version}'.strip()
-    year = f'{datetime.now().year}'
+    year = config.get("credentials:year")
     myname = 'Andrey.Putilov@materialplus.io'
 
     title = f'git ui - help'
@@ -211,26 +212,59 @@ def renderer_page_help(server_instance,config={},added_data=None):
 <div>
 <div id="id_help_placeholder_7256347265" class="helppage-fetch-content gitgui-fetched-content">Loading, please wait...</div>
 ''' + '''
-<style>.helppage-fetch-content { /* margin: 56px 0 56px; */ }</style>
 <script>
 (async function() {
 try {
-async function fetchHelpPage() {
-    const response = await fetch('/functionality/config');
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    async function embedStyles(document) {
+        const txt = '.helppage-fetch-content { /* margin: 56px 0 56px; */ }';
+        const style = document.createElement('style');
+        style.textContent = txt;
+        target = document.head || document;
+        target.append(style);
     }
-    const config = await response.json();
-    return config.help_pages;
-};
-const targetEl = document.querySelector('#id_help_placeholder_7256347265');
-const help_text_md = await fetchHelpPage();
-const helpFormatted = DOMPurify.sanitize(marked.parse(help_text_md));
-targetEl.innerHTML = helpFormatted;
+    async function fetchHelpPage() {
+        const response = await fetch('/functionality/config');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const config = await response.json();
+        return config.help_pages;
+    };
+    const promisePageReady = new Promise((resolve,reject) => {
+        document.addEventListener("DOMContentLoaded", () => {
+            try{
+                resolve(document);
+            } catch(e) {
+                reject(e);
+            }
+        });
+    });
+    const promiseTargetReady = new Promise((resolve,reject) => {
+        promisePageReady.then(
+            document => {
+                try{
+                    const targetEl = document.querySelector('#id_help_placeholder_7256347265');
+                    if(!!targetEl)
+                        resolve(targetEl);
+                    else
+                        reject('Fetching page contents: placeholder id not found');
+                } catch(e) {
+                    reject(e);
+                }
+            },
+            e => reject(e),
+        );
+    });
+    promisePageReady.then(embedStyles);
+    const help_text_md = await fetchHelpPage();
+    const helpFormatted = DOMPurify.sanitize(marked.parse(help_text_md));
+    targetEl = await promiseTargetReady;
+    targetEl.innerHTML = helpFormatted;
 } catch(e) {
-const targetEl = document.querySelector('#id_help_placeholder_7256347265');
-targetEl.innerHTML = '<div class="error"></div>';
-targetEl.querySelector('.error').textContent = `${e}`;
+    console.error(e);
+    const targetEl = document.querySelector('#id_help_placeholder_7256347265');
+    targetEl.innerHTML = '<div class="error"></div>';
+    targetEl.querySelector('.error').textContent = `${e}`;
 }
 })();
 </script>
@@ -252,6 +286,8 @@ targetEl.querySelector('.error').textContent = `${e}`;
         assets = [] + \
             make_default_assets_list(config) + \
             [
+        ('js-link',('/assets/vendorlibs/marked.js',),),
+        ('js-link',('/assets/vendorlibs/dompurify.js',),),
             ],
         body_css_classes= ['gitgui','gitgui-page-help','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
         banners = [

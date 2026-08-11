@@ -4,8 +4,6 @@ import re
 
 
 def get_matching_endpoint(path,endpoints):
-    def not_found(*args,**argv):
-        raise HTTP404(f'{path} was not found on the server')
 
     def check_if_pattern_matches(path, pattern):
         if callable(pattern):
@@ -33,4 +31,4 @@ def get_matching_endpoint(path,endpoints):
     if best_match:
         return best_match
 
-    return not_found
+    return None

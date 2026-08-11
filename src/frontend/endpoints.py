@@ -1,5 +1,5 @@
 
-from .endpoints_html_path import (
+from .endpoints_html_paths import (
     renderer_page_home,
     renderer_page_version,
     renderer_page_about,

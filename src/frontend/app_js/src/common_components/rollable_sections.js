@@ -5,7 +5,7 @@ import { ref, watch } from 'vue';
 
 
 
-export const ComponentSectionRollUp = {
+const ComponentSectionRollUp = {
   props: {
     'header': String,
     'condensed': {
@@ -57,3 +57,5 @@ export const ComponentSectionRollUp = {
     return {isCondensed}
   }
 }
+
+export default ComponentSectionRollUp;

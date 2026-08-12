@@ -267,6 +267,22 @@ td.mdmreport-contentcell label {
   resize: vertical;
   width: 100%;
 }
+.mdmreport-controls textarea, .mdmreport-controls input, .mdmreport-controls button {
+  -webkit-appearance:none;
+  appearance:none;
+  border:1px solid #d0d0d0;
+  border-radius:4px;
+  box-shadow:none;
+  outline:0;
+  line-height: 1em;
+  display: inline-block;
+  background: #fff;
+  padding: 5px 21px 5px;
+  transition: all 600ms ease;
+}
+.mdmreport-controls label, .mdmreport-controls label:active, .mdmreport-controls label:hover {
+  border: none; outline: none; box-shadow: none; -webkit-appearance: none;
+}
 .mdmreport-controls label input[type="checkbox"] {
     display: inline-block;
     width: 0;

@@ -4,7 +4,7 @@ from urllib.parse import urlparse, parse_qs # to detect path within endpoints
 import json # for responding, obviously
 import sys # for printing error in cli commands
 from pathlib import Path # for resolving paths to resources
-import os # getsize for gitignore and gitattributes - open for debate
+import os # accessing physical files - gitignore, gitattributes, work-tree path, git repo path...
 import subprocess # execute git rev-parse
 from datetime import datetime # format dates in json responses
 
@@ -19,9 +19,6 @@ from .common_functions import JSONEncoder, get_matching_endpoint
 
 
 
-
-def not_implemented(*args,**argv):
-    raise NotImplementedError('not implemented')
 
 
 
@@ -219,7 +216,7 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
             args = [*command]
             assert args[0]=='git', f'Not a git command'
             git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
-            work_tree = Path(config.get("dir_working_tree")).resolve()
+            work_tree = Path(config.get("dir_work_tree")).resolve()
             args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
             return args
         # I am not making it async - should not take long to execute
@@ -264,13 +261,71 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
             headers = [],
         )
 
+def handle_fspath(server_instance,config={},added_data=None):
+    path_fs = Path(added_data).resolve()
+    WebResponse = config.get("WebResponse")
+    method = server_instance.command
+    if method=='HEAD':
+        if not path_fs.exists():
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+            )
+        if not path_fs.is_dir():
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+            )
+        if not os.access(path_fs, os.R_OK):
+            return WebResponse(
+                status_code = 403,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+            )
+        return WebResponse(
+            status_code = 200,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+        )
+    elif method=='GET':
+        return WebResponse(
+            status_code = 405,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+        )
+    elif method=='POST':
+        raise NotImplementedError('not implemented')
+    elif method=='PUT':
+        return WebResponse(
+            status_code = 405,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+        )
+    elif method=='DELETE':
+        return WebResponse(
+            status_code = 403,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+        )
+    else:
+        return WebResponse(
+            status_code = 405,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+        )
+
+
+
+def handle_fspath_worktree(server_instance,config={},added_data=None):
+    path_fs = config.get("dir_work_tree")
+    return handle_fspath(server_instance,config,added_data=path_fs)
+
+def handle_fspath_gitrepodir(server_instance,config={},added_data=None):
+    path_fs = config.get("dir_git_repo")
+    return handle_fspath(server_instance,config,added_data=path_fs)
+
 
 endpoints = {
     # for each path, we need to know: 1. which command to execute, 2. how to process results (note: command is platform-dependent)
     '/is-git-repo': handle_is_git_repo,
-    '/git-ls-tracked-files': not_implemented,
     '/gitignore': handle_gitignore, # .git/info/exclude
     '/gitattributes': handle_gitattributes, # .git/info/attributes
+    '/dir-work-tree': handle_fspath_worktree,
+    '/dir-git-repo-dir': handle_fspath_gitrepodir,
     '/config': handle_config,
     '/isup.txt': handle_isup,
 }

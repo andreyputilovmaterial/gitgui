@@ -1,0 +1,107 @@
+
+
+
+.terminal-record {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+}
+.terminal-record .timestamp {
+  color: #aaa;
+  font-weight: 200;
+  display: block;
+  padding-right: 7px;
+  flex: 0 0 16em;
+}
+.terminal-record .timestamp {
+  display: none;
+}
+.terminal-record .returncode {
+  flex: 0 0 2.2em;
+  text-align: right;
+  display: inline-block;
+  padding: 5px 5px 5px 1px;
+  margin: -5px 0 -5px 0;
+  background: #eee;
+}
+.terminal-record .returncode.returncode-status-success {
+  color: #009900;
+}
+.terminal-record .returncode.returncode-status-nonzero {
+  color: #990000;
+}
+.terminal-record .status {
+  color: #666;
+  font-weight: 600;
+  display: block;
+  padding-right: 7px;
+  flex: 0 0 5em;
+}
+.terminal-record.terminal-record-status-request .status {
+  color: #335577;
+}
+.terminal-record.terminal-record-status-error .status {
+  color: #990000;
+}
+.terminal-record.terminal-record-status-response .status {
+  color: #006700;
+}
+.terminal-record .message {
+    white-space: pre-wrap;
+  }
+.terminal-record .message {
+  background: #eee;
+  display: inline-block;
+  padding: 5px 5px 5px 14px;
+  margin: -5px -5px -5px 0;
+  flex-grow: 100;
+  font-size: 80%;
+}
+.terminal-record .message .error {
+  font-weight: normal;
+}
+.terminal-record.terminal-record-status-error .message {
+  color: #660000;
+}
+
+.terminal-record, .terminal-record * {
+  line-height: 16px;
+}
+.terminal-record {
+  padding: 5px 0 5px;
+}
+
+
+
+
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group {
+  display: flex;
+  width: 100%;
+  gap: 7px;
+  /* align-items: scs; */
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group input {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+  width: auto!important;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group input.submit {
+  flex: 0 0 120px;
+  min-width: 120px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group label, .mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group .hint {
+  flex: 0 0 100%;
+  display: block;
+  margin-bottom: -10px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .hint {
+  color: #666;
+  margin-top: -7px;
+}
+.mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group label, .mdm-git-gui-terminal .mdmreport-controls .mdmreport-controls-group label:hover {
+  border: none!important;
+  outline: none!important;
+}

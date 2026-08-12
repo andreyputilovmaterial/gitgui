@@ -1,5 +1,5 @@
 
-import { formatDate } from '../common_defs/functions';
+import { formatDate } from '../../common_defs/functions';
 
 
 const ErrorRecord = {
@@ -19,7 +19,7 @@ const ErrorRecord = {
   setup() { return { formatDate } },
 }
 
-export const ErrorView = {
+const ErrorView = {
   props: ['errors'],
   template: `
 <div
@@ -43,3 +43,5 @@ export const ErrorView = {
   },
   setup() {return {}},
 }
+
+export default ErrorView;

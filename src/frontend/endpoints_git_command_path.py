@@ -26,7 +26,7 @@ def handle_git_command(server_instance,config={},added_data=None):
         # if len(args)>=2 and args[0]=='git' and args[1]=='error':
         #     raise ValueError('an error for testing')
         git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
-        work_tree = Path(config.get("dir_working_tree")).resolve()
+        work_tree = Path(config.get("dir_work_tree")).resolve()
         args = [
             args[0],
             '--git-dir'

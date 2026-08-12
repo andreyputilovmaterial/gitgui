@@ -27,5 +27,5 @@ echo -
 echo -
 
 
-# "$pythonexecutable" -m src.launcher --program gitgui --working-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"
-"$pythonexecutable" "dist/gitgui_bundle.py" --program gitgui --working-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"
+# "$pythonexecutable" -m src.launcher --program gitgui --work-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"
+"$pythonexecutable" "dist/gitgui_bundle.py" --program gitgui --work-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"

@@ -35,16 +35,16 @@ def is_in_pinliner():
 
 
 
-def make_hash(working_tree_folder,git_repo_folder):
-    working_tree_folder = f'{working_tree_folder}'
+def make_hash(work_tree_folder,git_repo_folder):
+    work_tree_folder = f'{work_tree_folder}'
     git_repo_folder = f'{git_repo_folder}'
-    if '\0' in working_tree_folder or '\0' in git_repo_folder:
+    if '\0' in work_tree_folder or '\0' in git_repo_folder:
         raise Exception('Zero char in config paths: it\'s illegal')
-    working_tree_folder = Path(working_tree_folder).resolve()
+    work_tree_folder = Path(work_tree_folder).resolve()
     git_repo_folder = Path(git_repo_folder).resolve()
     s = '\0'.join(
         (
-            str(Path(working_tree_folder).resolve()),
+            str(Path(work_tree_folder).resolve()),
             str(Path(git_repo_folder).resolve()),
         )
     ).encode('utf-8')

@@ -83,7 +83,8 @@ const DummyWrapper = {
           init({defineComponent,h,markRaw});
         })(),
       ])
-    })
+    });
+
   },
 }
  export default DummyWrapper;

@@ -17,6 +17,9 @@ body {
     color: #cc0000;
     font-weight: 500;
 }
+.hidden {
+  display: none;
+}
 .container {
     margin: 0 15px 0;
 }

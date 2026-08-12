@@ -1,0 +1,30 @@
+
+
+.git-repo-intro-setup-section .git-repo-init-form .init-repo-action-call-button {
+  display: block;
+  width: 80%;
+  max-width: 600px;
+  background: #559966;
+  padding: 21px;
+  border-radius: 14px;
+  border-color: #337744;
+  margin: 10px auto 36px;
+  font-size: 18px;
+  font-weight: 300;
+  color: #fff;
+  transition: 600ms all ease;
+}
+.git-repo-intro-setup-section .git-repo-init-form .init-repo-action-call-button .desc-line-1 {
+  display: block;
+  font-weight: 500;
+  font-size: 28px;
+  padding: 7px;
+}
+.git-repo-intro-setup-section .git-repo-init-form .init-repo-action-call-button:hover {
+  color: #fff;
+  background: #226633;
+}
+.git-repo-intro-setup-section .git-repo-gitignore-edit-form textarea {
+  min-height: 85px;
+  height: 140px;
+}

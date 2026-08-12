@@ -14,7 +14,7 @@ from .icon import make_icon
 def render_block_banner_config_git_folders(config):
     return f'''
 <div class="banner-global-folder-props">
-    <p class="mdmreport-prop-row">Git work tree folder: <code>{html.escape(""+config.get("dir_working_tree"))}</code></p>
+    <p class="mdmreport-prop-row">Git work tree folder: <code>{html.escape(""+config.get("dir_work_tree"))}</code></p>
     <p class="mdmreport-prop-row">Git repo folder: <code>{html.escape(""+config.get("dir_git_repo"))}</code></p>
 </div>
 '''
@@ -69,7 +69,7 @@ def make_default_assets_list(config):
         ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
         ('meta',('git-gui:script-name',config.get("script_name"),)),
         ('meta',('git-gui:script-version',config.get("credentials:version"),)),
-        ('meta',('git-gui:git-work-tree-folder',config.get("dir_working_tree"),)),
+        ('meta',('git-gui:git-work-tree-folder',config.get("dir_work_tree"),)),
         ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
         ('meta',('app:author',config.get("credentials:name"),)),
         ('meta',('app:version',config.get("credentials:version"),)),
@@ -84,8 +84,8 @@ def render_page_home(server_instance,config={},added_data=None):
     WebResponse = config.get("WebResponse")
     year = config.get("credentials:year")
 
-    title = f'git - {html.escape(config.get("dir_working_tree"))}'
-    page_h1 = f'git - {html.escape(config.get("dir_working_tree"))}'
+    title = f'git - {html.escape(config.get("dir_work_tree"))}'
+    page_h1 = f'git - {html.escape(config.get("dir_work_tree"))}'
 
     page_body = make_html(
         title = title,

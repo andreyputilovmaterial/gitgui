@@ -49,7 +49,7 @@ def main(*argcs,**kwargs):
     )
     parser.add_argument(
         #'-1',
-        '--working-tree-folder',
+        '--work-tree-folder',
         type=str,
         required=True
     )
@@ -71,7 +71,7 @@ def main(*argcs,**kwargs):
 
         'help_pages': help_md,
 
-        'dir_working_tree': None,
+        'dir_work_tree': None,
         'dir_git_repo': None,
         'git_paths_hash': None,
 
@@ -86,10 +86,10 @@ def main(*argcs,**kwargs):
         'HTTP404': HTTP404,
     }
 
-    if args.working_tree_folder:
-        working_tree_folder = f'{args.working_tree_folder}' # make sure it's text
-        working_tree_folder = Path(working_tree_folder).resolve()
-        config['dir_working_tree'] = f'{working_tree_folder}'
+    if args.work_tree_folder:
+        work_tree_folder = f'{args.work_tree_folder}' # make sure it's text
+        work_tree_folder = Path(work_tree_folder).resolve()
+        config['dir_work_tree'] = f'{work_tree_folder}'
     else:
         # print(f'{STDOUT_COLOR_RED}working-tree-folder not specified{STDOUT_COLOR_RESET}')
         raise Exception('working-tree-folder not specified')
@@ -102,7 +102,7 @@ def main(*argcs,**kwargs):
         # print(f'{STDOUT_COLOR_RED}git-repo-folder not specified{STDOUT_COLOR_RESET}')
         raise Exception('git-repo-folder not specified')
 
-    config['git_paths_hash'] = make_hash(working_tree_folder,git_repo_folder)
+    config['git_paths_hash'] = make_hash(work_tree_folder,git_repo_folder)
 
     print('\npreparing git cli command loop...\n')
     initiate_worker_loop(config)
@@ -114,7 +114,7 @@ def main(*argcs,**kwargs):
 
     print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     cfg_to_print_verify = {
-        "working-tree-folder":config.get("dir_working_tree"),
+        "working-tree-folder":config.get("dir_work_tree"),
         "git-repo-folder":config.get("dir_git_repo"),
         "http address":config.get("http_address"),
     }

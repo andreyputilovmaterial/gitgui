@@ -1,0 +1,57 @@
+
+.git-repo-modal-form-confirm-inner p {
+  margin: 0.5em 0;
+}
+
+.git-repo-modal-form-confirm-inner .config-work-tree-path, .git-repo-modal-form-confirm-inner  .config-git-dir-path {
+  font-weight: 500;
+  font-size: 115%;
+  color: #000;
+}
+.git-repo-modal-form-confirm-inner .click-next, .git-repo-modal-form-confirm-inner .click-finish {
+  padding-top: 21px;
+}
+.git-repo-modal-form-confirm-inner .click-next input, .git-repo-modal-form-confirm-inner .click-next button {
+  padding-top: 7px;
+  padding-bottom: 7px;
+  min-width: 210px;
+  font-weight: 500;
+}
+.git-repo-modal-form-confirm-inner .click-next input:hover, .git-repo-modal-form-confirm-inner .click-next button:hover{
+  color: #fff;
+  background: #226633;
+}
+.git-repo-modal-form-confirm-inner .click-finish input, .git-repo-modal-form-confirm-inner .click-finish button {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  min-width: 210px;
+  font-weight: 500;
+  border-radius: 5px;
+}
+.git-repo-modal-form-confirm-inner .click-finish .submit {
+  color: #114a11;
+  background: #fff;
+  min-width: 210px;
+}
+.git-repo-modal-form-confirm-inner .click-finish .submit:hover {
+  color: #ffffff;
+  background: #226633;
+}
+.git-repo-modal-form-confirm-inner .click-finish.all-steps-confirmed .submit {
+  color: #ffffff;
+  background: #226633;
+}
+.git-repo-modal-form-confirm-inner .click-finish.all-steps-confirmed .submit:hover {
+  color: #114a11;
+  background: #fff;
+}
+.git-repo-modal-form-confirm-inner .click-finish .cancel {
+  color: #000;
+  background: #dfdfdf;
+  margin-left: 21px;
+  min-width: 140px;
+}
+.git-repo-modal-form-confirm-inner .click-finish .cancel:hover {
+  color: #000;
+  background: #ffffff;
+}

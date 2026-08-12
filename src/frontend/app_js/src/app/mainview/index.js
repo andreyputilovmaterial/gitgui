@@ -1,6 +1,6 @@
 
 
-export const MainView = {
+const MainView = {
   props: [
     'repoStatus', 'repoCallbacks',
   ],
@@ -18,3 +18,5 @@ export const MainView = {
     return {  }
   }
 }
+
+export default MainView;

@@ -3,9 +3,10 @@
 import { ref, reactive } from 'vue';
 
 
-import { formatDate } from '../common_defs/functions';
+import { formatDate } from '../../common_defs/functions';
 
 
+import './styles.css';
 
 
 export function parseCommand(txt) {
@@ -186,7 +187,7 @@ const TerminalRecord = {
   }
 }
 
-export const TerminalSessionView = {
+const TerminalSessionView = {
   props: [
     'commands',
     'executeGitCommand',
@@ -216,3 +217,5 @@ export const TerminalSessionView = {
     return { }
   }
 }
+
+export default TerminalSessionView;

@@ -7,14 +7,14 @@ import './app.css';
 
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw } from './common_defs/cli';
-import { ComponentSectionRollUp } from './common_components/rollable_sections';
+import ComponentSectionRollUp from './common_components/rollable_sections';
 import { ModalsSite } from './common_components/modals';
-import { RepoInitView } from './app/repoinitview';
-import { MainView } from './app/mainview';
-import { TerminalSessionView } from './app/terminalview';
+import RepoInitView from './app/repoinitview/index';
+import MainView from './app/mainview/index';
+import TerminalSessionView from './app/terminalview/index';
 import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
 import AppOnlineIndicator from './app/onlineindicator';
-import { ErrorView } from './app/errorview';
+import ErrorView from './app/errorview/index';
 import { __access_errorSite } from './error_logger/setup';
 
 
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     template: `
 <div class="mdm-git-ui-app">
   <errorbanner :errors="errors"></errorbanner>
-  <repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></repoinit-view>
+  <repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repoinit-view>
   <maingui-view :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
   <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   <modals></modals>
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const repoStatus = ref({});
       const repoCallbacks = ref({});
       const config = ref({});
-      const configPathsFirstCaptured = ref({dir_working_tree:null,dir_git_repo:null,git_paths_hash:null});
+      const configPathsFirstCaptured = ref({dir_work_tree:null,dir_git_repo:null,git_paths_hash:null});
       const configPathsMismatch = ref(false);
       const errors = ref([]);
       const isOnline = ref(true);
@@ -175,15 +175,15 @@ document.addEventListener("DOMContentLoaded", () => {
       async function configAskFor() {
         function handleResponse(response) {
           config.value = response
-          // const configPathsFirstCaptured = ref({dir_working_tree:null,dir_git_repo:null,git_paths_hash:null});
-          if(!configPathsFirstCaptured.value.dir_working_tree)
-            configPathsFirstCaptured.value.dir_working_tree = response.dir_working_tree
+          // const configPathsFirstCaptured = ref({dir_work_tree:null,dir_git_repo:null,git_paths_hash:null});
+          if(!configPathsFirstCaptured.value.dir_work_tree)
+            configPathsFirstCaptured.value.dir_work_tree = response.dir_work_tree
           if(!configPathsFirstCaptured.value.dir_git_repo)
             configPathsFirstCaptured.value.dir_git_repo = response.dir_git_repo
           if(!configPathsFirstCaptured.value.git_paths_hash)
             configPathsFirstCaptured.value.git_paths_hash = response.git_paths_hash
           if(
-               ( !!configPathsFirstCaptured.value.dir_working_tree && !(configPathsFirstCaptured.value.dir_working_tree==response.dir_working_tree) )
+               ( !!configPathsFirstCaptured.value.dir_work_tree && !(configPathsFirstCaptured.value.dir_work_tree==response.dir_work_tree) )
             || ( !!configPathsFirstCaptured.value.dir_git_repo && !(configPathsFirstCaptured.value.dir_git_repo==response.dir_git_repo) )
             || ( !!configPathsFirstCaptured.value.git_paths_hash && !(configPathsFirstCaptured.value.git_paths_hash==response.git_paths_hash) )
 

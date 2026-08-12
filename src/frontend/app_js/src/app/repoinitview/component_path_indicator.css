@@ -1,0 +1,27 @@
+
+.gitui-app-pathstatus {
+  line-height: 1em;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  slign-items: center;
+}
+.gitui-app-pathstatus, .gitui-app-pathstatus > * {
+  line-height: 1em;
+  vertical-align: middle;
+  display: inline-block;
+}
+.gitui-app-pathstatus .mark {
+  font-size: 2em;
+  font-weight: 600;
+  display: inline-block;
+  padding: 0px 5px 2px 0;
+  margin-left: -2px;
+  color: #d45032;
+}
+.gitui-app-pathstatus .mark.ok {
+  color: #22bb33;
+}
+.gitui-app-pathstatus .mark.undefined {
+  color: #aaaaaa;
+}

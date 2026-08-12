@@ -29,7 +29,8 @@
   border-radius: 5px;
 }
 .git-repo-modal-form-confirm-inner .click-finish .submit {
-  color: #114a11;
+  font-weight: 600;
+  color: #1e881e;
   background: #fff;
   min-width: 210px;
 }
@@ -47,11 +48,22 @@
 }
 .git-repo-modal-form-confirm-inner .click-finish .cancel {
   color: #000;
-  background: #dfdfdf;
+  background: #ffffff;
   margin-left: 21px;
   min-width: 140px;
 }
 .git-repo-modal-form-confirm-inner .click-finish .cancel:hover {
   color: #000;
-  background: #ffffff;
+  background: #dfdfdf;
+}
+
+
+.git-repo-modal-form-confirm-inner .step-confirmed .click-next input, .git-repo-modal-form-confirm-inner .step-confirmed .click-next button {
+  position: relative;
+}
+.git-repo-modal-form-confirm-inner .step-confirmed .click-next input:before, .git-repo-modal-form-confirm-inner .step-confirmed .click-next button:before {
+  content: "✔";
+  display: block;
+  position: absolute;
+  color: #22bb33;
 }

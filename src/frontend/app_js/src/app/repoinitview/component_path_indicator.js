@@ -6,7 +6,7 @@ import './component_path_indicator.css';
 
 
 
-const FSPathStatus = Object.freeze({
+export const FSPathStatus = Object.freeze({
   UNDEFINED: 'undefined', // ...still checking...
   OK: 'ok', // normally exists
   NOTFOUND: 'notfound', // does not exist

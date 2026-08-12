@@ -2,8 +2,7 @@
 // import { Vue } from "./vue.js";
 import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 
-import './components.css';
-import './app.css';
+
 
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw } from './common_defs/cli';

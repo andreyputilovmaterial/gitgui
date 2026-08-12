@@ -1,11 +1,13 @@
 
 import { ref, reactive, watch } from 'vue';
 
-
+import HelpWindow from './section_gitignore_help_window.js';
 
 import './section_gitignore.css';
 
-// import logError from '../../error_logger/logError';
+import { createModal } from '../../common_components/modals';
+
+import logError from '../../error_logger/logError';
 
 
 
@@ -49,8 +51,14 @@ setup(props) {
      }
    };
 
-   const showHelp = () => {
-     throw new Error('Not implemented');
+   const showHelp = async () => {
+     try {
+       await createModal(HelpWindow);
+     } catch(e) {
+       if(e instanceof Error) {
+         logError(e);
+       }
+     }
    };
 
    // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.

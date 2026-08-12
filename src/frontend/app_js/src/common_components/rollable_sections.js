@@ -2,7 +2,7 @@
 
 import { ref, watch } from 'vue';
 
-
+import './rollable_sections.css';
 
 
 const ComponentSectionRollUp = {

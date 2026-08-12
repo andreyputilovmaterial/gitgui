@@ -3,6 +3,8 @@
 
 import {ref,onMounted,markRaw} from 'vue';
 
+import './modals.css';
+
 
 
 const appContext = {
@@ -56,9 +58,10 @@ const Modal = {
     'component',
     'resolve',
     'reject',
+    'zindex',
   ],
   template: `
-<div class="mdm-git-ui-modal-wrapper">
+<div class="mdm-git-ui-modal-wrapper" :style="\`z-index: \${zindex}\`">
   <div class="mdm-git-ui-modal-dismiss" @click="reject"></div>
   <div class="mdm-git-ui-modal-inner">
     <component :is="component"
@@ -85,18 +88,25 @@ export const ModalsSite = {
 >
   <div
   :class="{
-  'mdm-ui-modals-background': true,
+  'mdm-ui-modals-global-background': true,
   'active': modals.length>0,
   }"
   ></div>
-  <div class="mdm-ui-modals">
-    <modal
-    v-for="modal in modals"
-    :component="modal.component"
-    :resolve="modal.resolve"
-    :reject="modal.reject"
-    :key="modal.id"
-    ></modal>
+  <div
+    class="mdm-ui-modals"
+  >
+    <div
+      v-for="modal in modals"
+    >
+      <div class="mdm-ui-modals-modalform-background" :style="\`z-index: \${modal.zindex}\`"></div>
+      <modal
+      :component="modal.component"
+      :resolve="modal.resolve"
+      :reject="modal.reject"
+      :key="modal.id"
+      :zindex="modal.zindex"
+      />
+    </div>
   </div>
 </div>
 `,
@@ -109,10 +119,17 @@ export const ModalsSite = {
 
     const modals = ref([])
 
+
     const createModal = (Component,promiseVars) => {
+      const generateZindex = modals => {
+        const max = Math.max(...modals.value.map(m=>m.zindex));
+        const zindex = max>0 ? max+1 : 1010;
+        return zindex;
+      };
       console.log('[DEBUG]: modal: called createModal()');
       const {promiseResolve,promiseReject,promise} = promiseVars;
       const id = generateUUID();
+      const zindex = generateZindex(modals);
       console.log('[DEBUG]: modal: assigned id is ',id);
 
       const del = function() {
@@ -124,6 +141,7 @@ export const ModalsSite = {
         component: markRaw(Component),
         id: id,
         resolve:promiseResolve,reject:promiseReject,
+        zindex: zindex,
       }
       console.log('[DEBUG]: modal: modal object is ',newModal);
       modals.value.push(newModal);

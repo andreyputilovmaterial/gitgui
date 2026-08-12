@@ -1,0 +1,36 @@
+
+
+
+.mdm-ui-rollup {
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin-bottom: 14px;
+}
+.mdm-ui-rollup-header {
+  display: block;
+  position: relative;
+  background: #eee;
+  padding: 7px 7px 7px 14px;
+  color: #666;
+  cursor: pointer;
+}
+.mdm-ui-rollup-body {
+  display: block;
+  position: relative;
+  padding: 14px;
+}
+.mdm-ui-rollup.mdm-ui-rollup-condensed .mdm-ui-rollup-body {
+  display: none;
+}
+.mdm-ui-rollup-header:before {
+  content: "△";
+  display: block;
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.mdm-ui-rollup.mdm-ui-rollup-condensed .mdm-ui-rollup-header:before {
+  content: "▽";
+}

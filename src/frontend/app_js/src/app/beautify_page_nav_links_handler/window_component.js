@@ -12,7 +12,7 @@ const Window = {
     'url',
   ],
   template: `
-<div class="gitgui-ajax-pageview-form">
+<div class="gitgui-ajax-pageview-form gitgui-modal-form">
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <fieldset class="mdmreport-controls">
       <div class="mdmreport-controls-group">

@@ -329,6 +329,25 @@ td.mdmreport-contentcell label {
     border: 1px solid #dddddd;
     border-radius: 0.18em;
 }
+form.mdmreport-controls {
+  display: block;
+  position: relative;
+}
+form.mdmreport-controls:first-child:before {
+  content: " ";
+  display: none;
+  position: absolute;
+  background: rgba(222,222,222,0);
+  transition: 400ms all ease;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+form.mdmreport-controls.mdmreport-form-busy:first-child:before {
+  display: block;
+  background: rgba(222,222,222,.4);
+}
 
 .mdmreport-controls[disabled], .mdmreport-controls.disabled {
     position: relative;

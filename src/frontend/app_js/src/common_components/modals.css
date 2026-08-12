@@ -3,72 +3,8 @@
 
 
 
-form.mdmreport-controls {
-  display: block;
-  position: relative;
-}
-form.mdmreport-controls:first-child:before {
-  content: " ";
-  display: none;
-  position: absolute;
-  background: rgba(222,222,222,0);
-  transition: 400ms all ease;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-}
-form.mdmreport-controls.mdmreport-form-busy:first-child:before {
-  display: block;
-  background: rgba(222,222,222,.4);
-}
 
-
-
-
-
-
-.mdm-ui-rollup {
-  display: block;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  margin-bottom: 14px;
-}
-.mdm-ui-rollup-header {
-  display: block;
-  position: relative;
-  background: #eee;
-  padding: 7px 7px 7px 14px;
-  color: #666;
-  cursor: pointer;
-}
-.mdm-ui-rollup-body {
-  display: block;
-  position: relative;
-  padding: 14px;
-}
-.mdm-ui-rollup.mdm-ui-rollup-condensed .mdm-ui-rollup-body {
-  display: none;
-}
-.mdm-ui-rollup-header:before {
-  content: "△";
-  display: block;
-  position: absolute;
-  left: 1px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.mdm-ui-rollup.mdm-ui-rollup-condensed .mdm-ui-rollup-header:before {
-  content: "▽";
-}
-
-
-
-
-
-
-
-.mdm-ui-modals-site .mdm-ui-modals-background {
+.mdm-ui-modals-site .mdm-ui-modals-global-background, .mdm-ui-modals-site .mdm-ui-modals-modalform-background {
   display: none;
   position: fixed;
   background: rgba(255,255,255,0);
@@ -79,9 +15,13 @@ form.mdmreport-controls.mdmreport-form-busy:first-child:before {
   z-index: 101;
   transition: all 600ms ease;
 }
-.mdm-ui-modals-site.mdm-ui-modals-site-active .mdm-ui-modals-background {
+.mdm-ui-modals-site.mdm-ui-modals-site-active .mdm-ui-modals-global-background {
   display: block;
-  background: rgba(192,192,192,.6);
+  background: rgba(192,192,192,.2);
+}
+.mdm-ui-modals-site.mdm-ui-modals-site-active .mdm-ui-modals-modalform-background {
+  display: block;
+  background: rgba(192,192,192,.5);
 }
 .mdm-ui-modals-site .mdm-git-ui-modal-wrapper {
   display: block;
@@ -135,4 +75,32 @@ form.mdmreport-controls.mdmreport-form-busy:first-child:before {
 }
 .mdm-ui-modals-site .mdm-git-ui-modal-wrapper .mdm-git-ui-modal-dismiss:before {
   content: "×";
+}
+
+
+
+
+
+
+.gitgui-modal-form .gitgui-fetched-content {
+  min-height: 300px;
+}
+.gitgui-modal-form .gitgui-button-modal-close {
+  display: block;
+  min-width: 200px;
+  max-width: 600px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 7px;
+  border-color: ##678;
+  margin: 14px auto 0 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: #555;
+  transition: 600ms all ease;
+}
+.gitgui-modal-form .gitgui-button-modal-close:hover{
+  /* background: #e0e0e0; */
+  b/* order-color: #000; */
+  color: #000;
 }

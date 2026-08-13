@@ -1,7 +1,7 @@
 
 import { ref, reactive, watch } from 'vue';
 
-import HelpWindow from './section_gitignore_help_window.js';
+import HelpWindow from './gitignore_help_window.js';
 
 import './section_gitignore.css';
 

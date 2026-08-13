@@ -10,7 +10,7 @@ import './styles.css';
 
 
 import RepoInitViewGitignoreSection from './section_gitignore';
-import RepoInitViewInitTheRepo from './form_init_repo';
+import RepoInitViewInitTheRepo from './init_repo';
 
 
 const RepoInitView = {

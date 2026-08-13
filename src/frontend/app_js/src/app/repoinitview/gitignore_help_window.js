@@ -1,6 +1,6 @@
 
 
-import './section_gitignore_help_window.css';
+import './gitignore_help_window.css';
 
 import logError from '../../error_logger/logError';
 

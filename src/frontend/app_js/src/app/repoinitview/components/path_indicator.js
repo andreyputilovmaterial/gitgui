@@ -1,6 +1,6 @@
 
 
-import './component_path_indicator.css';
+import './path_indicator.css';
 
 
 

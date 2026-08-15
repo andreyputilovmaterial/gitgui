@@ -22,6 +22,9 @@
 .mdmreport-section-wrapper .mdmreport-banner p {
     margin: 0.1em 0;
 }
+.section {
+  margin-bottom: 30px;
+}
 
 .mdmreport-table tr td {
     vertical-align: top;

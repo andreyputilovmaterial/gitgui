@@ -10,7 +10,7 @@ import ComponentSectionRollup from './common_components/rollable_sections';
 import ComponentTabbedPanes from './common_components/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_pane';
 import { ModalsSite } from './common_components/modals';
-import RepoInitView from './app/repoinitview/index';
+import RepoInitView from './app/repoinitview/init_repo';
 import MainView from './app/mainview/index';
 import TerminalSessionView from './app/terminalview/index';
 import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
@@ -32,13 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
   <div class="mdm-git-gui-app-section-errorbanner">
     <errorbanner :errors="errors"></errorbanner>
   </div>
-  <div class="mdm-git-gui-app-section-repoinit">
-    <repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repoinit-view>
+  <div class="mdm-git-gui-app-section-mainview section">
+    <div class="repo-existence-section" v-if="!repoStatus.repoExists">
+      {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
+      <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repo-init-form>
+    </div>
+    <maingui-view v-if="repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
   </div>
-  <div class="mdm-git-gui-app-section-mainview">
-    <maingui-view :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
-  </div>
-  <div class="mdm-git-gui-app-section-terminal">
+  <div class="mdm-git-gui-app-section-terminal section">
     <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
   </div>
   <modals></modals>
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'component-section-rollup': ComponentSectionRollup,
       'component-tabbed-panes': ComponentTabbedPanes,
       'component-tabbed-pane': ComponentTabbedPane,
+      'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
       'maingui-view': MainView,
       'terminalsession-view': TerminalSessionView,

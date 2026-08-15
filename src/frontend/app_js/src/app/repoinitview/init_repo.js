@@ -1,6 +1,6 @@
 
 
-
+import './styles.css';
 
 
 import { ref, reactive, watch, h } from 'vue';
@@ -20,7 +20,7 @@ const RepoInitViewInitTheRepo = {
     'config',
   ],
   template: `
-  <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls git-repo-init-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+  <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls mdm-git-gui-app-git-repo-init-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <h3>Init as git repo</h3>
     <div class="error form-validation-error">{{ validationailureMsg }}</div>
     <fieldset class="mdmreport-controls">

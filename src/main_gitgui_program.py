@@ -14,16 +14,17 @@ from .webserver_engine.launch_browser import launch_browser
 from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
+from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
 from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner
 
 from .endpoints import endpoints
 
 if is_in_pinliner():
-    from .GENERATED.HARDCODED import _CREDENTIALS_STR as CREDENTIALS_STR
-    CREDENTIALS_STR = CREDENTIALS_STR.strip()
+    from .GENERATED.HARDCODED import _CREDENTIALS_STR as credentials_str
+    credentials_str = credentials_str.strip()
 else:
     load_dotenv()
-    CREDENTIALS_STR = os.getenv("CREDENTIALS", "-")
+    credentials_str = os.getenv("CREDENTIALS", "-")
 
 
 
@@ -66,7 +67,7 @@ def main(*argcs,**kwargs):
         'script_name': script_name,
         'script_version': script_version,
         'credentials:year': f'{datetime.now().year}',
-        'credentials:name': CREDENTIALS_STR,
+        'credentials:name': credentials_str,
         'credentials:version': script_version,
 
         'help_pages': help_md,
@@ -78,6 +79,8 @@ def main(*argcs,**kwargs):
         'http_host': None,
         'http_port': None,
         'http_address': None,
+
+        'gitignore_presets': gitignore_presets,
 
         'initiate_cli_command': initiate_cli_command,
         'get_cli_command_status': get_cli_command_status,

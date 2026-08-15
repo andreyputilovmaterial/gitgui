@@ -94,6 +94,15 @@ echo "# updated" >> src/GENERATED/HARDCODED.py
 echo "_CREDENTIALS_STR = '''" >> src/GENERATED/HARDCODED.py
 "$pythonexecutable" -c 'from dotenv import load_dotenv;import os;load_dotenv();print(os.getenv("CREDENTIALS", "-"))' >> src/GENERATED/HARDCODED.py
 echo "'''" >> src/GENERATED/HARDCODED.py
+
+echo "" > src/GENERATED/CONFIG.py
+echo "# THIS IS AUTO_GENERATED" >> src/GENERATED/CONFIG.py
+echo "# updated" >> src/GENERATED/CONFIG.py
+"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/CONFIG.py
+echo "GITIGNORE_PRESETS = \\" >> src/GENERATED/CONFIG.py
+"$pythonexecutable" -c 'import json;from pathlib import Path;cfg = json.loads(Path("./gitignore-config-presets.json").read_text(encoding="utf-8"));print(repr(cfg))' >> src/GENERATED/CONFIG.py
+echo "" >> src/GENERATED/CONFIG.py
+
 echo "" > src/frontend/GENERATED/ASSETS.py
 echo "# THIS IS AUTO_GENERATED" >> src/frontend/GENERATED/ASSETS.py
 echo "# updated" >> src/frontend/GENERATED/ASSETS.py

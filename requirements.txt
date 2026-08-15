@@ -6,3 +6,5 @@ rjsmin>=1
 csscompressor>=0.9
 boto3>=1
 six>=1
+markdown-it-py>=4
+rich>=15

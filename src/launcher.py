@@ -11,15 +11,23 @@ import traceback, sys
 if __name__ == '__main__':
     # run as a program
     from src.GENERATED.VERSION import _VERSION as gitgui_script_version
+    # from src.GENERATED.HELP import _MD as help_md
+    from src.main_print_help import print_help
     from src.main_gitgui_program import main as call_gitgui_program
 elif '.' in __name__:
     # package
     from .GENERATED.VERSION import _VERSION as gitgui_script_version
+    # from .GENERATED.HELP import _MD as help_md
+    from .main_print_help import print_help
     from .main_gitgui_program import main as call_gitgui_program
 else:
     # included with no parent package
     from src.GENERATED.VERSION import _VERSION as gitgui_script_version
+    # from src.GENERATED.HELP import _MD as help_md
+    from src.main_print_help import print_help
     from src.main_gitgui_program import main as call_gitgui_program
+
+gitgui_script_version = gitgui_script_version.strip()
 
 
 
@@ -52,6 +60,10 @@ def call_printversion_program(*argcs,**kwargs):
     print(msg)
     return True
 
+def call_help_program(*argcs,**kwargs):
+    print_help()
+    return True
+
 
 
 
@@ -59,6 +71,7 @@ run_programs = {
     'gitgui': call_gitgui_program,
     'test': call_test_program,
     'done': call_done_program,
+    'help': call_help_program,
     'version': call_printversion_program,
 }
 

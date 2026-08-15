@@ -1,0 +1,38 @@
+.mdm-ui-tabbed-panes {
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  transition: all 600ms ease;
+}
+.mdm-ui-tabbed-panes-head {
+  display: block;
+  position: relative;
+  background: #eee;
+  transition: all 600ms ease;
+}
+.mdm-ui-tabbed-panes-inner {
+  display: block;
+  position: relative;
+  padding: 14px;
+  transition: all 600ms ease;
+}
+.mdm-ui-tabbed-panes-head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.mdm-ui-tabbed-panes-head > * {
+  background: #eee;
+  padding: 7px 14px 7px 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 600ms ease, box-shadow 120ms ease;
+  box-shadow: inset 0 -4px 0 0 transparent;
+}
+.mdm-ui-tabbed-panes-head > *:hover {
+  background: #fff;
+  box-shadow: inset 0 -4px 0 0 #385;
+}
+.mdm-ui-tabbed-panes-head > *.active {
+  background: #fff;
+}

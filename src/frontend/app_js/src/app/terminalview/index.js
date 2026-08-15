@@ -193,8 +193,8 @@ const TerminalSessionView = {
     'executeGitCommand',
   ],
   template: `
-    <component-section-rollup header="Commands View" :condensed="false">
-    <div class="mdm-git-gui-terminal">
+<component-section-rollup header="Commands View" :condensed="false">
+  <div class="mdm-git-gui-terminal">
     <terminal-submit-form :executeGitCommand="executeGitCommand"></terminal-submit-form>
     <terminal-record
       v-for="cmd in commands"
@@ -206,8 +206,8 @@ const TerminalSessionView = {
       :source="cmd.source"
       :type="cmd.type">
     </terminal-record>
-    </div>
-    </component-section-rollup>
+  </div>
+</component-section-rollup>
   `,
   components: {
     'terminal-record': TerminalRecord,

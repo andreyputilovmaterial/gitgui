@@ -6,7 +6,9 @@ import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw } from './common_defs/cli';
-import ComponentSectionRollUp from './common_components/rollable_sections';
+import ComponentSectionRollup from './common_components/rollable_sections';
+import ComponentTabbedPanes from './common_components/tabbed_panes';
+import ComponentTabbedPane from './common_components/tabbed_pane';
 import { ModalsSite } from './common_components/modals';
 import RepoInitView from './app/repoinitview/index';
 import MainView from './app/mainview/index';
@@ -27,10 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const app = createApp({
     template: `
 <div class="mdm-git-ui-app">
-  <errorbanner :errors="errors"></errorbanner>
-  <repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repoinit-view>
-  <maingui-view :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
-  <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
+  <div class="mdm-git-gui-app-section-errorbanner">
+    <errorbanner :errors="errors"></errorbanner>
+  </div>
+  <div class="mdm-git-gui-app-section-repoinit">
+    <repoinit-view :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repoinit-view>
+  </div>
+  <div class="mdm-git-gui-app-section-mainview">
+    <maingui-view :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
+  </div>
+  <div class="mdm-git-gui-app-section-terminal">
+    <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
+  </div>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
   <online-indicator :isonline="isOnline" :repoCallbacks="repoCallbacks" :config="config" :configPathsFirstCaptured="configPathsFirstCaptured" :configPathsMismatch="configPathsMismatch"></online-indicator>
@@ -38,7 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
 `, // <modals></modals>
     components: {
       'errorbanner': ErrorView,
-      'component-section-rollup': ComponentSectionRollUp,
+      'component-section-rollup': ComponentSectionRollup,
+      'component-tabbed-panes': ComponentTabbedPanes,
+      'component-tabbed-pane': ComponentTabbedPane,
       'repoinit-view': RepoInitView,
       'maingui-view': MainView,
       'terminalsession-view': TerminalSessionView,
@@ -277,8 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
   })
   // FORCE VUE DEVTOOLS TO ACTIVATE
   app.config.performance = true;
-  app.component('component-section-rollup', ComponentSectionRollUp)
-  app.mount('#gitui_app')
+  app.component('component-section-rollup', ComponentSectionRollup);
+  app.component('component-tabbed-panes', ComponentTabbedPanes);
+  app.component('component-tabbed-pane', ComponentTabbedPane);
+  app.mount('#gitui_app');
 
 
 

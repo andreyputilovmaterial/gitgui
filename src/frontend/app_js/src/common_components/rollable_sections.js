@@ -49,12 +49,12 @@ const ComponentSectionRollUp = {
 
     const determineInitialState = () => {
       return props.condensed === 'true' || props.condensed === true
-    }
-    const isCondensed = ref(determineInitialState())
+    };
+    const isCondensed = ref(determineInitialState());
     watch(() => props.condensed, () => {
       isCondensed.value = determineInitialState()
-    })
-    return {isCondensed}
+    });
+    return {isCondensed};
   }
 }
 

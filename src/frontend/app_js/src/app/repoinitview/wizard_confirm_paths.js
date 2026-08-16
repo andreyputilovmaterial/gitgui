@@ -107,7 +107,7 @@ const WizardConfirmPaths = {
   setup(props) {
     // const { ref, reactive } = Vue
 
-    const isBusy = ref(false)
+    const isBusy = ref(false);
     const formFields = reactive({
       step1Acknowledged: false,
       step2Acknowledged: false,

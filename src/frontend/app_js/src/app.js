@@ -3,6 +3,7 @@
 import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 
 import './app.css';
+import './app_form_control_adjustments.css';
 import './common_components/css_grid.css';
 
 

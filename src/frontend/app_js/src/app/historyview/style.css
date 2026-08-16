@@ -16,23 +16,36 @@
   display: none;
 }
 .mdm-git-gui-historyview .history-record .message {
-  font-weight: 500;
-  color: #115522;
+  /* font-weight: 500;
+  color: #115522; */
 }
 .mdm-git-gui-historyview .history-record .message .label {
   display: none;
 }
+.mdm-git-gui-historyview .timestamp {
+  color: #666;
+  font-size: 92%;
+}
+.mdm-git-gui-historyview .message-box {
+  border: 1px solid #eee;
+  padding: 7px 14px 7px;
+}
 
 
 
+.mdm-git-gui-historyview .history-records {
+  position: relative;
+}
 .mdm-git-gui-historyview .history-record {
   /* display: flex;
   flex-direction: row;
   flex-wrap: wrap; */
+  position: relative;
 }
 .mdm-git-gui-historyview .history-record {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 4px; /* to add some gap between cards */
+  padding-bottom: 4px; /* to add some gap between cards */
+  padding-left: 56px; /* to add space for form-controls - I will not put them into normal component workflow but will add with position: absolute, so will reserve space nnow */
 }
 .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
   padding: 4px 14px;
@@ -57,6 +70,7 @@
       max-content
       max-content
       max-content
+      max-content
       5fr;
   }
   .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
@@ -73,14 +87,14 @@
     padding-right: 0;
   }
 }
-.mdm-git-gui-historyview .history-record > .mdm-ui-record-col-4 {
+.mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message {
   grid-column: 1 / -1;
   /* margin-top: -8px; /\* move upwards, to stick to base line, as it jumps to the next line with grid-column property *\/
   padding-left: 0; */
 }
 @media (min-width: 1650px) {
-  .mdm-git-gui-historyview .history-record > .mdm-ui-record-col-4 {
-    grid-column: 4;
+  .mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message {
+    grid-column: 5;
     /* margin-top: 0; /\* reset - it no loner jumps *\/
     padding-left: 14px; /\* reset - it no loner jumps *\/ */
   }

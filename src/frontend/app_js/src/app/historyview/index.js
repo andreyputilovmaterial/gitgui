@@ -1,6 +1,8 @@
 
 import { ref, reactive, watch, computed, onMounted, toRaw } from 'vue';
 
+import logError from '../../error_logger/logError';
+
 import HistoryRecords from './component_records';
 
 import './style.css';
@@ -16,7 +18,11 @@ const View = {
     Fetching history...
   </template>
   <template v-else-if="!!repoStatus?.history">
-    <history-records :history="repoStatus?.history" />
+    <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+      <div class="error">{{ validationMessage }}</div>
+      <div class="mdmreport-controls-group top-row"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
+      <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" />
+    </form>
   </template>
 </div>
 `,
@@ -24,15 +30,56 @@ const View = {
     'history-records': HistoryRecords,
   },
   setup(props) {
+
+    const isBusy = ref(false);
+    const formFields = reactive({
+      compareLeft: '',
+      compareRight: '',
+    });
+    const validationMessage = ref('');
+
+    const handleSubmit = async () => {
+      try {
+        isBusy.value = true;
+        validationMessage.value = '';
+        if( !formFields.compareLeft ) {
+          validationMessage.value = 'Please select some version to compare as Left';
+          isBusy.value = false;
+          return;
+        }
+        if( !formFields.compareRight ) {
+          validationMessage.value = 'Please select some version to compare as Right';
+          isBusy.value = false;
+          return;
+        }
+        throw new Error('Compare: not implemented');
+      } catch (err) {
+        logError(err);
+        logError('Failed to call for version compare window');
+        console.error('Failed to call for versioncompare window',err)
+        // Promise.resolve().then(()=>{throw err;});
+        return props.reject(err)
+      } finally {
+        isBusy.value = false
+      }
+    };
+
     onMounted(async () => {
       await Promise.all([
         props.repoCallbacks.updateHistory(),
       ])
     });
+
     watch(() => props?.repoStatus?.history, () => {
       console.log('[DEBUG-history]: new history:',toRaw(props?.repoStatus?.history));
     });
-    return {};
+
+    return {
+      isBusy,
+      formVerCompareFields: formFields,
+      validationMessage,
+      handleSubmit,
+    };
   },
 };
 

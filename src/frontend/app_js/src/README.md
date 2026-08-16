@@ -18,3 +18,8 @@ rules they should only be addressed within component's parent class. Never
 style .button, or .hash, or .message. globally. And that parent component
 class should follow some global guidelines for naming (I don't have it
 formulated yet but this is necessary)
+
+All "component" classes should be prefixed - like, not .form-controls, but
+.mdm-form-controls, or .git-ui-form-controls, or .git-gui-app-form-controls
+(depending on where does this component stand in hierarchy - does it belong
+to app or global frontend template, or just a secondary helper component)

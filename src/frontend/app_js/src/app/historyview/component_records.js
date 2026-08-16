@@ -7,6 +7,7 @@ import './style.css';
 const Records = {
   props: [
     'history',
+    'formVerCompareFields',
   ],
   template: `
 <div class="history-records mdm-ui-records">
@@ -17,6 +18,7 @@ const Records = {
       :author="h.author"
       :date="h.date"
       :message="h.message"
+      :formVerCompareFields="formVerCompareFields"
     />
 </div>
 `,

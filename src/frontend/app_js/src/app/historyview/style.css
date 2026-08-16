@@ -1,0 +1,17 @@
+
+.mdm-git-gui-historyview .history-record {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.mdm-git-gui-historyview .history-record > * {
+  display: block;
+  padding: 4px 14px 4px;
+}
+.mdm-git-gui-historyview .history-record > *:first-child {
+  padding-left: 0;
+}
+.mdm-git-gui-historyview .history-record > *:last-child {
+  padding-right: 0;
+}

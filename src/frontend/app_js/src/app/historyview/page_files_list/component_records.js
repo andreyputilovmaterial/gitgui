@@ -8,27 +8,26 @@ import './style.css';
 
 const Records = {
   props: [
-    'history',
-    'formVerCompareFields',
+    'files',
+    'repoStatus',
+    'repoCallbacks',
   ],
   template: `
-<component-filter-records-form :columns="{'hash':'Hash','author':'Author','timestamp':'Date/time','message':'Commit message'}" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
-  <div class="history-records mdm-ui-records">
-      <history-record
-        v-for="h in history"
-        :key="h.hash"
-        :hash="h.hash"
-        :author="h.author"
-        :timestamp="h.timestamp"
-        :message="h.message"
-        :formVerCompareFields="formVerCompareFields"
-        :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
-      />
+<component-filter-records-form :columns="{'filepath':'File path'}" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
+  <div class="files-records mdm-ui-records">
+    <files-record
+      v-for="h in files"
+      :key="h"
+      :filepath="h"
+      :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
+      :repoStatus="repoStatus"
+      :repoCallbacks="repoCallbacks"
+    />
   </div>
 </component-filter-records-form>
 `,
   components: {
-    'history-record': Record,
+    'files-record': Record,
   },
   setup(props) {
     const componentFilterRecordsGetClassesCb = ref(()=>[]);

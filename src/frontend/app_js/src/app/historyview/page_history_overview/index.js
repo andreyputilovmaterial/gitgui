@@ -20,12 +20,14 @@ const View = {
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
+<div class="mdm-git-gui-historylogview">
   <p class="description">History of previous commits/backups. Each is a snapshot of previous state. "Hash" is something like backup id - every snapshot is identified by its hash (first 7 letters are usually enough for addressing backups/commits in history for git).</p>
   <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <div class="error">{{ validationMessage }}</div>
     <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
     <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
   </form>
+</div>
 `,
   components: {
     'history-records': HistoryRecords,

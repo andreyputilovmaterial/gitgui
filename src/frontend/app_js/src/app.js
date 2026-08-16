@@ -165,8 +165,12 @@ document.addEventListener("DOMContentLoaded", () => {
             commands.value = [...commands.value,command]
           }
         )
-        return promise
-      }
+        return promise.then(response=>{
+          if( !response.ok )
+            throw Error(`HTTP ${response.status}`);
+          return response.payload;
+        });
+      };
       repoCallbacks.value.executeGitCommand = executeGitCommand;
 
       async function gitignoreRead() {
@@ -251,13 +255,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         try {
           const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict'])
-          if( !response.ok )
-            throw new Error(`HTTP ${response.status}`);
-          if( (response?.payload?.returncode==128) && (/.*does not have any commits.*/.test(response?.payload?.stderr)) )
+          if( (response.returncode==128) && (/.*does not have any commits.*/.test(response?.stderr)) )
             return handleResponse('');
-          if( response?.payload?.stderr )
-            throw response?.payload?.stderr;
-          return handleResponse(response?.payload?.stdout);
+          if( response?.stderr )
+            throw response?.stderr;
+          return handleResponse(response.stdout);
         } catch (e) {
           logError(e);
           return;

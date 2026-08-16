@@ -1,123 +1,12 @@
 
 
 
-
-.mdm-git-gui-historyview .history-record .hash .label {
+.mdm-git-gui-historyfileslistview .files-record .link-view-file .label, .mdm-git-gui-historyfileslistview .files-record .link-download-file .label, .mdm-git-gui-historyfileslistview .files-record .filepath .label {
   display: none;
 }
-.mdm-git-gui-historyview .history-record .author .label {
-  display: inline;
-}
-@media all and (min-width: 900px) {
-  .mdm-git-gui-historyview .history-record .author .label {
-    display: none;
-  }
-}
-.mdm-git-gui-historyview .history-record .timestamp .label {
-  display: none;
-}
-.mdm-git-gui-historyview .history-record .message {
-  /* font-weight: 500;
-  color: #115522; */
-}
-.mdm-git-gui-historyview .history-record .message .label {
-  display: none;
-}
-.mdm-git-gui-historyview .history-records .timestamp {
-  color: #666;
-  font-size: 92%;
-}
-.mdm-git-gui-historyview .history-records .message-box {
-  border: 1px solid #eee;
-  padding: 7px 14px 7px;
-}
-
-
-
-.mdm-git-gui-historyview .history-records {
-  position: relative;
-}
-.mdm-git-gui-historyview .history-record {
-  /* display: flex;
-  flex-direction: row;
-  flex-wrap: wrap; */
-  position: relative;
-}
-.mdm-git-gui-historyview .history-record {
-  padding-top: 4px; /* to add some gap between cards */
-  padding-bottom: 4px; /* to add some gap between cards */
-  padding-left: 56px; /* to add space for form-controls - I will not put them into normal component workflow but will add with position: absolute, so will reserve space nnow */
-}
-.mdm-git-gui-historyview .history-record.mdm-ui-record > * {
-  padding: 4px 14px;
-}
-@media (min-width: 500px) {
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
-    /* grid-column: 1 / -1; */
-  }
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-}
-@media (max-width: 899px) {
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
-    grid-column: 1 / -1;
-  }
-}
-@media (min-width: 900px) {
-  .mdm-git-gui-historyview .history-records.mdm-ui-records {
-    grid-template-columns:
-      max-content
-      max-content
-      max-content
-      max-content
-      5fr;
-  }
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
-    /* grid-column: auto; */
-  }
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > * {
-    /* padding-left: 0;
-    padding-right: 0; */
-  }
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > *:first-child {
-    padding-left: 0;
-  }
-  .mdm-git-gui-historyview .history-record.mdm-ui-record > *:last-child {
-    padding-right: 0;
-  }
-}
-.mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message {
-  grid-column: 1 / -1;
-  /* margin-top: -8px; /\* move upwards, to stick to base line, as it jumps to the next line with grid-column property *\/
-  padding-left: 0; */
-}
-@media (min-width: 1650px) {
-  .mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message {
-    grid-column: 5;
-    /* margin-top: 0; /\* reset - it no loner jumps *\/
-    padding-left: 14px; /\* reset - it no loner jumps *\/ */
-  }
-}
-.mdm-git-gui-historyview .history-record > * {
-  display: block;
-  padding: 4px 14px 4px;
-}
-.mdm-git-gui-historyview .history-record > *:first-child {
-  padding-left: 0;
-}
-.mdm-git-gui-historyview .history-record > *:last-child {
-  padding-right: 0;
-}
-.mdm-git-gui-historyview .history-record .hash-leading {
-  font-weight: 600;
-}
-
-.mdm-git-gui-historyview .history-record .view-files-button, .mdm-git-gui-historyview .history-record .view-files-button:active, .mdm-git-gui-historyview .history-record .view-files-button:link, .mdm-git-gui-historyview .history-record .view-files-button:hover {
-  color: #6670bb;
-  text-decoration: none;
-  transition: all 600ms ease;
-  cursor: pointer;
-  outline: none;
+.mdm-git-gui-historyfileslistview .files-records.mdm-ui-records {
+  grid-template-columns:
+  max-content
+  max-content
+    5fr;
 }

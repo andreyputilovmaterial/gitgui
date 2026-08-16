@@ -19,7 +19,7 @@ const FormWrapper = {
   ],
   template: `
 <form :class="{'mdm-ui-recordsfilter': true}" @submit.prevent="handleSubmit">
-  <div class="mdm-ui-recordsfilter-form mdmreport-banner">
+  <div class="mdm-ui-recordsfilter-form mdmreport-banner mdmreport-controls">
     <div class="mdmreport-controls-group">
       <div v-for="col in Object.keys(columns)" :key="col">
         <label>{{ columns[col] }}:

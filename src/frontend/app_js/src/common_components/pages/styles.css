@@ -1,0 +1,130 @@
+
+
+
+
+
+.mdm-ui-pages-site .mdm-ui-pages {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100;
+  overflow: hidden;
+}
+.mdm-ui-pages-site .mdm-ui-pages > * {
+  flex: 0 0 100%;
+  width: 100%;
+  margin-left: -100%;
+}
+.mdm-ui-pages-site .mdm-ui-pages > *.is-first {
+  margin-left: 0;
+}
+
+
+.mdm-ui-pages-site .mdm-ui-pages .mdm-git-ui-page-wrapper .mdm-git-ui-page-dismiss-wrapper {
+  display: block;
+}
+.mdm-ui-pages-site .mdm-ui-pages .mdm-git-ui-page-wrapper.is-first .mdm-git-ui-page-dismiss-wrapper {
+  display: none;
+}
+
+.mdm-ui-pages-site .mdm-ui-pages-global-background, .mdm-ui-pages-site .mdm-ui-pages-pageform-background {
+  display: none;
+  position: absolute;
+  background: rgba(255,255,255,0);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  transition: all 600ms ease;
+}
+.mdm-ui-pages-site.mdm-ui-pages-site-active .mdm-ui-pages-global-background {
+  display: block;
+  background: rgba(255,255,255,.2);
+}
+.mdm-ui-pages-site.mdm-ui-pages-site-active .mdm-ui-pages-pageform-background {
+  display: block;
+  background: rgba(255,255,255,.85);
+}
+.mdm-ui-pages-site .mdm-git-ui-page-wrapper {
+  display: block;
+  position: relative;
+  margin-left: -100%;
+  background: #ffffff;
+  z-index: 10;
+  transform: translateX(0);
+}
+.mdm-ui-pages-site .mdm-git-ui-page-wrapper  iframe {
+  margin: -4px -15px 0 -15px;
+}
+@media all and (min-width: 1300px) {
+    .mdm-ui-pages-site .mdm-git-ui-page-wrapper {
+        width: 1230px;
+    }
+}
+@media all and (min-width: 1650px) {
+  .mdm-ui-pages-site .mdm-git-ui-page-wrapper {
+        width: 1530px;
+    }
+}
+@media all and (min-width: 1800px) {
+  .mdm-ui-pages-site .mdm-git-ui-page-wrapper {
+        width: 1730px;
+    }
+}
+.mdm-ui-pages-site .mdm-git-ui-page-wrapper .mdm-git-ui-page-dismiss-wrapper {
+  padding: 7px 0 7px;
+}
+.mdm-ui-pages-site .mdm-git-ui-page-wrapper .mdm-git-ui-page-dismiss {
+  position: relative;
+  display: inline-block;
+  z-index: 99999;
+  margin: 0;
+  line-height: 14px;
+  text-align: center;
+  cursor: pointer;
+  color: #6670bb;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  box-shadow: none;
+  outline: 0;
+  line-height: 14px;
+  display: inline-block;
+  background: #fff;
+  padding: 5px 21px 5px;
+  transition: all 600ms ease;
+}
+.mdm-ui-pages-site .mdm-git-ui-page-wrapper .mdm-git-ui-page-dismiss:hover {
+  color: #7780cc;
+}
+
+
+
+
+
+
+
+.gitgui-page-form .gitgui-fetched-content {
+  min-height: 300px;
+}
+.gitgui-page-form .gitgui-button-page-close {
+  display: block;
+  min-width: 200px;
+  max-width: 600px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 7px;
+  border-color: ##678;
+  margin: 14px auto 0 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: #555;
+  transition: 600ms all ease;
+}
+.gitgui-page-form .gitgui-button-page-close:hover{
+  /* background: #e0e0e0; */
+  b/* order-color: #000; */
+  color: #000;
+}

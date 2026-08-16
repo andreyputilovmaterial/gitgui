@@ -1,7 +1,7 @@
 
 
 
-import {ref,onMounted,markRaw} from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 
 import './styles.css';
 
@@ -95,18 +95,17 @@ export const ModalsSite = {
   <div
     class="mdm-ui-modals"
   >
-    <div
-      v-for="modal in modals"
+    <template
+      v-for="modal in modals" :key="modal.id"
     >
       <div class="mdm-ui-modals-modalform-background" :style="\`z-index: \${modal.zindex}\`"></div>
       <modal
       :component="modal.component"
       :resolve="modal.resolve"
       :reject="modal.reject"
-      :key="modal.id"
       :zindex="modal.zindex"
       />
-    </div>
+    </template>
   </div>
 </div>
 `,

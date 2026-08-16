@@ -10,8 +10,6 @@ const Records = {
   props: [
     'history',
     'formVerCompareFields',
-    'repoStatus',
-    'repoCallbacks',
   ],
   template: `
 <component-filter-records-form :columns="{'hash':'Hash','author':'Author','timestamp':'Date/time','message':'Commit message'}" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
@@ -25,8 +23,6 @@ const Records = {
         :message="h.message"
         :formVerCompareFields="formVerCompareFields"
         :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
-        :repoStatus="repoStatus"
-        :repoCallbacks="repoCallbacks"
       />
   </div>
 </component-filter-records-form>

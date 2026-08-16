@@ -1,7 +1,10 @@
 
 
-import { ref, reactive, watch, onMounted, toRaw } from 'vue';
+import { ref, reactive, watch, onMounted, toRaw, h } from 'vue';
 
+import logError from '../../error_logger/logError';
+
+import PagesSite from '../../common_components/pages/index';
 
 import PageHistoryOverview from './page_history_overview/index';
 
@@ -14,30 +17,52 @@ const View = {
   ],
   template: `
 <div class="mdm-git-gui-historyview">
-  <p class="description">History of previous commits/backups</p>
   <template v-if="!repoStatus?.history">
     Fetching history...
   </template>
   <template v-else-if="!!repoStatus?.history">
-    <page-history-overview :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+    <pages-site ref="pagesSite"/>
   </template>
 </div>
 `,
   components: {
-    'page-history-overview': PageHistoryOverview,
+    // 'page-history-overview': PageHistoryOverview,
+    'pages-site': PagesSite,
   },
   setup(props) {
+
+    const pagesSite = ref(null);
+    const createPage = ref(()=>{ try { throw new Error('calling createPage: pages site is not inited'); } catch(e) { logError(e); throw e; } });
+
+    const promiseContextHistoryReady = {
+      resolve: () => {throw new Error('promise not inited')},
+      reject: () => {throw new Error('promise not inited')},
+      promise: undefined,
+    };
+    promiseContextHistoryReady.promise = new Promise((resolve,reject) => {
+      promiseContextHistoryReady.resolve = resolve;
+      promiseContextHistoryReady.reject = reject;
+    });
+
+    const navigateHistoryHomePage = async () => {
+      await Promise.all([promiseContextHistoryReady.promise,]);
+      createPage.value = pagesSite.value.createPage;
+      createPage.value(h(PageHistoryOverview,{repoStatus:props.repoStatus,repoCallbacks:{...props.repoCallbacks,createPage:createPage.value}}));
+    };
+
     onMounted(async () => {
       await Promise.all([
         props.repoCallbacks.updateHistory(),
+        navigateHistoryHomePage(),
       ])
     });
 
     watch(() => props?.repoStatus?.history, () => {
+      promiseContextHistoryReady.resolve(props?.repoStatus?.history);
       console.log('[DEBUG-history]: new history:',toRaw(props?.repoStatus?.history));
     });
 
-    return {}
+    return { pagesSite, createPage }
   }
 };
 

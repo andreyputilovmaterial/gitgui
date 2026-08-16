@@ -1,0 +1,36 @@
+
+.mdm-git-gui-historyview .history-record {
+  position: relative;
+}
+.mdm-git-gui-historyview .history-record .form-controls {
+  display: block;
+  position: absolute;
+  left: -56px; /* this is the allocated space, implyint we take 28px and have 14 pe margin too the right */
+  top: 4px; /* replicating 4px padding in all other elementes in this line */
+}
+.mdm-git-gui-historyview .history-record .form-controls label {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 21px; height: 21px; position: relative;
+}
+.mdm-git-gui-historyview .history-record .form-controls label input {
+  position: static;
+  margin: 0;
+}
+.mdm-git-gui-historyview .history-record .form-controls label input:before, .mdm-git-gui-historyview .history-record .form-controls label input::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: auto;
+  transform: none;
+}
+.mdm-git-gui-historyview .history-record .form-controls .description {
+  display: none;
+}
+.mdm-git-gui-historyview .history-record .form-controls fieldset {
+  display: flex;
+  flex-direction: row;
+  gap: 9px;
+  flex-wrap:nowrap;
+}

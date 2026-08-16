@@ -1,34 +1,29 @@
 
 
-import { ref, reactive, watch, h } from 'vue';
+import { ref, reactive, watch } from 'vue';
 
 import './style.css';
 
-import PageVersionCompare from '../page_version_compare/index';
 
 import logError from '../../../error_logger/logError';
 
-import HistoryRecords from './component_records';
+import FilesRecords from './component_records';
 
 
 
 
 const View = {
   props: [
+    'hash',
     'repoStatus',
     'repoCallbacks',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
-  <p class="description">History of previous commits/backups. Each is a snapshot of previous state. "Hash" is something like backup id - every snapshot is identified by its hash (first 7 letters are usually enough for addressing backups/commits in history for git).</p>
-  <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
-    <div class="error">{{ validationMessage }}</div>
-    <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
-    <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
-  </form>
+  <p class="description">View files from hash {{ hash }}</p>
 `,
   components: {
-    'history-records': HistoryRecords,
+    'files-records': FilesRecords,
   },
   setup(props) {
 
@@ -38,10 +33,6 @@ const View = {
       compareRight: '',
     });
     const validationMessage = ref('');
-
-    const navigateVersionComparePage = async () => {
-      await props.repoCallbacks.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
-    };
 
     const handleSubmit = async () => {
       try {
@@ -57,7 +48,7 @@ const View = {
           isBusy.value = false;
           return;
         }
-        await navigateVersionComparePage();
+        throw new Error('Compare: not implemented');
       } catch (err) {
         logError(err);
         logError('Failed to call for version compare window');

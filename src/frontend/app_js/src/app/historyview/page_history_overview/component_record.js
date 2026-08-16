@@ -1,9 +1,9 @@
 
 import { ref } from 'vue';
 
-import FormCompareVersionsControls from './component_ver_compare_form_elements';
+import FormCompareVersionsControls from './component_ver_compare_radioboxes';
 
-import { formatDate } from '../../common_defs/functions';
+import { formatDate } from '../../../common_defs/functions';
 
 import './style.css';
 

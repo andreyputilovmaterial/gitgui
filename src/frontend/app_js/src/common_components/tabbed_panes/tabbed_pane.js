@@ -1,5 +1,5 @@
 
-import './tabbed_panes.css';
+import './styles.css';
 
 // <tabbed-panes>
 //   <tab-pane title="General">

@@ -35,3 +35,10 @@
   display: flex;
   flex-direction: column;
 }
+
+.mdm-git-ui-app .mdmreport-banner {
+  position: relative;
+  padding: 14px;
+  margin: 0 0 14px;
+  border: #ddd solid 1px;
+}

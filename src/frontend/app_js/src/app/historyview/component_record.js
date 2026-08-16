@@ -29,8 +29,8 @@ const Author = {
 };
 
 const Date = {
-  props: [ 'date', ],
-  template: `{{ formatDate(date) }}`,
+  props: [ 'timestamp', ],
+  template: `{{ formatDate(timestamp) }}`,
   setup() {
     return { formatDate };
   },
@@ -51,15 +51,16 @@ const Record = {
     'hash',
     'author',
     'message',
-    'date',
+    'timestamp',
     'formVerCompareFields',
+    'componentFilterRecordsGetClassesCb',
   ],
   template: `
-<div class="history-record mdm-ui-record" :key="hash">
+<div :class="[...['history-record','mdm-ui-record'],...componentFilterRecordsGetClassesCb({'hash':hash,'message':'message','timestamp':timestamp,'author':author})]" :key="hash" :data-recordsfilter-hash="hash" :data-recordsfilter-author="author" :data-recordsfilter-timestamp="timestamp" :data-recordsfilter-message="message">
   <div class="form-controls mdm-ui-record-col-formcontrols mdm-ui-record-col-1"><form-compare-vers-controls :formVerCompareFields="formVerCompareFields" :hash="hash" /></div>
   <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash"><span class="label">Hash: </span><hash :hash="hash" /> <a href="#!" @click.prevent="undefined" class="view-files-button">(files)</a></span>
   <span class="author mdm-ui-record-col-author mdm-ui-record-col-3" title="Author - username"><span class="label">Author - Username: </span><author :author="author" /></span>
-  <span class="timestamp mdm-ui-record-col-timestamp mdm-ui-record-col-4" title="Date/time when saved/commited"><span class="label">Saved/Commited on: </span><date :date="date" /></span>
+  <span class="timestamp mdm-ui-record-col-timestamp mdm-ui-record-col-4" title="Date/time when saved/commited"><span class="label">Saved/Commited on: </span><date :timestamp="timestamp" /></span>
   <span class="message mdm-ui-record-col-message mdm-ui-record-col-5" title="Version description"><span class="label">Version description: </span><message :message="message" /></span>
 </div>
 `,

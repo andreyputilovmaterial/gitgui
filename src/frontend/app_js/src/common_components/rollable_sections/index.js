@@ -2,7 +2,7 @@
 
 import { ref, watch } from 'vue';
 
-import './rollable_sections.css';
+import './styles.css';
 
 
 const ComponentSectionRollUp = {
@@ -41,7 +41,7 @@ const ComponentSectionRollUp = {
    'mdm-ui-rollup-condensed': isCondensed == 'true' || isCondensed === true,
    'mdm-ui-rollup-open': isCondensed != 'true' && isCondensed !== true
  }"><div class="mdm-ui-rollup-header" @click="isCondensed = !isCondensed">{{ header }}</div>
-<div class="mdm-ui-rollup-body"><slot></slot></div>
+<div class="mdm-ui-rollup-body"><slot /></div>
 </div>
 `,
   setup(props) {

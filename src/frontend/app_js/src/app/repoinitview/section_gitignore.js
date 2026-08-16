@@ -5,9 +5,10 @@ import HelpWindow from './gitignore_help_window.js';
 
 import './section_gitignore.css';
 
-import { createModal } from '../../common_components/modals';
+import { createModal } from '../../common_components/modals/modals';
 
 import logError from '../../error_logger/logError';
+
 
 
 
@@ -23,7 +24,7 @@ const RepoInitViewGitignoreSection = {
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls git-repo-gitignore-edit-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <h3>gitignore Setup</h3>
     <fieldset class="mdmreport-controls">
-      <div class="mdmreport-controls-group">
+      <div class="mdmreport-controls-group mdmreport-controls-group-nonegmargin">
         <label>gitignore file: <span class="help"><a href="#!" @click.prevent="showHelp">Show help</a></span></label>
         <textarea name="gitignore" placeholder="" v-model="formFields.gitignore" readonly disabled></textarea>
       </div>

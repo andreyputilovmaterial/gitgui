@@ -6,7 +6,7 @@ import './styles.css';
 import { ref, reactive, watch, h } from 'vue';
 
 
-import { createModal } from '../../common_components/modals';
+import { createModal } from '../../common_components/modals/modals';
 import logError from '../../error_logger/logError';
 
 import WizardConfirmPaths from './wizard_confirm_paths';
@@ -24,9 +24,7 @@ const RepoInitViewInitTheRepo = {
     <h3>Init as git repo</h3>
     <div class="error form-validation-error">{{ validationailureMsg }}</div>
     <fieldset class="mdmreport-controls">
-      <div class="mdmreport-controls-group">
-        <button type="submit" class="init-repo-action-call-button submit" value="Init git"><span class="desc-line-1">Init git<br></span><span class="desc-line-2">at specified folders<br></span><span class="desc-line-3">and start to manage backups and track history.<br /><br /></span><span class="desc-line-4">Press here, and we'll guide you through.</span></button>
-      </div>
+      <button type="submit" class="init-repo-action-call-button submit" value="Init git"><span class="desc-line-1">Init git<br></span><span class="desc-line-2">at specified folders<br></span><span class="desc-line-3">and start to manage backups and track history.<br /><br /></span><span class="desc-line-4">Press here, and we'll guide you through.</span></button>
     </fieldset>
   </form>
 `,

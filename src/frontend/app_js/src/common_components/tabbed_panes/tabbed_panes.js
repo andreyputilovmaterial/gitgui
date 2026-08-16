@@ -1,6 +1,6 @@
 import { computed, useSlots, ref } from 'vue';
 
-import './tabbed_panes.css';
+import './styles.css';
 
 const TabbedPanes = {
   props: [

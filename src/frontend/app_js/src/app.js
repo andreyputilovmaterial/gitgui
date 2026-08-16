@@ -4,15 +4,16 @@ import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 
 import './app.css';
 import './app_form_control_adjustments.css';
-import './common_components/css_grid.css';
 
 
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw } from './common_defs/cli';
-import ComponentSectionRollup from './common_components/rollable_sections';
-import ComponentTabbedPanes from './common_components/tabbed_panes';
-import ComponentTabbedPane from './common_components/tabbed_pane';
-import { ModalsSite } from './common_components/modals';
+import ComponentSectionRollup from './common_components/rollable_sections/index';
+import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
+import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
+import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
+import './common_components/css_grid/styles.css';
+import { ModalsSite } from './common_components/modals/modals';
 import RepoInitView from './app/repoinitview/init_repo';
 import MainView from './app/mainview/index';
 import TerminalSessionView from './app/terminalview/index';
@@ -56,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'component-section-rollup': ComponentSectionRollup,
       'component-tabbed-panes': ComponentTabbedPanes,
       'component-tabbed-pane': ComponentTabbedPane,
+      'component-filter-records-form': ComponentFilterRecordsForm,
       'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
       'maingui-view': MainView,
@@ -245,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
       async function updateHistory() {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'repoExists':response}
-          repoStatus.value.history = response.split("\x1e").filter(a=>!!a&&!(/^\s*$/.test(a))).map(str=>str.split("\x1f")).map(ar=>({hash:ar[0],author:ar[1],message:ar[2],date:new Date(ar[3])}));
+          repoStatus.value.history = response.split("\x1e").filter(a=>!!a&&!(/^\s*$/.test(a))).map(str=>str.split("\x1f")).map(ar=>({hash:ar[0],author:ar[1],message:ar[2],timestamp:new Date(ar[3])}));
         }
         try {
           const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict'])
@@ -319,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-section-rollup', ComponentSectionRollup);
   app.component('component-tabbed-panes', ComponentTabbedPanes);
   app.component('component-tabbed-pane', ComponentTabbedPane);
+  app.component('component-filter-records-form', ComponentFilterRecordsForm);
   app.mount('#gitui_app');
 
 

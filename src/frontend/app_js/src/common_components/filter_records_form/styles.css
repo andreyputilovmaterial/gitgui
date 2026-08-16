@@ -1,0 +1,8 @@
+
+.mdm-ui-recordsfilter-form .mdmreport-controls-group {
+  display: flex; flex-direction: row; flex-wrap: wrap;
+}
+
+.mdm-ui-recordsfilter-status-hidden {
+  display: none!important;
+}

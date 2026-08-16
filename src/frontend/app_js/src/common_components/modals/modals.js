@@ -3,7 +3,7 @@
 
 import {ref,onMounted,markRaw} from 'vue';
 
-import './modals.css';
+import './styles.css';
 
 
 

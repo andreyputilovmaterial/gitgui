@@ -15,13 +15,11 @@ const Window = {
 <div class="gitgui-ajax-pageview-form gitgui-modal-form">
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <fieldset class="mdmreport-controls">
-      <div class="mdmreport-controls-group">
-        <div class="gitgui-fetched-content">
-          <div class="error" style="color: #990000;">{{ error }}</div>
-          <iframe :srcdoc="content" :key="\`fetch-\${lastFetchCounter}\`"></iframe>
-        </div>
-        <div><input type="submit" value="Close" class="gitgui-button-modal-close"></input></div>
+      <div class="gitgui-fetched-content">
+        <div class="error" style="color: #990000;">{{ error }}</div>
+        <iframe :srcdoc="content" :key="\`fetch-\${lastFetchCounter}\`"></iframe>
       </div>
+      <div><input type="submit" value="Close" class="gitgui-button-modal-close"></input></div>
     </fieldset>
   </form>
 </div>

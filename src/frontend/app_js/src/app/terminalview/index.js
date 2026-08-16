@@ -123,7 +123,7 @@ const TerminalSubmitForm = {
     <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
       <fieldset class="mdmreport-controls">
         <div class="error">{{ formFields.validationError }}</div>
-        <div class="mdmreport-controls-group">
+        <div class="mdmreport-controls-group mdmreport-controls-group-nonegmargin">
           <label style="display: none;">COMMAND:  </label>
           <input type="text" name="command" value="" placeholder="git command: " v-model="formFields.command"></input>
           <input type="submit" value="Execute" class="submit"></input>

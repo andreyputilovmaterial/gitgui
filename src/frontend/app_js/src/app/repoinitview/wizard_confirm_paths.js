@@ -5,7 +5,7 @@ import { ref, reactive, onMounted } from 'vue';
 
 
 import PathStatus, { FSPathStatus } from './components/path_indicator';
-import { createModal } from '../../common_components/modals';
+import { createModal } from '../../common_components/modals/modals';
 
 import './wizard_styles.css';
 
@@ -89,7 +89,6 @@ const WizardConfirmPaths = {
       <div class="error">{{ validationMessage }}</div>
       <fieldset class="mdmreport-controls">
         <div :class="{
-        'mdmreport-controls-group':true,
         'click-finish':true,
         'all-steps-confirmed': formFields.step1Acknowledged && formFields.step2Acknowledged
         }">

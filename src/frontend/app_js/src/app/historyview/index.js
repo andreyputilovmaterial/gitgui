@@ -20,7 +20,7 @@ const View = {
   <template v-else-if="!!repoStatus?.history">
     <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
       <div class="error">{{ validationMessage }}</div>
-      <div class="mdmreport-controls-group top-row"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
+      <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
       <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" />
     </form>
   </template>

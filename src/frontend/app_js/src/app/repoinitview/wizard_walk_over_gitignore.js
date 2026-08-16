@@ -5,7 +5,6 @@ import { ref, reactive, onMounted } from 'vue';
 
 
 import RepoInitViewGitignoreSection from './section_gitignore';
-// import { createModal } from '../../common_components/modals';
 
 import './wizard_styles.css';
 
@@ -38,7 +37,6 @@ const WizardWalkOverGitignore = {
       <div class="error">{{ validationMessage }}</div>
       <fieldset class="mdmreport-controls">
         <div :class="{
-        'mdmreport-controls-group':true,
         'click-finish':true,
         'all-steps-confirmed': true
         }">

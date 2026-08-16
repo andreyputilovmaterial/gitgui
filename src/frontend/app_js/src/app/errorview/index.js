@@ -8,12 +8,13 @@ const ErrorRecord = {
 <div
   :class="{
     'mdm-ui-error-record': true,
+    'mdm-ui-record': true,
     'error': true,
   }"
 >
-  <span class="timestamp">{{ formatDate(time) }}</span>
-  <span class="label">Error:</span>
-  <span class="errorbody error" style="color: #990000;">{{ error }}</span>
+  <span class="timestamp mdm-ui-record-col-1">{{ formatDate(time) }}</span>
+  <span class="label mdm-ui-record-col-2">Error:</span>
+  <span class="errorbody error mdm-ui-record-col-3" style="color: #990000;">{{ error }}</span>
 </div>
 `,
   setup() { return { formatDate } },
@@ -25,6 +26,7 @@ const ErrorView = {
 <div
   :class="{
     'error-banner': true,
+    'mdm-ui-records': true,
     'error': true,
     'error-banner-nonempty': errors.length>0,
   }"

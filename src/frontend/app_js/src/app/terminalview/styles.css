@@ -16,29 +16,56 @@
 
 
 
+@media (min-width: 500px) {
+  .mdm-git-gui-terminal .terminal-records.mdm-ui-records {
+    grid-template-columns:
+      max-content
+      max-content
+      max-content
+      5fr
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content;
+  }
+}
 
 .mdm-git-gui-terminal .terminal-record {
-  display: flex;
+  /* display: flex; */
+  /* flex-direction: row */
   position: relative;
-  flex-direction: row;
+}
+.mdm-git-gui-terminal .terminal-record > * {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 .mdm-git-gui-terminal .terminal-record .timestamp {
   color: #aaa;
   font-weight: 200;
+  font-size: 92%;
   display: block;
   padding-right: 7px;
-  flex: 0 0 16em;
+  /* flex: 0 0 16em; */
 }
 .mdm-git-gui-terminal .terminal-record .timestamp {
   display: none;
 }
 .mdm-git-gui-terminal .terminal-record .returncode {
-  flex: 0 0 2.2em;
-  text-align: right;
-  display: inline-block;
+  /* flex: 0 0 2.2em; */
   padding: 5px 5px 5px 1px;
-  margin: -5px 0 -5px 0;
   background: #eee;
+  min-width: 3em;
+}
+@media (min-width: 500px) {
+  .mdm-git-gui-terminal .terminal-record .returncode {
+    text-align: right;
+  }
 }
 .mdm-git-gui-terminal .terminal-record .returncode.returncode-status-success {
   color: #009900;
@@ -46,12 +73,17 @@
 .mdm-git-gui-terminal .terminal-record .returncode.returncode-status-nonzero {
   color: #990000;
 }
+@media (min-width: 500px) {
+   .mdm-git-gui-terminal .terminal-record .returncode .label {
+     display: none;
+   }
+}
 .mdm-git-gui-terminal .terminal-record .status {
   color: #666;
   font-weight: 600;
   display: block;
   padding-right: 7px;
-  flex: 0 0 5em;
+  /* flex: 0 0 5em; */
 }
 .mdm-git-gui-terminal .terminal-record.mdm-git-gui-terminal .terminal-record-status-request .status {
   color: #335577;
@@ -67,11 +99,14 @@
   }
 .mdm-git-gui-terminal .terminal-record .message {
   background: #eee;
-  display: inline-block;
   padding: 5px 5px 5px 14px;
-  margin: -5px -5px -5px 0;
-  flex-grow: 100;
-  font-size: 80%;
+  /* flex-grow: 100; */
+  font-size: 86%;
+}
+@media (min-width: 500px) {
+  .mdm-git-gui-terminal .terminal-record .message {
+    /* margin: -5px -5px -5px 0; */
+  }
 }
 .mdm-git-gui-terminal .terminal-record .message .error {
   font-weight: normal;

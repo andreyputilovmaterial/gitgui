@@ -1,0 +1,148 @@
+
+
+.mdm-ui-records {
+  display: block;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (min-width: 500px) {
+  .mdm-ui-records {
+    grid-template-columns:
+      max-content
+      max-content
+      2fr
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content
+      max-content;
+  }
+}
+
+.mdm-ui-record {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  /* align-items: left; */
+}
+.mdm-ui-record > * {
+  padding: 7px 0; /* warning: that's a tradeoff - that's a general class for all such lists, and I should not apply unexpected styles here; but anyway I'll do the padding to set some default; however, I should generally avoid adding rules to children here */
+}
+
+@media (min-width: 500px) {
+  .mdm-ui-record > * {
+    padding: 7px 0;
+  }
+  .mdm-ui-record > *:first-child {
+    padding-left: 0;
+  }
+  .mdm-ui-record > *:last-child {
+    padding-right: 0;
+  }
+}
+.mdm-ui-record-col-1 { grid-column: 1; }
+.mdm-ui-record-col-2 { grid-column: 2; }
+.mdm-ui-record-col-3 { grid-column: 3; }
+.mdm-ui-record-col-4 { grid-column: 4; }
+.mdm-ui-record-col-5 { grid-column: 5; }
+.mdm-ui-record-col-6 { grid-column: 6; }
+.mdm-ui-record-col-7 { grid-column: 7; }
+.mdm-ui-record-col-8 { grid-column: 8; }
+.mdm-ui-record-col-9 { grid-column: 9; }
+.mdm-ui-record-col-10 { grid-column: 10; }
+.mdm-ui-record-col-11 { grid-column: 11; }
+.mdm-ui-record-col-12 { grid-column: 12; }
+.mdm-ui-record-col-13 { grid-column: 13; }
+.mdm-ui-record-col-14 { grid-column: 14; }
+.mdm-ui-record-col-15 { grid-column: 15; }
+.mdm-ui-record-col-16 { grid-column: 16; }
+.mdm-ui-record-col-17 { grid-column: 17; }
+.mdm-ui-record-col-18 { grid-column: 18; }
+.mdm-ui-record-col-19 { grid-column: 19; }
+.mdm-ui-record-col-20 { grid-column: 20; }
+.mdm-ui-record-col-21 { grid-column: 21; }
+.mdm-ui-record-col-22 { grid-column: 22; }
+.mdm-ui-record-col-23 { grid-column: 23; }
+.mdm-ui-record-col-24 { grid-column: 24; }
+.mdm-ui-record-col-25 { grid-column: 25; }
+.mdm-ui-record-col-26 { grid-column: 26; }
+.mdm-ui-record-col-27 { grid-column: 27; }
+.mdm-ui-record-col-28 { grid-column: 28; }
+.mdm-ui-record-col-29 { grid-column: 29; }
+.mdm-ui-record-col-30 { grid-column: 30; }
+.mdm-ui-record-col-31 { grid-column: 31; }
+.mdm-ui-record-col-32 { grid-column: 32; }
+.mdm-ui-record-col-33 { grid-column: 33; }
+.mdm-ui-record-col-34 { grid-column: 34; }
+.mdm-ui-record-col-35 { grid-column: 35; }
+.mdm-ui-record-col-36 { grid-column: 36; }
+.mdm-ui-record-col-37 { grid-column: 37; }
+.mdm-ui-record-col-38 { grid-column: 38; }
+.mdm-ui-record-col-39 { grid-column: 39; }
+.mdm-ui-record-col-40 { grid-column: 40; }
+.mdm-ui-record-col-41 { grid-column: 41; }
+.mdm-ui-record-col-42 { grid-column: 42; }
+.mdm-ui-record-col-43 { grid-column: 43; }
+.mdm-ui-record-col-44 { grid-column: 44; }
+.mdm-ui-record-col-45 { grid-column: 45; }
+.mdm-ui-record-col-46 { grid-column: 46; }
+.mdm-ui-record-col-47 { grid-column: 47; }
+.mdm-ui-record-col-48 { grid-column: 48; }
+.mdm-ui-record-col-49 { grid-column: 49; }
+.mdm-ui-record-col-50 { grid-column: 50; }
+.mdm-ui-record-col-51 { grid-column: 51; }
+.mdm-ui-record-col-52 { grid-column: 52; }
+.mdm-ui-record-col-53 { grid-column: 53; }
+.mdm-ui-record-col-54 { grid-column: 54; }
+.mdm-ui-record-col-55 { grid-column: 55; }
+.mdm-ui-record-col-56 { grid-column: 56; }
+.mdm-ui-record-col-57 { grid-column: 57; }
+.mdm-ui-record-col-58 { grid-column: 58; }
+.mdm-ui-record-col-59 { grid-column: 59; }
+.mdm-ui-record-col-60 { grid-column: 60; }
+.mdm-ui-record-col-61 { grid-column: 61; }
+.mdm-ui-record-col-62 { grid-column: 62; }
+.mdm-ui-record-col-63 { grid-column: 63; }
+.mdm-ui-record-col-64 { grid-column: 64; }
+.mdm-ui-record-col-65 { grid-column: 65; }
+.mdm-ui-record-col-66 { grid-column: 66; }
+.mdm-ui-record-col-67 { grid-column: 67; }
+.mdm-ui-record-col-68 { grid-column: 68; }
+.mdm-ui-record-col-69 { grid-column: 69; }
+.mdm-ui-record-col-70 { grid-column: 70; }
+.mdm-ui-record-col-71 { grid-column: 71; }
+.mdm-ui-record-col-72 { grid-column: 72; }
+.mdm-ui-record-col-73 { grid-column: 73; }
+.mdm-ui-record-col-74 { grid-column: 74; }
+.mdm-ui-record-col-75 { grid-column: 75; }
+.mdm-ui-record-col-76 { grid-column: 76; }
+.mdm-ui-record-col-77 { grid-column: 77; }
+.mdm-ui-record-col-78 { grid-column: 78; }
+.mdm-ui-record-col-79 { grid-column: 79; }
+.mdm-ui-record-col-80 { grid-column: 80; }
+.mdm-ui-record-col-81 { grid-column: 81; }
+.mdm-ui-record-col-82 { grid-column: 82; }
+.mdm-ui-record-col-83 { grid-column: 83; }
+.mdm-ui-record-col-84 { grid-column: 84; }
+.mdm-ui-record-col-85 { grid-column: 85; }
+.mdm-ui-record-col-86 { grid-column: 86; }
+.mdm-ui-record-col-87 { grid-column: 87; }
+.mdm-ui-record-col-88 { grid-column: 88; }
+.mdm-ui-record-col-89 { grid-column: 89; }
+.mdm-ui-record-col-90 { grid-column: 90; }
+.mdm-ui-record-col-91 { grid-column: 91; }
+.mdm-ui-record-col-92 { grid-column: 92; }
+.mdm-ui-record-col-93 { grid-column: 93; }
+.mdm-ui-record-col-94 { grid-column: 94; }
+.mdm-ui-record-col-95 { grid-column: 95; }
+.mdm-ui-record-col-96 { grid-column: 96; }
+.mdm-ui-record-col-97 { grid-column: 97; }
+.mdm-ui-record-col-98 { grid-column: 98; }
+.mdm-ui-record-col-99 { grid-column: 99; }
+.mdm-ui-record-col-100 { grid-column: 100; }

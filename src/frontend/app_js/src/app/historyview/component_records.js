@@ -9,7 +9,7 @@ const Records = {
     'history',
   ],
   template: `
-<div class="history-records">
+<div class="history-records mdm-ui-records">
     <history-record
       v-for="h in history"
       :key="h.hash"

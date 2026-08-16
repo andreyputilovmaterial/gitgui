@@ -22,6 +22,7 @@
   display: block;
   padding-right: 7px;
   flex: 0 0 16em;
+  font-size: 86%;
 }
 .mdm-ui-error-record .label {
   display: block;

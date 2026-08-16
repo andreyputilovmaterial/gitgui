@@ -176,11 +176,11 @@ const TerminalRecord = {
     'type',
   ],
   template: `
-    <div :class="\`terminal-record terminal-record-status-\${type}\`">
-      <span class="timestamp">{{ formatDate(timestamp) }}</span>
-      <span class="status">{{ type }}</span>
-      <span :class="\`returncode returncode-status-\${String(returncode)==String('0')?'success':'nonzero'}\`" title="returncode - %errorlevel%">{{ returncode }}</span>
-      <code class="message">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></code>
+    <div :class="\`terminal-record mdm-ui-record terminal-record-status-\${type}\`">
+      <span class="timestamp mdm-ui-record-col-1">{{ formatDate(timestamp) }}</span>
+      <span class="status mdm-ui-record-col-2">{{ type }}</span>
+      <span :class="\`returncode mdm-ui-record-col-3 returncode-status-\${(!!returncode || (returncode===0)?(String(returncode)===String('0')?'success':'nonzero'):'')}\`" title="returncode - %errorlevel%"><span class="label" v-if="!!returncode || (returncode===0)">returncode: </span>{{ returncode }}</span>
+      <code class="message mdm-ui-record-col-4">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></code>
     </div>
   `,
   setup() {
@@ -197,7 +197,7 @@ const TerminalSessionView = {
 <component-section-rollup header="Commands View" :condensed="false">
   <div class="mdm-git-gui-terminal">
     <terminal-submit-form :executeGitCommand="executeGitCommand"></terminal-submit-form>
-    <div class="terminal-records" ref="commandsEl" @scroll="onScroll">
+    <div class="terminal-records mdm-ui-records" ref="commandsEl" @scroll="onScroll">
       <terminal-record
         v-for="cmd in commands"
         :timestamp="cmd.timestamp"

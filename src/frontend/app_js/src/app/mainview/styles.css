@@ -4,5 +4,5 @@
   padding: 0; border: none; margin: -1px;
 } */
 .mdm-git-gui-mainview > .mdm-ui-tabbed-panes > .mdm-ui-tabbed-panes-inner {
-  min-height: 300px;
+  /* min-height: 300px; */
 }

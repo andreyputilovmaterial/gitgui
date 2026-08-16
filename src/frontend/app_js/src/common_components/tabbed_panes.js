@@ -23,11 +23,11 @@ const TabbedPanes = {
         </div>
       </div>
       <div class="mdm-ui-tabbed-panes-inner">
-        <div v-for="pane in panes" :key="pane.props?.id" :data-pane-id="pane.props?.id">
-          <div v-if="pane.props?.id==active" :key="pane.props?.id">
+        <template v-for="pane in panes" :key="pane.props?.id">
+          <div v-if="pane.props?.id==active" :key="pane.props?.id" :data-pane-id="pane.props?.id">
             <component :is="pane" :key="pane.props?.id" />
           </div>
-        </div>
+        </template>
       </div>
     </div>
   `,

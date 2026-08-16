@@ -10,6 +10,48 @@ code, pre, samp, kbd {
 
 
 
+
+
+
+
+body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+header,
+footer {
+    flex: 0 0 auto;
+}
+.main {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 15px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.main .section-h1, .main .section.section-h1  {
+    flex: 0 0 auto;
+    margin-top: 0;
+}
+.main .section {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+
+
+
+
 .gitgui-page-home .header {
   /* display: none; */
 }

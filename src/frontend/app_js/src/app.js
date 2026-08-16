@@ -2,6 +2,7 @@
 // import { Vue } from "./vue.js";
 import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 
+import './app.css';
 
 
 import { FetchError, fetchWrapper } from './common_defs/networking';

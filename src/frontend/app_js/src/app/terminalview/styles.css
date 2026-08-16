@@ -1,9 +1,15 @@
 
 
-
-
-.mdm-git-gui-terminal .terminal-records {
-  max-height: 500px;
+.mdm-git-gui-terminal {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mdm-git-gui-terminal > form {
+  flex: 0 0 auto;
+}
+.mdm-git-gui-terminal > .terminal-records {
+  flex: 1 1 auto;
   overflow-y: auto;
 }
 

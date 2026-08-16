@@ -250,8 +250,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       async function updateHistory() {
         function handleResponse(response) {
-          // repoStatus.value = {...repoStatus.value,'repoExists':response}
-          repoStatus.value.history = response.split("\x1e").filter(a=>!!a&&!(/^\s*$/.test(a))).map(str=>str.split("\x1f")).map(ar=>({hash:ar[0],author:ar[1],message:ar[2],timestamp:new Date(ar[3])}));
+          repoStatus.value.history = response
+            .split("\x1e")
+            .filter(a => a && !/^\s*$/.test(a))
+            .map(str => str.split("\x1f"))
+            .map(ar => ({
+              hash: ar[0].trim(),
+              author: ar[1].trim(),
+              message: ar[2],
+              timestamp: new Date(ar[3].trim())
+            }));
         }
         try {
           const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict'])

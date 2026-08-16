@@ -1,6 +1,6 @@
 
 
-import { ref, reactive } from 'vue';
+import { ref, reactive, nextTick, watch } from 'vue';
 
 
 import { formatDate } from '../../common_defs/functions';
@@ -103,6 +103,7 @@ export function parseCommand(txt) {
       else
         throw new Error('unrecgnized token type')
     }
+    if(!txt || /^\s*$/.test(txt)) throw new Error('Please enter command, input is empty');
     return tokenize(txt).filter(filter).map(a=>a.type=='string'?extractStrContents(a.value):a.value)
   } catch(e) {
     throw new Error(`Can't parse command string: ${e}`)
@@ -196,16 +197,18 @@ const TerminalSessionView = {
 <component-section-rollup header="Commands View" :condensed="false">
   <div class="mdm-git-gui-terminal">
     <terminal-submit-form :executeGitCommand="executeGitCommand"></terminal-submit-form>
-    <terminal-record
-      v-for="cmd in commands"
-      :timestamp="cmd.timestamp"
-      :payload="cmd.payload"
-      :message_stdout="cmd.message_stdout"
-      :message_stderr="cmd.message_stderr"
-      :returncode="cmd.returncode"
-      :source="cmd.source"
-      :type="cmd.type">
-    </terminal-record>
+    <div class="terminal-records" ref="commandsEl" @scroll="onScroll">
+      <terminal-record
+        v-for="cmd in commands"
+        :timestamp="cmd.timestamp"
+        :payload="cmd.payload"
+        :message_stdout="cmd.message_stdout"
+        :message_stderr="cmd.message_stderr"
+        :returncode="cmd.returncode"
+        :source="cmd.source"
+        :type="cmd.type">
+      </terminal-record>
+    </div>
   </div>
 </component-section-rollup>
   `,
@@ -213,8 +216,33 @@ const TerminalSessionView = {
     'terminal-record': TerminalRecord,
     'terminal-submit-form': TerminalSubmitForm,
   },
-  setup() {
-    return { }
+  setup(props) {
+    const commandsEl = ref(null);
+    let wasAtBottom = true;
+    function isAtBottom(el, threshold = 30) {
+      return el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+    };
+    watch(
+      () => props.commands,
+      async () => {
+        const el = commandsEl.value;
+        if (!el) return;
+
+        await nextTick();
+
+        if (wasAtBottom) {
+          el.scrollTop = el.scrollHeight;
+        }
+      },
+      { deep: true }
+    );
+    function onScroll() {
+      const el = commandsEl.value
+      if (el) {
+        wasAtBottom = isAtBottom(el)
+      }
+    }
+    return { onScroll, commandsEl };
   }
 }
 

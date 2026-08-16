@@ -1,22 +1,32 @@
 
 
 
-.terminal-record {
+
+.mdm-git-gui-terminal .terminal-records {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+
+
+
+
+.mdm-git-gui-terminal .terminal-record {
   display: flex;
   position: relative;
   flex-direction: row;
 }
-.terminal-record .timestamp {
+.mdm-git-gui-terminal .terminal-record .timestamp {
   color: #aaa;
   font-weight: 200;
   display: block;
   padding-right: 7px;
   flex: 0 0 16em;
 }
-.terminal-record .timestamp {
+.mdm-git-gui-terminal .terminal-record .timestamp {
   display: none;
 }
-.terminal-record .returncode {
+.mdm-git-gui-terminal .terminal-record .returncode {
   flex: 0 0 2.2em;
   text-align: right;
   display: inline-block;
@@ -24,32 +34,32 @@
   margin: -5px 0 -5px 0;
   background: #eee;
 }
-.terminal-record .returncode.returncode-status-success {
+.mdm-git-gui-terminal .terminal-record .returncode.returncode-status-success {
   color: #009900;
 }
-.terminal-record .returncode.returncode-status-nonzero {
+.mdm-git-gui-terminal .terminal-record .returncode.returncode-status-nonzero {
   color: #990000;
 }
-.terminal-record .status {
+.mdm-git-gui-terminal .terminal-record .status {
   color: #666;
   font-weight: 600;
   display: block;
   padding-right: 7px;
   flex: 0 0 5em;
 }
-.terminal-record.terminal-record-status-request .status {
+.mdm-git-gui-terminal .terminal-record.mdm-git-gui-terminal .terminal-record-status-request .status {
   color: #335577;
 }
-.terminal-record.terminal-record-status-error .status {
+.mdm-git-gui-terminal .terminal-record.mdm-git-gui-terminal .terminal-record-status-error .status {
   color: #990000;
 }
-.terminal-record.terminal-record-status-response .status {
+.mdm-git-gui-terminal .terminal-record.mdm-git-gui-terminal .terminal-record-status-response .status {
   color: #006700;
 }
-.terminal-record .message {
+.mdm-git-gui-terminal .terminal-record .message {
     white-space: pre-wrap;
   }
-.terminal-record .message {
+.mdm-git-gui-terminal .terminal-record .message {
   background: #eee;
   display: inline-block;
   padding: 5px 5px 5px 14px;
@@ -57,17 +67,17 @@
   flex-grow: 100;
   font-size: 80%;
 }
-.terminal-record .message .error {
+.mdm-git-gui-terminal .terminal-record .message .error {
   font-weight: normal;
 }
-.terminal-record.terminal-record-status-error .message {
+.mdm-git-gui-terminal .terminal-record.mdm-git-gui-terminal .terminal-record-status-error .message {
   color: #660000;
 }
 
-.terminal-record, .terminal-record * {
+.mdm-git-gui-terminal .terminal-record, .mdm-git-gui-terminal .terminal-record * {
   line-height: 16px;
 }
-.terminal-record {
+.mdm-git-gui-terminal .terminal-record {
   padding: 5px 0 5px;
 }
 

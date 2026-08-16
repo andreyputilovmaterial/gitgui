@@ -239,6 +239,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       repoCallbacks.value.updateGitRepoExistence = updateGitRepoExistence
 
+      async function updateHistory() {
+        function handleResponse(response) {
+          // repoStatus.value = {...repoStatus.value,'repoExists':response}
+          repoStatus.value.history = response.split("\x1e").filter(a=>!!a&&!(/^\s*$/.test(a))).map(str=>str.split("\x1f")).map(ar=>({commit:ar[0],message:ar[1],date:new Date(ar[2])}));
+        }
+        try {
+          const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%s%x1f%ad%x1e','--date=iso-strict'])
+          if( !response.ok )
+            throw new Error(`HTTP ${response.status}`);
+          if( (response?.payload?.returncode==128) && (/.*does not have any commits.*/.test(response?.payload?.stderr)) )
+            return handleResponse('');
+          if( response?.payload?.stderr )
+            throw response?.payload?.stderr;
+          return handleResponse(response?.payload?.stdout);
+        } catch (e) {
+          logError(e);
+          return;
+        }
+      }
+      repoCallbacks.value.updateHistory = updateHistory
+
       async function setIsOnlineTimer() {
         const fn = async function () {
           try {

@@ -1,4 +1,5 @@
 
+import { ref, reactive, watch, computed, onMounted, toRaw } from 'vue';
 
 const View = {
   props: [
@@ -7,7 +8,15 @@ const View = {
   template: `
   Hello, history view...
 `,
-  setup() {
+  setup(props) {
+    onMounted(async () => {
+      await Promise.all([
+        props.repoCallbacks.updateHistory(),
+      ])
+    });
+    watch(() => props?.repoStatus?.history, () => {
+      console.log('[DEBUG-history]: new history:',toRaw(props?.repoStatus?.history));
+    });
     return {};
   },
 };

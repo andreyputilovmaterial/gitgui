@@ -242,10 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
       async function updateHistory() {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'repoExists':response}
-          repoStatus.value.history = response.split("\x1e").filter(a=>!!a&&!(/^\s*$/.test(a))).map(str=>str.split("\x1f")).map(ar=>({commit:ar[0],message:ar[1],date:new Date(ar[2])}));
+          repoStatus.value.history = response.split("\x1e").filter(a=>!!a&&!(/^\s*$/.test(a))).map(str=>str.split("\x1f")).map(ar=>({commit:ar[0],author:ar[1],message:ar[2],date:new Date(ar[3])}));
         }
         try {
-          const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%s%x1f%ad%x1e','--date=iso-strict'])
+          const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict'])
           if( !response.ok )
             throw new Error(`HTTP ${response.status}`);
           if( (response?.payload?.returncode==128) && (/.*does not have any commits.*/.test(response?.payload?.stderr)) )

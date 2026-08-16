@@ -35,11 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
     <errorbanner :errors="errors"></errorbanner>
   </div>
   <div class="mdm-git-gui-app-section-mainview section">
-    <div class="repo-existence-section" v-if="!repoStatus.repoExists">
+    <div v-if="repoStatus.repoExists===undefined">Requesting repo status and fetching data, please wait...</div>
+    <div v-else-if="repoStatus.repoExists===false" class="repo-existence-section">
       {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
       <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repo-init-form>
     </div>
-    <maingui-view v-if="repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
+    <maingui-view v-else-if="repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
   </div>
   <div class="mdm-git-gui-app-section-terminal section">
     <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
@@ -225,13 +226,13 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
         try {
-          const response = await fetchWrapper('HEAD', '/functionality/is-git-repo',{})
-          handleResponse(true)
-          return true
+          const response = await fetchWrapper('HEAD', '/functionality/is-git-repo',{});
+          handleResponse(true);
+          return true;
         } catch (e) {
           if( e instanceof FetchError) {
-            handleResponse(false)
-            return false
+            handleResponse(false);
+            return false;
           } else {
             logError(e);
             return;

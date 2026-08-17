@@ -9,12 +9,6 @@ import logError from '../../error_logger/logError';
 
 
 
-const notEmpty = v => {
-  if(!v) return false;
-  if(/^\s*$/.test(v)) return false;
-  return true;
-};
-
 
 
 

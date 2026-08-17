@@ -11,12 +11,6 @@ import FilesRecords from './component_records';
 
 
 
-const notEmpty = v => {
-  if(!v) return false;
-  if(/^\s*$/.test(v)) return false;
-  return true;
-};
-
 
 
 
@@ -46,6 +40,7 @@ const View = {
     const error = ref('');
 
     const getFilesList = async () => {
+      const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
       try {
         error.value = '';
         const response = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r','--name-only',props.hash]);

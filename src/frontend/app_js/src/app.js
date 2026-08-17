@@ -173,7 +173,34 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.payload;
         });
       };
+      async function executeGitBinaryCommand(args) {
+        const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
+        const filename = 'file'; // we don't care what the name is, and that's not important
+        const response = await executeGitCommand(args,true);
+        if( !(response.returncode===0) || notEmpty(response.stderr) ) {
+          const errmsg = `Response from ${args.join(' ')}: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
+          error.value = errmsg;
+          throw new Error(errmsg);
+        }
+        const downloadUrl = `${new URL(response.stdout, window.location.origin)}`.replace('%FILENAME%',filename);
+        const fileDataResponse = await fetch(
+          downloadUrl,
+            {method: 'GET',
+            headers: {
+                "Content-Type": "application/octet-stream"
+            },
+          },
+        );
+        if (!fileDataResponse.ok) {
+          throw new Error(`Download failed: ${response.status}`)
+        };
+        const fileDataBuffer = await fileDataResponse.arrayBuffer();
+        const fileDataByteArray = new Uint8Array(fileDataBuffer);
+        // const fileDataSize = fileDataByteArray.byteLength;
+        return fileDataByteArray;
+      }
       repoCallbacks.value.executeGitCommand = executeGitCommand;
+      repoCallbacks.value.executeGitBinaryCommand = executeGitBinaryCommand;
 
       async function gitignoreRead() {
         function handleResponse(response) {

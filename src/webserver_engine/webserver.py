@@ -1,5 +1,5 @@
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse # for finding handler for the endpoint - we need to know path
 import html # for sanitizing response on errors
 import re
@@ -36,11 +36,12 @@ class WebResponse:
 
 
 class Webserver:
-    def __init__(self,config):
+    def __init__(self,config,is_threading=True):
         self.endpoints = {}
         self._config = config
         self.bind_host = config.get("http_host")
         self.port = config.get("http_port")
+        self._is_threading_server = is_threading
         # sorry very stupid
         # from .logging_helper import config as logging_helper_config
         for key, value in config.items():
@@ -54,7 +55,10 @@ class Webserver:
             self.port = int(self.port)
         except Exception as e:
             raise Exception(f'Webserve: Can\'t parse port param: {self.port}') from e
-        server = HTTPServer((self.bind_host, self.port), self._get_handler(self.endpoints))
+        cls = HTTPServer
+        if self._is_threading_server:
+            cls = ThreadingHTTPServer
+        server = cls((self.bind_host, self.port), self._get_handler(self.endpoints))
         print_console_green(f'starting webserver at {self.bind_host}:{self.port}')
         try:
             server.serve_forever()

@@ -1,6 +1,6 @@
 
 
-from datetime import datetime
+from datetime import datetime, timezone
 import argparse
 from pathlib import Path
 from dotenv import load_dotenv # for loading .env
@@ -42,7 +42,7 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 def main(*argcs,**kwargs):
-    time_start = datetime.now()
+    time_start = datetime.now(timezone.utc)
     script_name = 'gitgui script'
 
     parser = argparse.ArgumentParser(

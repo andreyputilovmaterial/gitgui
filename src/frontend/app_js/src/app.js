@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
       __access_errorSite().promiseResolve(logError);
       __access_errorSite().promise = Promise.resolve(logError);
 
-      function executeGitCommand(args) {
+      function executeGitCommand(args,is_binary=false) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = /\s/.test(str)
@@ -118,14 +118,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         args = args || []
         args = [...args]
-        const promise = cliCommandRaw(args)
+        const promise = cliCommandRaw(args,is_binary)
         const command_str = formatArgsString(args)
         const command = {
           timestamp: new Date(),
           message_stdout: command_str,
           message_stderr: '',
           returncode: '',
-          payload: {'message':command_str},
+          payload: {'message':command_str,'is_binary':is_binary},
           source: undefined,
           'type': 'request',
         }
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
           response => {
             const command = {
               timestamp: new Date(),
-              message_stdout: (((response||{}).payload||{}).stdout||''),
+              message_stdout: ( is_binary ? '<raw bytes>' : (((response||{}).payload||{}).stdout||'') ),
               message_stderr: (((response||{}).payload||{}).stderr||''),
               returncode: getReturnCode(response),
               payload: response,

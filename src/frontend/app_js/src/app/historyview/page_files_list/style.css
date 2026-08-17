@@ -10,3 +10,55 @@
   max-content
     5fr;
 }
+
+.mdm-git-gui-historyfileslistview .mdm-ui-records {
+    grid-template-columns:
+      max-content
+      max-content
+      10fr;
+}
+.mdm-git-gui-historyfileslistview .mdm-ui-record > * {
+  padding: 3px 3px;
+}
+.mdm-git-gui-historyfileslistview .mdm-ui-record > *:first-child {
+  padding-left: 0;
+}
+.mdm-git-gui-historyfileslistview .mdm-ui-record > *:last-child {
+  padding-right: 0;
+}
+.mdm-git-gui-historyfileslistview .files-record .link-view-file > a, .mdm-git-gui-historyfileslistview .files-record .link-download-file > a {
+  display: block;
+  width: 21px;
+  height: 21px;
+  line-height: 14px;
+  padding: 3px 3.5px 4px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  border-radius: 3px;
+}
+.mdm-git-gui-historyfileslistview .files-record .link-view-file > a,
+.mdm-git-gui-historyfileslistview .files-record .link-view-file > a:link,
+.mdm-git-gui-historyfileslistview .files-record .link-view-file > a:active,
+.mdm-git-gui-historyfileslistview .files-record .link-download-file > a,
+.mdm-git-gui-historyfileslistview .files-record .link-download-file > a:link,
+.mdm-git-gui-historyfileslistview .files-record .link-download-file > a:active {
+  color: #000;
+  text-decoration: none;
+  outline: none;
+  transition: all 600px ease;
+}
+.mdm-git-gui-historyfileslistview .files-record .link-view-file > a:hover,
+.mdm-git-gui-historyfileslistview .files-record .link-download-file > a:hover {
+  color: #223077;
+  text-decoration: none;
+  outline: none;
+}
+.mdm-git-gui-historyfileslistview .files-record .link-view-file > a {
+  padding-top:1px;
+  padding-bottom: 6px;
+}
+.mdm-git-gui-historyfileslistview .files-record .link-download-file > a {
+  padding-top:0px;
+  padding-bottom: 7px;
+  font-size: 24px;
+}

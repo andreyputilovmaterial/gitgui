@@ -11,6 +11,14 @@ import FilesRecords from './component_records';
 
 
 
+const notEmpty = v => {
+  if(!v) return false;
+  if(/^\s*$/.test(v)) return false;
+  return true;
+};
+
+
+
 
 const View = {
   props: [
@@ -25,7 +33,7 @@ const View = {
   <div class="error">{{ error }}</div>
   <template v-if="!filesList">Quering data, please wait...</template>
   <template v-else-if="!!filesList">
-    <files-records :files="filesList" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+    <files-records :files="filesList" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :hash="hash" />
   </template>
 </div>
 `,
@@ -39,11 +47,6 @@ const View = {
 
     const getFilesList = async () => {
       try {
-        const notEmpty = v => {
-          if(!v) return false;
-          if(/^\s*$/.test(v)) return false;
-          return true;
-        };
         error.value = '';
         const response = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r','--name-only',props.hash]);
         if( !(response.returncode===0) || notEmpty(response.stderr) ) {
@@ -54,7 +57,7 @@ const View = {
         filesList.value = response.stdout.split('\n').filter(a=>a!=='');
       } catch(e) {
         logError(e);
-        logError(`Failed fetching file list for hash ${props.hash}`);
+        logError(`Failed fetching file list for hash "${props.hash}"`);
         throw e;
       }
     };

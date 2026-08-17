@@ -9,6 +9,7 @@ import './style.css';
 const Records = {
   props: [
     'files',
+    'hash',
     'repoStatus',
     'repoCallbacks',
   ],
@@ -22,6 +23,7 @@ const Records = {
       :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
       :repoStatus="repoStatus"
       :repoCallbacks="repoCallbacks"
+      :hash="hash"
     />
   </div>
 </component-filter-records-form>

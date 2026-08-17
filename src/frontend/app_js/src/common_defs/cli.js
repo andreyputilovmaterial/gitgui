@@ -4,7 +4,7 @@
 
 
 
-export  function cliCommandRaw(command) {
+export function cliCommandRaw(command,is_binary=false) {
     function preparePayload(command) {
       console.log('[DEBUG]: preparing payload')
       return command
@@ -13,14 +13,14 @@ export  function cliCommandRaw(command) {
       console.log('[DEBUG]: initiating a new request',command)
       const payload = preparePayload(command)
       const response = await fetch(
-        `/command`,
+        `/command${is_binary?'?is_binary=1':''}`,
           {method: 'POST',
           headers: {
               "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
         },
-      )
+      );
       if (!response.ok) {
         let error = `HTTP ${response.status}`
         try {
@@ -32,8 +32,8 @@ export  function cliCommandRaw(command) {
         throw new Error(error)
       }
       const data = await response.json()
-      const jobId = data.jobId
-      return jobId
+      const result = data.result
+      return result
     }
     const context = {
       promiseResolve: ()=>{throw new Error('promise not inited')},

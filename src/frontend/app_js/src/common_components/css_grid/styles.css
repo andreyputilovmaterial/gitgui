@@ -37,7 +37,7 @@
 
 @media (min-width: 500px) {
   .mdm-ui-record > * {
-    padding: 7px 0;
+    padding: 7px 14px;
   }
   .mdm-ui-record > *:first-child {
     padding-left: 0;

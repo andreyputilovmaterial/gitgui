@@ -1,11 +1,12 @@
 
 import { ref, h } from 'vue';
 
+import { formatDate } from '../../../common_defs/functions';
+import logError from '../../../error_logger/logError';
+
 import FormCompareVersionsControls from './component_ver_compare_radioboxes';
 
 import PageFilesList from '../page_files_list/index';
-
-import { formatDate } from '../../../common_defs/functions';
 
 import './style.css';
 
@@ -78,7 +79,15 @@ const Record = {
   setup(props) {
 
     const navigateFilesListPage = async () => {
-      await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
+      try {
+        await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
+      } catch(e) {
+        if( e instanceof Error ) {
+          logError(e);
+          logError(`Failed to navigate to page: history-files-list/${props?.hash}`);
+          throw e;
+        }
+      }
     };
 
     return { navigateFilesListPage };

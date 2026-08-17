@@ -1,0 +1,36 @@
+
+.mdm-git-gui-filecontents, .dmreport-controls .mdm-git-gui-filecontents, .mdm-git-gui-fileview .mdm-git-gui-filecontents, .mdm-git-gui-fileview .dmreport-controls .mdm-git-gui-filecontents {
+  min-height: 350px;
+  height: 67vh;
+  resize: vertical;
+  width: 100%;
+  border: none;
+  border-radius: 2px;
+  box-shadow: none;
+  outline: 0;
+  display: block;
+  background: #fff;
+  padding: 14px;
+  transition: all 600ms ease;
+}
+
+
+.mdm-git-gui-fileview .gitgui-button-close {
+  display: block;
+  min-width: 200px;
+  max-width: 600px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 7px;
+  border-color: #ddd;
+  margin: 14px auto 0 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: #555;
+  transition: 600ms all ease;
+}
+.mdm-git-gui-fileview .gitgui-button-close:hover{
+  /* background: #e0e0e0; */
+  /* border-color: #000; */
+  color: #000;
+}

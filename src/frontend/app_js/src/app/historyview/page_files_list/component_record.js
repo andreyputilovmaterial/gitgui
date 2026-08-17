@@ -1,7 +1,7 @@
 
 import { ref, h } from 'vue';
 
-import PageFileView from '../page_file_view/index';
+import PageFileView from '../../../app/fileviewerview/index';
 
 import logError from '../../../error_logger/logError';
 
@@ -43,7 +43,54 @@ const Record = {
 
     const navigateFileViewPage = async () => {
       try {
-        await props.repoCallbacks.createPage(h(PageFileView,{...props,hash:props.hash,filepath:props.filepath}));
+        const resourcepath = `${props.hash}:${props.filepath}`;
+        const filename = `${resourcepath}`.split('/').pop();
+
+        error.value = '';
+        const response = await props.repoCallbacks.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],true);
+        if( !(response.returncode===0) || notEmpty(response.stderr) ) {
+          const errmsg = `Response from git show: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
+          error.value = errmsg;
+          throw new Error(errmsg);
+        }
+        console.log('[DEBUG-history-view-file]: request finished, received: ',response.stdout);
+        const downloadUrl = `${new URL(response.stdout, window.location.origin)}`.replace('%FILENAME%',filename);
+        console.log('[DEBUG-history-view-file]: fetching from download url: ',downloadUrl);
+
+        const fileDataResponse = await fetch(
+          downloadUrl,
+            {method: 'GET',
+            headers: {
+                "Content-Type": "application/octet-stream"
+            },
+          },
+        );
+        if (!fileDataResponse.ok) {
+          throw new Error(`Download failed: ${response.status}`)
+        };
+        const fileDataBuffer = await fileDataResponse.arrayBuffer();
+        const fileDataByteArray = new Uint8Array(fileDataBuffer);
+        const fileDataSize = fileDataByteArray.byteLength;
+
+        // // Common Ecosystem Conversions
+
+        // // To a DOM Image (Browser):
+        // const blob = new Blob([buffer], { type: "image/jpeg" });
+        // const imgUrl = URL.createObjectURL(blob);
+        // document.querySelector("img").src = imgUrl;
+
+        // // To utf-8 string:
+        // // 2. Instantiate a TextDecoder for UTF-8
+        // const decoder = new TextDecoder("utf-8");
+        // // 3. Decode the ArrayBuffer into text
+        // const text = decoder.decode(buffer);
+
+        const contentAsText = props.repoCallbacks.textconv(fileDataByteArray,filename);
+
+        await props.repoCallbacks.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
+
+        error.value = '';
+
       } catch(e) {
         if( e instanceof Error ) {
           logError(e);
@@ -64,11 +111,10 @@ const Record = {
           error.value = errmsg;
           throw new Error(errmsg);
         }
-        // filesList.value = response.stdout.split('\n').filter(a=>a!=='');
-        console.log('[DEBUG-history-view-file]: request finished, received: ',response.stdout);
+        console.log('[DEBUG-history-download-file]: request finished, received: ',response.stdout);
         const filename = `${props.filepath}`.split('/').pop()
         const downloadUrl = `${new URL(response.stdout, window.location.origin)}`.replace('%FILENAME%',filename)
-        console.log('[DEBUG-history-view-file]: fetching from download url: ',downloadUrl);
+        console.log('[DEBUG-history-download-file]: fetching from download url: ',downloadUrl);
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = filename;
@@ -79,7 +125,6 @@ const Record = {
         //     headers: {
         //         "Content-Type": "application/octet-stream"
         //     },
-        //     body: JSON.stringify(payload),
         //   },
         // );
         // if (!fileData.ok) {
@@ -92,6 +137,7 @@ const Record = {
         // a.download = 'report.pdf';
         // a.click();
         // URL.revokeObjectURL(blobUrl);
+        error.value = '';
 
       } catch(e) {
         logError(e);

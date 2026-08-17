@@ -13,7 +13,8 @@ import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes'
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
 import './common_components/css_grid/styles.css';
-import { ModalsSite } from './common_components/modals/modals';
+import textconv from './textconv/index';
+import { ModalsSite, createModal } from './common_components/modals/modals';
 import RepoInitView from './app/repoinitview/init_repo';
 import MainView from './app/mainview/index';
 import TerminalSessionView from './app/terminalview/index';
@@ -51,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
   <online-indicator :isonline="isOnline" :repoCallbacks="repoCallbacks" :config="config" :configPathsFirstCaptured="configPathsFirstCaptured" :configPathsMismatch="configPathsMismatch"></online-indicator>
 </div>
-`, // <modals></modals>
+`,
     components: {
       'errorbanner': ErrorView,
       'component-section-rollup': ComponentSectionRollup,
@@ -293,6 +294,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         isOnlinePollingTimer.value = setInterval(fn,7850);
       }
+
+      repoCallbacks.value.createModal = createModal;
+
+      repoCallbacks.value.textconv = textconv;
 
       onMounted(async () => {
         await Promise.all([

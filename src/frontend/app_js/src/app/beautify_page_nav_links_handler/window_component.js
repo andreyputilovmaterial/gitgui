@@ -19,7 +19,7 @@ const Window = {
         <div class="error" style="color: #990000;">{{ error }}</div>
         <iframe :srcdoc="content" :key="\`fetch-\${lastFetchCounter}\`"></iframe>
       </div>
-      <div><input type="submit" value="Close" class="gitgui-button-modal-close"></input></div>
+      <div><input type="submit" value="Close" class="gitgui-button-close"></input></div>
     </fieldset>
   </form>
 </div>

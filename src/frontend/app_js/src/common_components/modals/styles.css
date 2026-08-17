@@ -85,22 +85,22 @@
 .gitgui-modal-form .gitgui-fetched-content {
   min-height: 300px;
 }
-.gitgui-modal-form .gitgui-button-modal-close {
+.gitgui-modal-form .gitgui-button-close {
   display: block;
   min-width: 200px;
   max-width: 600px;
   background: #fff;
   padding: 6px;
   border-radius: 7px;
-  border-color: ##678;
+  border-color: #ddd;
   margin: 14px auto 0 0;
   font-size: 15px;
   font-weight: 300;
   color: #555;
   transition: 600ms all ease;
 }
-.gitgui-modal-form .gitgui-button-modal-close:hover{
+.gitgui-modal-form .gitgui-button-close:hover{
   /* background: #e0e0e0; */
-  b/* order-color: #000; */
+  /* border-color: #000; */
   color: #000;
 }

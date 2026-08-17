@@ -58,7 +58,9 @@
   padding-bottom: 6px;
 }
 .mdm-git-gui-historyfileslistview .files-record .link-download-file > a {
-  padding-top:0px;
+  /* padding-top:0px;
   padding-bottom: 7px;
-  font-size: 24px;
+  font-size: 24px; */
+  padding-top:3px;
+  padding-bottom: 4px;
 }

@@ -21,7 +21,7 @@ const View = {
   ],
   template: `
 <div class="mdm-git-gui-historylogview">
-  <p class="description">History of previous commits/backups. Each is a snapshot of previous state. "Hash" is something like backup id - every snapshot is identified by its hash (first 7 letters are usually enough for addressing backups/commits in history for git).</p>
+  <p class="description">History of previous revisions. Each is a snapshot of previous state.</p>
   <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <div class="error">{{ validationMessage }}</div>
     <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>

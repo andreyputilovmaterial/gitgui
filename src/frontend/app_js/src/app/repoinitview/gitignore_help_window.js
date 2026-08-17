@@ -10,7 +10,7 @@ const HelpWindow = {
   template: `
 <form  @submit.prevent="handleSubmit" class="gitgui-modal-form">
   Hey here we help ya
-  <div><input type="submit" value="Close" class="gitgui-button-modal-close"></input></div>
+  <div><input type="submit" value="Close" class="gitgui-button-close"></input></div>
 </form>
 `,
   setup(props) {

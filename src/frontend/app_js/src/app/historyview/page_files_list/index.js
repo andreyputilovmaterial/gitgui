@@ -29,7 +29,7 @@ const View = {
   ],
   template: `
 <div class="mdm-git-gui-historyfileslistview">
-  <p class="description">View files from commit (backup) {{ hash }}</p>
+  <p class="description">View files from revision {{ hash }}</p>
   <div class="error">{{ error }}</div>
   <template v-if="!filesList">Quering data, please wait...</template>
   <template v-else-if="!!filesList">

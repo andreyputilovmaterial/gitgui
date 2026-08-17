@@ -116,7 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
           return args.map(formatArg).join(' ')
-        }
+        };
+        const prettyprintBytes = bytes => bytes.length<65 ? `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]`;
         args = args || []
         args = [...args]
         const promise = cliCommandRaw(args,is_binary)
@@ -140,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
           response => {
             const command = {
               timestamp: new Date(),
-              message_stdout: ( is_binary ? '<raw bytes>' : (((response||{}).payload||{}).stdout||'') ),
+              message_stdout: ( is_binary ? prettyprintBytes((((response||{}).payload||{}).stdout_rawbytes||[]) ) : (((response||{}).payload||{}).stdout||'') ),
               message_stderr: (((response||{}).payload||{}).stderr||''),
               returncode: getReturnCode(response),
               payload: response,

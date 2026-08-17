@@ -19,6 +19,8 @@ from .common_functions import JSONEncoder
 def handle_git_command(server_instance,config={},added_data=None):
     def prep_paylaod(f):
         return f
+    def make_bytes_example(bytes):
+        return [ n for n in bytes[:65] ]
     call_initiate_cli_command = config.get("initiate_cli_command")
     call_get_cli_command_status = config.get("get_cli_command_status")
     def sanitize_command(command,is_binary=False):
@@ -74,7 +76,7 @@ def handle_git_command(server_instance,config={},added_data=None):
             if 'stdout_rawbytes' in result['payload']:
                 url_get_rawbytes = f'{path[0]}/{path[1]}/{jobid}/rawbytes'
                 result['payload']['stdout'] = url_get_rawbytes
-                result['payload']['stdout_rawbytes'] = '<raw bytes>'
+                result['payload']['stdout_rawbytes'] = make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = {
             'ok': True,
             'status': 'called',
@@ -119,7 +121,7 @@ def handle_git_command(server_instance,config={},added_data=None):
             filename = Path('%FILENAME%').name
             url_get_rawbytes = f'{path[0]}/{path[1]}/{jobid}/rawbytes/{filename}'
             result['payload']['stdout'] = url_get_rawbytes
-            result['payload']['stdout_rawbytes'] = '<raw bytes>'
+            result['payload']['stdout_rawbytes'] = make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = result
         return WebResponse(
             status_code = 200,

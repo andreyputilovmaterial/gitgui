@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           return args.map(formatArg).join(' ')
         };
-        const prettyprintBytes = bytes => bytes.length<65 ? `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]`;
+        const prettyprintBytes = bytes => '<bytes>';//bytes.length<65 ? `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]`;
         args = args || []
         args = [...args]
         const promise = cliCommandRaw(args,is_binary)
@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         );
         if (!fileDataResponse.ok) {
-          throw new Error(`Download failed: ${response.status}`)
+          throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
         };
         const fileDataBuffer = await fileDataResponse.arrayBuffer();
         const fileDataByteArray = new Uint8Array(fileDataBuffer);

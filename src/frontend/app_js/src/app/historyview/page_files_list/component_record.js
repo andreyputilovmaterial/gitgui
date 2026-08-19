@@ -99,7 +99,7 @@ const Record = {
         //   },
         // );
         // if (!fileData.ok) {
-        //   throw new Error(`Download failed: ${response.status}`)
+        //   throw new Error(`Download failed: HTTP: ${fileData.status}`)
         // };
         // const blob = await fileData.blob();
         // const blobUrl = URL.createObjectURL(blob);

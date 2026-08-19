@@ -19,13 +19,16 @@ from .common_functions import JSONEncoder
 def handle_git_command(server_instance,config={},added_data=None):
     def prep_paylaod(f):
         return f
-    def make_bytes_example(bytes):
-        if bytes is None:
-            return None
-        return [ n for n in bytes[:65] ]
+    # def make_bytes_example(bytes):
+    #     if bytes is None:
+    #         return None
+    #     return [ n for n in bytes[:65] ]
+    def make_download_url(path_parts,job_id,binary_bucket_id,filename):
+        return f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{binary_bucket_id}/{filename}'
     WebResponse = config.get('iface').get('WebResponse')
-    call_initiate_cli_command = config.get('iface').get('initiate_cli_command')
-    call_get_cli_command_status = config.get('iface').get('get_cli_command_status')
+    call_initiate_cli_command = config.get('iface').get('cli_initiate_cli_command')
+    call_get_cli_command_status = config.get('iface').get('cli_get_cli_command_status')
+    call_get_binary_data = config.get('iface').get('cli_get_binary_data')
     def sanitize_command(command,is_binary=False):
         args = [*command]
         assert args[0]=='git', f'Not a git command'
@@ -77,11 +80,13 @@ def handle_git_command(server_instance,config={},added_data=None):
         result = call_initiate_cli_command(command,config,is_binary=flag_is_binary)
         headers = []
         if 'payload' in result:
-            if ('stdout_rawbytes' in result['payload']) and (result['payload']['stdout_rawbytes'] is not None):
-                url_get_rawbytes = f'{path[0]}/{path[1]}/{jobid}/rawbytes'
+            if result['payload']['is_binary'] and not not result['payload']['stdout']:
+                filename = Path('%FILENAME%').name
+                binary_bucket_id = result['payload']['stdout']
+                url_get_rawbytes = make_download_url(path,job_id,binary_bucket_id,filename)# f'{path[0]}/{path[1]}/{job_id}/rawbytes/{filename}'
                 result['payload']['stdout'] = url_get_rawbytes
                 headers.append(('Location',f'{url_get_rawbytes}',))
-                result['payload']['stdout_rawbytes'] = make_bytes_example(result['payload']['stdout_rawbytes'])
+                result['payload']['stdout_rawbytes'] = '<binary>' # make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = {
             'ok': True,
             'status': 'called',
@@ -94,41 +99,41 @@ def handle_git_command(server_instance,config={},added_data=None):
             headers = headers,
         )
     def call_check_status(server_instance):
+        def parse_path(path_parts):
+            # path_parts[0] == ''
+            # path_parts[1] == 'command'
+            # path_parts[2] == job_id
+            job_id = path_parts[2]
+            return job_id
         path_with_query = server_instance.path
         path_parsed = f'{urlparse(path_with_query).path}'
-        path = path_parsed.split('/')
-        jobid = None
-        if len(path)==3 and path[0]=='':
-            jobid = path[2]
-        elif len(path)>=4 and path[0]=='' and path[3]=='rawbytes':
-            return call_get_data(server_instance)
-        else:
+        path_parts = path_parsed.split('/')
+        job_id = None
+        try:
+            job_id = parse_path(path_parts)
+        except:
+            job_id = None
+        if not job_id:
             return WebResponse(
                 status_code = 404,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'call_check_status: path not recognized'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'call_check_status: job_id not found: "{job_id}'}, cls=JSONEncoder),
                 headers = [],
             )
-        if not jobid:
-            return WebResponse(
-                status_code = 404,
-                content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'call_check_status: jobid is missing'}, cls=JSONEncoder),
-                headers = [],
-            )
-        result = call_get_cli_command_status(jobid,config)
+        result = call_get_cli_command_status(job_id,config)
         result = {
             'ok': True,
             'status': result.get("status"),
             'payload': result,
         }
         headers = []
-        if ('stdout_rawbytes' in result['payload']) and (result['payload']['stdout_rawbytes'] is not None):
+        if result['payload']['is_binary'] and not not result['payload']['stdout']:
             filename = Path('%FILENAME%').name
-            url_get_rawbytes = f'{path[0]}/{path[1]}/{jobid}/rawbytes/{filename}'
+            binary_bucket_id = result['payload']['stdout']
+            url_get_rawbytes = make_download_url(path_parts,job_id,binary_bucket_id,filename)# f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
             result['payload']['stdout'] = url_get_rawbytes
             headers.append(('Location',f'{url_get_rawbytes}',))
-            result['payload']['stdout_rawbytes'] = make_bytes_example(result['payload']['stdout_rawbytes'])
+            result['payload']['stdout_rawbytes'] = '<binary>' # make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = result
         return WebResponse(
             status_code = 200,
@@ -137,28 +142,34 @@ def handle_git_command(server_instance,config={},added_data=None):
             headers = headers,
         )
     def call_get_data(server_instance):
+        def parse_path(path_parts):
+            # path_parts[0] == ''
+            # path_parts[1] == 'command'
+            # path_parts[2] == job_id
+            # path_parts[3] == 'rawbytes'
+            # path_parts[4] == binary_bucket_id
+            # path_parts[5] == filename # <- useless, only helps browser derive file name if this is saved directly
+            job_id = path_parts[2]
+            binary_bucket_id = path_parts[4]
+            return job_id, binary_bucket_id
         path_with_query = server_instance.path
         path_parsed = f'{urlparse(path_with_query).path}'
-        path = path_parsed.split('/')
-        jobid = None
-        if len(path)>=4 and path[0]=='' and path[3]=='rawbytes':
-            jobid = path[2]
-        else:
+        path_parts = path_parsed.split('/')
+        job_id = None
+        binary_bucket_id = None
+        try:
+            job_id, binary_bucket_id = parse_path(path_parts)
+        except:
+            job_id, binary_bucket_id = None, None
+        if not job_id or not binary_bucket_id:
             return WebResponse(
                 status_code = 404,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'call_get_data: path not recognized'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'call_get_data: not found'}, cls=JSONEncoder),
                 headers = [],
             )
-        if not jobid:
-            return WebResponse(
-                status_code = 404,
-                content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'call_get_data: jobid is missing'}, cls=JSONEncoder),
-                headers = [],
-            )
-        result = call_get_cli_command_status(jobid,config)
-        payload = result.get("stdout_rawbytes") if "stdout_rawbytes" in result else result.get("stdout").encode(encoding='utf-8')
+        result = call_get_binary_data(job_id,binary_bucket_id,config)
+        payload = result
         return WebResponse(
             status_code = 200,
             content_type = 'application/octet-stream',
@@ -175,7 +186,10 @@ def handle_git_command(server_instance,config={},added_data=None):
         if method=='POST' and path_parsed=='/command':
             renderer = render_initiate_new_command
         elif method=='GET' and path_parsed.startswith('/command/'):
-            renderer = call_check_status
+            if method=='GET' and re.match(r'^/command/[^/]*/rawbytes\b.*',path_parsed):
+                renderer = call_get_data
+            else:
+                renderer = call_check_status
         if not renderer:
             raise Exception(f'request not recognized: {method} {path_with_query}')
         return renderer(server_instance)

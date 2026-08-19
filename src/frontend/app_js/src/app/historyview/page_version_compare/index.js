@@ -26,7 +26,7 @@ const View = {
 <div class="mdm-git-gui-historyfileslistview">
   <p class="description">Compare {{ hashLeft }} and {{ hashRight }}</p>
   <div class="error">{{ error }}</div>
-  <template v-if="!changedFiles">Quering data, please wait...</template>
+  <template v-if="!changedFiles && !error">Quering data, please wait...</template>
   <template v-else-if="!!changedFiles">
     <component-filter-records-form :columns="{'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', 'status': 'status', 'path': 'path', }" :setComponentFilterRecordsClasses="setComponentFilterChangedfilesRecordsClasses">
       <div class="diff-records mdm-ui-records">
@@ -194,12 +194,12 @@ const View = {
         return results;
       }
       try {
-        error.value = '';
         // git diff --raw -z --no-abbrev -M ec18f2c b4c0edf
         const result = await props.repoCallbacks.executeGitBinaryCommand(['git', 'diff', '--raw', '-z', '--no-abbrev', '-M', props.hashLeft, props.hashRight]);
         changedFiles.value = handleResult(result);
         error.value = '';
       } catch(e) {
+        error.value = e;
         logError(e);
         logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}"`);
         throw e;
@@ -207,17 +207,24 @@ const View = {
     };
 
     const collectBlobs = async () => {
-      if( !changedFiles.value )
-        return;
-      const result = new Set();
-      for (const record of changedFiles.value) {
-        const isZero = s => /^0+$/.test(s);
-        if( !isZero(record.old_oid) )
-          result.add(record.old_oid);
-        if( !isZero(record.new_oid) )
-          result.add(record.new_oid);
+      try {
+        if( !changedFiles.value )
+          return;
+        const result = new Set();
+        for (const record of changedFiles.value) {
+          const isZero = s => /^0+$/.test(s);
+          if( !isZero(record.old_oid) )
+            result.add(record.old_oid);
+          if( !isZero(record.new_oid) )
+            result.add(record.new_oid);
+        }
+        blobs.value = Array.from(result);
+      } catch(e) {
+        error.value = e;
+        logError(e);
+        logError(`Failed fetching blobs for hash "${props.hashLeft}" and "${props.hashRight}"`);
+        throw e;
       }
-      blobs.value = Array.from(result);
     };
 
     onMounted(async () => {

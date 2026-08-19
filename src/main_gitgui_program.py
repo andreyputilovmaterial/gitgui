@@ -11,7 +11,7 @@ from .webserver_engine.webserver import Webserver # a wrapper around python http
 from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
 from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
-from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status
+from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status, get_binary_data
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
@@ -87,13 +87,14 @@ def main(*argcs,**kwargs):
         'gitignore_presets': gitignore_presets,
 
         'app_config': {
-            'webserver_multithreaded': CONFIG_WEBSERVER_MULTITHREADED,
-            'cli_command_exec_workers': CONFIG_CLI_COMMAND_EXEC_WORKERS,
+            'is_webserver_multithreaded': CONFIG_WEBSERVER_MULTITHREADED,
+            'num_cli_command_exec_workers': CONFIG_CLI_COMMAND_EXEC_WORKERS,
         },
 
         'iface': {
-            'initiate_cli_command': initiate_cli_command,
-            'get_cli_command_status': get_cli_command_status,
+            'cli_initiate_cli_command': initiate_cli_command,
+            'cli_get_cli_command_status': get_cli_command_status,
+            'cli_get_binary_data': get_binary_data,
             'WebResponse': WebResponse,
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,

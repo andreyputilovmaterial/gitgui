@@ -23,9 +23,15 @@ const View = {
 <div class="mdm-git-gui-historylogview">
   <p class="description">History of previous revisions. Each is a snapshot of previous state.</p>
   <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+    <div class="error">{{ error }}</div>
     <div class="error">{{ validationMessage }}</div>
-    <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
-    <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+    <template v-if="!repoStatus?.history && !error">
+      Quering data, please wait...
+    </template>
+    <template v-else-if="!!repoStatus?.history">
+      <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
+      <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+    </template>
   </form>
 </div>
 `,
@@ -40,6 +46,7 @@ const View = {
       compareRight: '',
     });
     const validationMessage = ref('');
+    const error = ref('');
 
     const navigateVersionComparePage = async () => {
       await props.repoCallbacks.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
@@ -48,6 +55,7 @@ const View = {
     const handleSubmit = async () => {
       try {
         isBusy.value = true;
+        error.value = '';
         validationMessage.value = '';
         if( !formFields.compareLeft ) {
           validationMessage.value = 'Please select some version to compare as Left';
@@ -61,6 +69,7 @@ const View = {
         }
         await navigateVersionComparePage();
       } catch (err) {
+        error.value = err;
         logError(err);
         logError('Failed to call for version compare window');
         console.error('Failed to call for versioncompare window',err)
@@ -73,6 +82,7 @@ const View = {
 
     return {
       isBusy,
+      error,
       formVerCompareFields: formFields,
       validationMessage,
       handleSubmit,

@@ -1,7 +1,17 @@
 
 
 
+export function genId(command) {
+  const idbase = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+  return `${command}:${idbase}:${new Date()}`;
+}
 
+
+export const prettyprintBytes = bytes => bytes.length<65 ? `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]`;
 
 
 export function cliCommandRaw(command,is_binary=false) {
@@ -38,15 +48,15 @@ export function cliCommandRaw(command,is_binary=false) {
     const context = {
       promiseResolve: ()=>{throw new Error('promise not inited')},
       promiseReject: ()=>{throw new Error('promise not inited')},
-      jobId: null,
+      job_id: null,
       status: 'prepare',
       pollTimerId: null,
     }
     async function pendStatus() {
-      console.log('[DEBUG]: pending request status, jobId now is ',context.jobId)
+      console.log('[DEBUG]: pending request status, job_id now is ',context.job_id)
       try{
         const response = await fetch(
-          `/command/${context.jobId}`,
+          `/command/${context.job_id}`,
           {
             method: 'GET',
             headers: {
@@ -66,6 +76,7 @@ export function cliCommandRaw(command,is_binary=false) {
           throw new Error(errmsg)
                   }
         const data = await response.json()
+        data.id = genId(`response:/command/${context.job_id}`);
         context.status = data.status
         if( data.status=='done' )
           return context.promiseResolve(data)
@@ -89,14 +100,14 @@ export function cliCommandRaw(command,is_binary=false) {
       sendCommandPromise.then(
         result => {
           context.status = 'in-progress'
-          context.jobId = result.job_id
+          context.job_id = result.job_id
           console.log('[DEBUG]',context)
-          console.log('[DEBUG]: setting jobId to',context.jobId)
+          console.log('[DEBUG]: setting job_id to',context.job_id)
         },
         err => {reject(err)}
       )
       sendCommandPromise.then(
-        (jobId) => {
+        (job_id) => {
           context.pollTimerId = setInterval(pendStatus,207)
         }
       )

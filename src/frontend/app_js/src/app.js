@@ -7,7 +7,7 @@ import './app_form_control_adjustments.css';
 
 
 import { FetchError, fetchWrapper } from './common_defs/networking';
-import { cliCommandRaw } from './common_defs/cli';
+import { cliCommandRaw, prettyprintBytes, genId } from './common_defs/cli';
 import ComponentSectionRollup from './common_components/rollable_sections/index';
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
@@ -78,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
       const repoInitRequiresAttention = ref(false)
-      // const commands = ref([{timestamp:new Date(),payload:'test-first-record',message_stdout:'test-first-record','message_stderr':'','source':null,'type':'test'}])
       const commands = ref([])
 
       function logError(e) {
@@ -117,13 +116,14 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           return args.map(formatArg).join(' ')
         };
-        const prettyprintBytes = bytes => '<bytes>';//bytes.length<65 ? `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]`;
         args = args || []
         args = [...args]
         const promise = cliCommandRaw(args,is_binary)
         const command_str = formatArgsString(args)
+        const id = genId(`input:${command_str}`);
         const command = {
           timestamp: new Date(),
+          id,
           message_stdout: command_str,
           message_stderr: '',
           returncode: '',
@@ -139,10 +139,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         promise.then(
           response => {
+            const id = response?.id || genId(`output:${command_str}`);
             const command = {
               timestamp: new Date(),
-              message_stdout: ( is_binary ? prettyprintBytes((((response||{}).payload||{}).stdout_rawbytes||[]) ) : (((response||{}).payload||{}).stdout||'') ),
-              message_stderr: (((response||{}).payload||{}).stderr||''),
+              id,
+              message_stdout: response?.payload?.stdout || '',
+              message_stderr: response?.payload?.stderr || '',
               returncode: getReturnCode(response),
               payload: response,
               source: source_command,
@@ -155,8 +157,10 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
               response = await response.json();
             } catch(e) { }
+            const id = genId(`error:${command_str}`);
             const command = {
               timestamp: new Date(),
+              id,
               payload: err,
               message_stdout: '',
               message_stderr: err,
@@ -170,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return promise.then(response=>{
           if( !response.ok )
             throw Error(`HTTP ${response.status}`);
-          return response.payload;
+          return {...response.payload,id:response.id};
         });
       };
       async function executeGitBinaryCommand(args) {
@@ -197,6 +201,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const fileDataBuffer = await fileDataResponse.arrayBuffer();
         const fileDataByteArray = new Uint8Array(fileDataBuffer);
         // const fileDataSize = fileDataByteArray.byteLength;
+        try {
+          const id = response?.id || genId(`output:${genId(`response:/command/${response.job_id}`)}`);
+          const commandElementsMatchingCandidates = commands.value.filter(record=>record.id===id);
+          if(commandElementsMatchingCandidates.length>0) {
+            const commandElement = commandElementsMatchingCandidates[commandElementsMatchingCandidates.length-1];
+            commandElement.message_stdout = prettyprintBytes(fileDataByteArray);
+          }
+        } catch(e) {}
         return fileDataByteArray;
       }
       repoCallbacks.value.executeGitCommand = executeGitCommand;

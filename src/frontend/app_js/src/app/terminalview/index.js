@@ -200,6 +200,7 @@ const TerminalSessionView = {
     <div class="terminal-records mdm-ui-records" ref="commandsEl" @scroll="onScroll">
       <terminal-record
         v-for="cmd in commands"
+        :key="cmd.id"
         :timestamp="cmd.timestamp"
         :payload="cmd.payload"
         :message_stdout="cmd.message_stdout"

@@ -20,9 +20,12 @@ def handle_git_command(server_instance,config={},added_data=None):
     def prep_paylaod(f):
         return f
     def make_bytes_example(bytes):
+        if bytes is None:
+            return None
         return [ n for n in bytes[:65] ]
-    call_initiate_cli_command = config.get("initiate_cli_command")
-    call_get_cli_command_status = config.get("get_cli_command_status")
+    WebResponse = config.get('iface').get('WebResponse')
+    call_initiate_cli_command = config.get('iface').get('initiate_cli_command')
+    call_get_cli_command_status = config.get('iface').get('get_cli_command_status')
     def sanitize_command(command,is_binary=False):
         args = [*command]
         assert args[0]=='git', f'Not a git command'
@@ -72,10 +75,12 @@ def handle_git_command(server_instance,config={},added_data=None):
         command = prep_paylaod(payload)
         command = sanitize_command(command, is_binary = not not flag_is_binary)
         result = call_initiate_cli_command(command,config,is_binary=flag_is_binary)
+        headers = []
         if 'payload' in result:
-            if 'stdout_rawbytes' in result['payload']:
+            if ('stdout_rawbytes' in result['payload']) and (result['payload']['stdout_rawbytes'] is not None):
                 url_get_rawbytes = f'{path[0]}/{path[1]}/{jobid}/rawbytes'
                 result['payload']['stdout'] = url_get_rawbytes
+                headers.append(('Location',f'{url_get_rawbytes}',))
                 result['payload']['stdout_rawbytes'] = make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = {
             'ok': True,
@@ -86,7 +91,7 @@ def handle_git_command(server_instance,config={},added_data=None):
             status_code = 202,
             content_type = 'application/json',
             body = json.dumps(payload, cls=JSONEncoder),
-            headers = [],
+            headers = headers,
         )
     def call_check_status(server_instance):
         path_with_query = server_instance.path
@@ -117,17 +122,19 @@ def handle_git_command(server_instance,config={},added_data=None):
             'status': result.get("status"),
             'payload': result,
         }
-        if 'stdout_rawbytes' in result['payload']:
+        headers = []
+        if ('stdout_rawbytes' in result['payload']) and (result['payload']['stdout_rawbytes'] is not None):
             filename = Path('%FILENAME%').name
             url_get_rawbytes = f'{path[0]}/{path[1]}/{jobid}/rawbytes/{filename}'
             result['payload']['stdout'] = url_get_rawbytes
+            headers.append(('Location',f'{url_get_rawbytes}',))
             result['payload']['stdout_rawbytes'] = make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = result
         return WebResponse(
             status_code = 200,
             content_type = 'application/json',
             body = json.dumps(payload, cls=JSONEncoder),
-            headers = [],
+            headers = headers,
         )
     def call_get_data(server_instance):
         path_with_query = server_instance.path
@@ -159,7 +166,6 @@ def handle_git_command(server_instance,config={},added_data=None):
             headers = [],
             is_binary = True,
         )
-    WebResponse = config.get("WebResponse")
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     method = server_instance.command
@@ -174,15 +180,9 @@ def handle_git_command(server_instance,config={},added_data=None):
             raise Exception(f'request not recognized: {method} {path_with_query}')
         return renderer(server_instance)
     except Exception as e:
-        payload = {
-            'ok': False,
-            'status': 'error',
-            'error': f'{e}',
-        }
-        print(e,file=sys.stderr)
-        return WebResponse(
-            status_code = 400,
-            content_type = 'application/json',
-            body = json.dumps(payload, cls=JSONEncoder),
-            headers = [],
-        )
+        # payload = {
+        #     'ok': False,
+        #     'status': 'error',
+        #     'error': f'{e}',
+        # }
+        raise e

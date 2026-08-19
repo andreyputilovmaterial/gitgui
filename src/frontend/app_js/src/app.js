@@ -292,11 +292,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         try {
           const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict'])
-          if( (response.returncode==128) && (/.*does not have any commits.*/.test(response?.stderr)) )
-            return handleResponse('');
+          if( (response.returncode==128) && (/.*does not have any commits.*/.test(response?.stderr)) ) {
+            const stdout = '';
+            try {
+              return handleResponse(stdout);
+            } catch(e) {
+              throw new Error(`updateHistory: failed to parse response: "${stdout}"`);
+            }
+          }
           if( response?.stderr )
             throw response?.stderr;
-          return handleResponse(response.stdout);
+          const stdout = response.stdout;
+          try {
+            return handleResponse(stdout);
+          } catch(e) {
+            throw new Error(`updateHistory: failed to parse response: "${stdout}"`);
+          }
         } catch (e) {
           logError(e);
           return;

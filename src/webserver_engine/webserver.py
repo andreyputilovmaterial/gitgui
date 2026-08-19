@@ -59,6 +59,8 @@ class Webserver:
         if self._is_threading_server:
             cls = ThreadingHTTPServer
         server = cls((self.bind_host, self.port), self._get_handler(self.endpoints))
+        if self._is_threading_server:
+            server.daemon_threads = True
         print_console_green(f'starting webserver at {self.bind_host}:{self.port}')
         try:
             server.serve_forever()
@@ -88,7 +90,7 @@ class Webserver:
 
                     self.send_response(response.status_code)
                     for header_name, header_value in response.headers:
-                        self.send_header(header_name,header_value)
+                        self.send_header(header_name, header_value)
                     if response.is_binary:
                         self.send_header(f"Content-type", f"{response.content_type}")
                     else:
@@ -96,7 +98,10 @@ class Webserver:
                     self.end_headers()
                     if send_body:
                         if response.is_binary:
-                            self.wfile.write(response.body)
+                            if response.body is not None:
+                                self.wfile.write(response.body)
+                            else:
+                                self.wfile.write(b'')
                         else:
                             self.wfile.write(response.body.encode("utf-8"))
                 except (HTTP404,HTTP403) as e:
@@ -122,36 +127,43 @@ class Webserver:
                         self.wfile.write(content)
                 except Exception as e:
                     self.send_response(500)
+                    self.send_header(f"Content-type", "text/plain; charset=utf-8")
                     self.end_headers()
                     print_console_err_fulltrace(e)
                     if send_body:
                         try:
                             err = f'{e}'
-                            err_html = html.escape(err)
+                            # err_html = html.escape(err)
+                            err_txt = err
                             try:
                                 # several more levels to capture stacktrace, format it, convert "red" colors to spans with color red... If anything fails, there is a fallback to simpler way to just show the message
                                 err_full = string_err_fulltrace(e)
-                                err_html = '<br />'.join(html.escape(err_full).splitlines())
-                                COLOR_MARKERS = {
-                                    '@STDOUT_COLOR_RED@': '<span class="err-color-red" style="color: #990000;">',
-                                    '@STDOUT_COLOR_GREEN@': '<span class="err-color-green" style="color: #009900;">',
-                                    '@STDOUT_COLOR_RESET@': '</span>',
-                                }
-                                color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
-                                err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
-                                try:
-                                    err_html = sanitize_dom('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
-                                except Exception as ee:
-                                    print_console_err_fulltrace(ee)
-                                    pass
+                                err_txt = f'{err_full}'
+                                # err_html = '<br />'.join(html.escape(err_full).splitlines())
+                                # COLOR_MARKERS = {
+                                #     '@STDOUT_COLOR_RED@': '<span class="err-color-red" style="color: #990000;">',
+                                #     '@STDOUT_COLOR_GREEN@': '<span class="err-color-green" style="color: #009900;">',
+                                #     '@STDOUT_COLOR_RESET@': '</span>',
+                                # }
+                                # color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
+                                # err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
+                                # try:
+                                #     err_html = sanitize_dom('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
+                                # except Exception as ee:
+                                #     print_console_err_fulltrace(ee)
+                                #     pass
                             except Exception as ee:
                                 print_console_err_fulltrace(ee)
                                 pass
-                            self.wfile.write(("<html><body>"+err_html+"</body></html>").encode("utf-8"))
+                            # self.wfile.write(("<html><body>"+err_html+"</body></html>").encode("utf-8"))
+                            self.wfile.write((f"{err_txt}").encode("utf-8"))
                         except Exception as ee:
                             print_console_err_fulltrace(ee)
                             # print fallback
-                            self.wfile.write(("<html><body>"+html.escape("Error processing request")+"</body></html>").encode("utf-8"))
+                            # err_html = "error processing request"
+                            err_txt = "error processing request"
+                            self.wfile.write((f"{err_txt}").encode("utf-8"))
+                            # self.wfile.write(("<html><body>"+err_html+"</body></html>").encode("utf-8"))
 
             def __getattr__(self, name):
                 if name.startswith("do_"):

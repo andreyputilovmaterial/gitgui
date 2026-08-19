@@ -11,7 +11,7 @@ def gc(jobs):
     cutoff = timestamp_now + JOB_TTL
 
     for job_id, job in list(jobs.items()):
-        finished_at = job.get("execution_finished_at")
+        finished_at = job.execution_finished_at
 
-        if finished_at is not None and (job.get("execution_finished_at") >= cutoff):
+        if finished_at is not None and (job.execution_finished_at >= cutoff):
             del jobs[job_id]

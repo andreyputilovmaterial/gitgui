@@ -28,7 +28,7 @@ from .GENERATED.ASSETS import (
 
 
 def render_payload(server_instance,config={},added_data=None,is_binary=False):
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     content_type = 'text/plain'
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
@@ -36,7 +36,6 @@ def render_payload(server_instance,config={},added_data=None,is_binary=False):
         content_type = 'text/css'
     elif re.match(r'.*\.m?js\s*$',path_parsed,flags=re.I):
         content_type = 'text/javascript'
-    # method = server_instance.command
     payload = added_data
     return WebResponse(
         status_code = 200,
@@ -64,10 +63,6 @@ def render_assets_app_js(server_instance,config={},added_data=None):
     payload = app_js
     return render_payload(server_instance,config,added_data=payload)
 
-# def render_assets_app_css(server_instance,config={},added_data=None):
-#     payload = app_css
-#     return render_payload(server_instance,config,added_data=payload)
-
 def render_assets_project_specific_styles_css(server_instance,config={},added_data=None):
     payload = project_specific_styles_css
     return render_payload(server_instance,config,added_data=payload)
@@ -82,15 +77,20 @@ def render_assets_vendorlibs_dompurify_js(server_instance,config={},added_data=N
     payload = vendorlibs_dompurify_js
     return render_payload(server_instance,config,added_data=payload)
 def render_assets_vendorlibs_font_ibmplexsans(server_instance,config={},added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS
-    def err():
-        HTTP404 = config.get("HTTP404")
-        raise HTTP404()
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = '/'.join((path_parsed.split('/'))[5:])
-    payload = payload_dict.get(path) if path in payload_dict else err(path)
+    if path not in payload_dict:
+        return WebResponse(
+            status_code = 404,
+            content_type = 'text/css',
+            body = '',
+            headers = [],
+        )
+    payload = payload_dict.get(path)
     return render_payload(
         server_instance,
         config,
@@ -99,14 +99,18 @@ def render_assets_vendorlibs_font_ibmplexsans(server_instance,config={},added_da
     )
 def render_assets_vendorlibs_font_ibmplexmono(server_instance,config={},added_data=None):
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
-    def err():
-        HTTP404 = config.get("HTTP404")
-        raise HTTP404()
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = '/'.join((path_parsed.split('/'))[5:])
-    payload = payload_dict.get(path) if path in payload_dict else err(path)
+    if path not in payload_dict:
+        return WebResponse(
+            status_code = 404,
+            content_type = 'text/css',
+            body = '',
+            headers = [],
+        )
+    payload = payload_dict.get(path)
     return render_payload(
         server_instance,
         config,
@@ -131,11 +135,8 @@ endpoints = {
 
 
 def renderer_assets(server_instance,config={},added_data=None):
-    # HTTP404 = config.get("HTTP404")
-    # def not_found(*args,**argv):
-    #     raise HTTP404() # hmm, maybe simply returning statuscode 404 is simpler... but webserver engine handles this exact exception
     def not_found(*args,**argv):
-        WebResponse = config.get("WebResponse")
+        WebResponse = config.get('iface').get('WebResponse')
         payload = f'Resource not found: {repr(server_instance.path)}'
         return WebResponse(
             status_code = 404,

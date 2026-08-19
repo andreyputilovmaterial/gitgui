@@ -23,7 +23,7 @@ from .common_functions import JSONEncoder, get_matching_endpoint
 
 
 def not_found(server_instance,config={},added_data=None):
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     payload = {'status':'error','error':'not found'}
     return WebResponse(
         status_code = 404,
@@ -45,7 +45,7 @@ def handle_gitignore(server_instance,config={},added_data=None):
         with open(fname,'w',encoding='utf-8') as f:
             txt = f.write(txt)
             return txt
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'exclude'
     method = server_instance.command
     if method=='GET':
@@ -102,7 +102,7 @@ def handle_gitattributes(server_instance,config={},added_data=None):
         with open(fname,'w',encoding='utf-8') as f:
             txt = f.write(txt)
             return txt
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'attributes'
     method = server_instance.command
     if method=='GET':
@@ -181,7 +181,7 @@ def handle_config(server_instance,config={},added_data=None):
             f"Object of type {type(obj).__name__} "
             f"is not JSON serializable at {path}"
         )
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     config_sanitized = json.loads(json.dumps(clean_config(config),cls=JSONEncoder))
     payload = config_sanitized
     return WebResponse(
@@ -192,7 +192,7 @@ def handle_config(server_instance,config={},added_data=None):
     )
 
 def handle_isup(server_instance,config={},added_data=None):
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     method = server_instance.command
     payload = ''
     if method=='HEAD':
@@ -204,13 +204,14 @@ def handle_isup(server_instance,config={},added_data=None):
         )
     else:
         return WebResponse(
-            status_code = 400,
+            status_code = 405,
             content_type = 'application/json',
             body = json.dumps(payload, cls=JSONEncoder),
             headers = [],
         )
 
 def handle_is_git_repo(server_instance,config={},added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
     def pend_git_repo_status():
         def sanitize_command(command):
             args = [*command]
@@ -235,7 +236,6 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
             return True
         else:
             return (result.returncode==0)
-    WebResponse = config.get("WebResponse")
     method = server_instance.command
     if method=='HEAD' or method=='GET':
         payload = ''
@@ -263,7 +263,7 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
 
 def handle_fspath(server_instance,config={},added_data=None):
     path_fs = Path(added_data).resolve()
-    WebResponse = config.get("WebResponse")
+    WebResponse = config.get('iface').get('WebResponse')
     method = server_instance.command
     if method=='HEAD':
         if not path_fs.exists():
@@ -331,9 +331,6 @@ endpoints = {
 }
 
 def handle_request_functionality_endpoint(server_instance,config={},added_data=None):
-    # HTTP404 = config.get("HTTP404")
-    # def not_found(*args,**argv):
-    #     raise HTTP404() # hmm, maybe simply returning statuscode 404 is simpler... but webserver engine handles this exact exception
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')

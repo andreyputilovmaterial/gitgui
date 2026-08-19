@@ -15,9 +15,6 @@ def not_implemented(*args,**argv):
 
 
 def handle_request_files_endpoint(server_instance,config={},added_data=None):
-    # HTTP404 = config.get("HTTP404")
-    # def not_found(*args,**argv):
-    #     raise HTTP404() # hmm, maybe simply returning statuscode 404 is simpler... but webserver engine handles this exact exception
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')

@@ -28,6 +28,10 @@ else:
 
 
 
+CONFIG_WEBSERVER_MULTITHREADED = True
+CONFIG_CLI_COMMAND_EXEC_WORKERS = 3
+
+
 script_version = f'{script_version}'.strip()
 
 # STDOUT_COLOR_RED = "\033[91m"
@@ -82,11 +86,18 @@ def main(*argcs,**kwargs):
 
         'gitignore_presets': gitignore_presets,
 
-        'initiate_cli_command': initiate_cli_command,
-        'get_cli_command_status': get_cli_command_status,
-        'WebResponse': WebResponse,
-        'HTTP403': HTTP403,
-        'HTTP404': HTTP404,
+        'app_config': {
+            'webserver_multithreaded': CONFIG_WEBSERVER_MULTITHREADED,
+            'cli_command_exec_workers': CONFIG_CLI_COMMAND_EXEC_WORKERS,
+        },
+
+        'iface': {
+            'initiate_cli_command': initiate_cli_command,
+            'get_cli_command_status': get_cli_command_status,
+            'WebResponse': WebResponse,
+            'HTTP403': HTTP403,
+            'HTTP404': HTTP404,
+        },
     }
 
     if args.work_tree_folder:
@@ -108,11 +119,12 @@ def main(*argcs,**kwargs):
     config['git_paths_hash'] = make_hash(work_tree_folder,git_repo_folder)
 
     print('\npreparing git cli command loop...\n')
-    initiate_worker_loop(config)
+    for _ in range (0,CONFIG_CLI_COMMAND_EXEC_WORKERS):
+        initiate_worker_loop(config)
 
     print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'
-    config['http_port'] = find_free_port(start=5180)
+    config['http_port'] = find_free_port(config['http_host'],start=5180)
     config['http_address'] = f'http://{config.get("http_host")}:{config.get("http_port")}'
 
     print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
@@ -123,7 +135,7 @@ def main(*argcs,**kwargs):
     }
     print(f'CONFIG:\n{prettyprint_config(cfg_to_print_verify)}')
     print('\n')
-    server = Webserver(config) # a wrapper around python http.server - no flask or django
+    server = Webserver(config,is_threading=CONFIG_WEBSERVER_MULTITHREADED) # a wrapper around python http.server - no flask or django
     server.assign_handlers(endpoints)
     # print(f'{STDOUT_COLOR_GREEN}starting webserver at {config.get("http_address")}{STDOUT_COLOR_RESET}')
 

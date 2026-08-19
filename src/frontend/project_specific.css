@@ -3,7 +3,7 @@
 body {
   font-family: 'IBM Plex Sans';
 }
-code, pre, samp, kbd {
+code, pre, samp, kbd, .code {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 90%;
 }

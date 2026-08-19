@@ -55,7 +55,7 @@ const Record = {
         // // 3. Decode the ArrayBuffer into text
         // const text = decoder.decode(buffer);
 
-        const contentAsText = props.repoCallbacks.textconv(fileDataByteArray,filename);
+        const contentAsText = await props.repoCallbacks.textconv(fileDataByteArray,filename);
 
         await props.repoCallbacks.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
 

@@ -1,17 +1,36 @@
 
 
-import { ref, watch } from 'vue';
+import { ref, watch, isVNode } from 'vue';
 
 import './styles.css';
 
 
-const ComponentSectionRollUp = {
-  props: {
-    'header': String,
-    'condensed': {
-      type: [String, Boolean], // Accepts either a string "true" or an actual boolean true
-      default: "true",          // The default value if the prop is missing
-    },
+
+function isRenderableComponent(value) {
+  function isObject(o) {
+    return (typeof o==='object') && (o!==null);
+  }
+  return isVNode(value) ||
+    (isObject(value) && (
+      typeof value.render === 'function' ||
+      typeof value.template === 'string' ||
+      typeof value.setup === 'function'
+    ))
+}
+
+const ComponentSectionRollup = {
+  props:
+    // {
+    //   'header': String,
+    //   'condensed': {
+    //     type: [String, Boolean], // Accepts either a string "true" or an actual boolean true
+    //     default: "true",          // The default value if the prop is missing
+    //   }
+    // },
+    [
+      'header',
+      'condensed',
+    ],
     // How to check the prop value inside your TemplateYou can
     // use Vue directives directly in your HTML template string
     // to react to the prop:
@@ -33,14 +52,13 @@ const ComponentSectionRollUp = {
     // <section-roll-up :condensed="false">
     // Would you like to see how to use this condensed prop to dynamically add a CSS class to your container element?
 
-  },
   template: `
 <div class="mdm-ui-rollup"
  :data-condensed="isCondensed"
  :class="{
    'mdm-ui-rollup-condensed': isCondensed == 'true' || isCondensed === true,
    'mdm-ui-rollup-open': isCondensed != 'true' && isCondensed !== true
- }"><div class="mdm-ui-rollup-header" @click="isCondensed = !isCondensed">{{ header }}</div>
+ }"><div class="mdm-ui-rollup-header" @click="isCondensed = !isCondensed"><template v-if="isRenderableComponent(header)"><component :is="header" /></template><template v-else>{{ header }}</template></div>
 <div class="mdm-ui-rollup-body"><slot /></div>
 </div>
 `,
@@ -54,8 +72,8 @@ const ComponentSectionRollUp = {
     watch(() => props.condensed, () => {
       isCondensed.value = determineInitialState()
     });
-    return {isCondensed};
+    return { isCondensed, isRenderableComponent };
   }
 }
 
-export default ComponentSectionRollUp;
+export default ComponentSectionRollup;

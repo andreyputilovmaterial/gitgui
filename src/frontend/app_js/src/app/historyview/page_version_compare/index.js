@@ -28,8 +28,8 @@ const View = {
   <div class="error">{{ error }}</div>
   <template v-if="!changedFiles && !error">Quering data, please wait...</template>
   <template v-else-if="!!changedFiles">
-    <component-filter-records-form :columns="{'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', 'status': 'status', 'path': 'path', }" :setComponentFilterRecordsClasses="setComponentFilterChangedfilesRecordsClasses">
-      <div class="diff-records mdm-ui-records">
+    <component-filter-records-form :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }" :setComponentFilterRecordsClasses="setComponentFilterChangedfilesRecordsClasses">
+      <div class="mdm-git-gui-diff-records diff-records mdm-ui-records">
         <diff-record
           v-for="h in changedFiles"
           :key="\`\${h.old_mode}-\${h.new_mode}-\${h.old_oid}-\${h.new_oid}-\${h.status}-\${h.path}\`"
@@ -45,17 +45,6 @@ const View = {
         />
       </div>
     </component-filter-records-form>
-    <component-filter-records-form v-if="!!blobs" :columns="{'blobid': 'blob id', }" :setComponentFilterRecordsClasses="setComponentFilterBlobsRecordsClasses">
-      <div class="blobs-records mdm-ui-records">
-        <div
-          v-for="h in blobs"
-          :key="h"
-          :class="[...['diffblob-record','mdm-ui-record'],...componentFilterBlobsRecordsGetClassesCb({blob:h})]"
-        >
-        {{ h }}
-        </div>
-      </div>
-    </component-filter-records-form>
   </template>
 </div>
 `,
@@ -66,12 +55,9 @@ const View = {
 
     const error = ref('');
     const changedFiles = ref(null);
-    const blobs = ref(null);
 
     const componentFilterChangedfilesRecordsGetClassesCb = ref(()=>[]);
     const setComponentFilterChangedfilesRecordsClasses = cb => componentFilterChangedfilesRecordsGetClassesCb.value = cb;
-    const componentFilterBlobsRecordsGetClassesCb = ref(()=>[]);
-    const setComponentFilterBlobsRecordsClasses = cb => componentFilterBlobsRecordsGetClassesCb.value = cb;
 
     const getFiles = async data => {
       function handleResult(data) {
@@ -206,43 +192,16 @@ const View = {
       }
     };
 
-    const collectBlobs = async () => {
-      try {
-        if( !changedFiles.value )
-          return;
-        const result = new Set();
-        for (const record of changedFiles.value) {
-          const isZero = s => /^0+$/.test(s);
-          if( !isZero(record.old_oid) )
-            result.add(record.old_oid);
-          if( !isZero(record.new_oid) )
-            result.add(record.new_oid);
-        }
-        blobs.value = Array.from(result);
-      } catch(e) {
-        error.value = e;
-        logError(e);
-        logError(`Failed fetching blobs for hash "${props.hashLeft}" and "${props.hashRight}"`);
-        throw e;
-      }
-    };
-
     onMounted(async () => {
       await Promise.all([
         getFiles(),
       ])
     });
 
-    watch(() => changedFiles.value, () => {
-      collectBlobs();
-    });
-
     return {
       error,
       changedFiles,
-      blobs,
       componentFilterChangedfilesRecordsGetClassesCb, setComponentFilterChangedfilesRecordsClasses,
-      componentFilterBlobsRecordsGetClassesCb, setComponentFilterBlobsRecordsClasses,
     };
   },
 };

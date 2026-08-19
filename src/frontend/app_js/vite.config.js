@@ -16,6 +16,10 @@ export default defineConfig({
         target: 'http://localhost:5180',
         changeOrigin: true
       },
+      '/textconv': {
+        target: 'http://localhost:5180',
+        changeOrigin: true
+      },
       '/functionality': {
         target: 'http://localhost:5180',
         changeOrigin: true

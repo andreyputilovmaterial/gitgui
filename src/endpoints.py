@@ -9,6 +9,7 @@ from .frontend.endpoints import (
     render_page_test,
     renderer_assets,
     handle_git_command,
+    handle_textconv_request,
     handle_request_functionality_endpoint,
     handle_request_files_endpoint,
 )
@@ -26,6 +27,8 @@ endpoints = {
     re.compile('^/assets/.*'): renderer_assets,
 
     re.compile(r'/command\b(.*)'): handle_git_command,
+
+    re.compile(r'/textconv\b(.*)'): handle_textconv_request,
 
     re.compile(r'/functionality\b(.*)'): handle_request_functionality_endpoint,
 

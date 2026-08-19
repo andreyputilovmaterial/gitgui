@@ -23,7 +23,7 @@ const textconvProcessors = {
 // so, the cut off should be somewhere in between, not sure exactly
 // I think should be below 100 MB
 // I'll set to 32 MB, for now
-const MAX_FILE_SIZE_LIMIT_BYTES = 32*1000*1000;
+const MAX_FILE_SIZE_LIMIT_BYTES = 64*1000*1000;
 
 // // Common Ecosystem Conversions
 
@@ -41,9 +41,13 @@ const MAX_FILE_SIZE_LIMIT_BYTES = 32*1000*1000;
 
 const textconv = (fileData,filename) => {
   try {
+    if( !(fileData instanceof Uint8Array) )
+      throw new Error(`textconv: input of type Uint8Array was expected, got "${typeof fileData}" ("${filename}")`);
     const fileSize = fileData.byteLength;
+    if( fileSize===0 )
+      return '';
     if( fileSize>MAX_FILE_SIZE_LIMIT_BYTES )
-      return 'FILEVIEWER: File is too big to be displayed';
+      return 'FILEVIEWER: File too big to be displayed';
     const fileType = detectFileMimeType(fileData,filename);
     if( !fileType )
       return `FILEVIEWER: Can't recognize file type: "${filename}"`;

@@ -1,0 +1,33 @@
+
+.mdm-git-gui-diffview .two-sided-view {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+.mdm-git-gui-diffview .two-sided-view > * {
+  width: 50;
+  flex: 1 1 50%;
+  overflow: auto;
+  padding: 0 0 0 14px;
+}
+.mdm-git-gui-diffview .two-sided-view > *:first-child {
+  padding-right: 5px;
+  padding-left: 0;
+}
+.mdm-git-gui-diffview .diff-outputs p {
+  white-space: pre;
+  margin: 0;
+  padding: 1px 0;
+}
+.mdm-git-gui-diffview  .linenumber-and-content-columns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+.mdm-git-gui-diffview  .linenumber-and-content-columns > * {
+  flex: 1 1 100%;
+}
+.mdm-git-gui-diffview  .linenumber-and-content-columns > *.linenum-col {
+  width: 40px;
+  flex: 0 0 40px;
+}

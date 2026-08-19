@@ -1,0 +1,43 @@
+
+.mdm-git-gui-diff-records .diff-record {
+  grid-template-columns: 5fr;
+}
+
+.mdm-git-gui-diff-records .diff-record > * {
+  grid-column: 1 / -1;
+}
+
+.mdm-git-gui-diff-fileheader {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+.mdm-git-gui-diff-fileheader > .status {
+  flex: 0 0 95px;
+  width: 95px;
+  padding-right: 14px;
+  font-size: 12px;
+  color: #000;
+  font-weight: 500;
+  display: inline-block;
+  padding-top: 1px;
+}
+.mdm-git-gui-diff-fileheader > .filepath {
+  flex: 1 1 auto;
+}
+
+.mdm-git-gui-diff-records .diff-record > .mdm-ui-rollup {
+  padding: 0;
+  border: 1px solid #dbdbdb;
+  margin-bottom: 7px;
+}
+.mdm-git-gui-diff-records .diff-record > .mdm-ui-rollup > .mdm-ui-rollup-header {
+  padding: 1px 7px 2px 21px;
+
+}
+.mdm-git-gui-diff-records .diff-record > .mdm-ui-rollup > .mdm-ui-rollup-header:before {
+  transform: translateY(-60%);
+}
+.mdm-git-gui-diff-records .diff-record > .mdm-ui-rollup > .mdm-ui-rollup-body {
+
+}

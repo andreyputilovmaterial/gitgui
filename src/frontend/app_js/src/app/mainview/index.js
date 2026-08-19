@@ -32,7 +32,7 @@ const MainView = {
         <component-tabbed-pane id="gitignore" title="gitignore (tracked files)">
           <page-gitignore :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
         </component-tabbed-pane>
-        <component-tabbed-pane id="packstatus" title="Hist Pack Compression Status">
+        <component-tabbed-pane id="packstatus" title="Disk usage">
           <page-packcompression :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
         </component-tabbed-pane>
       </component-tabbed-panes>

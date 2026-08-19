@@ -4,3 +4,6 @@
 [submodule "src/frontend/bundler_engine/lib/py_js_bundler"]
 	path = src/frontend/bundler_engine/lib/py_js_bundler
 	url = https://github.com/The-city-not-present/py_js_bundler.git
+[submodule "src/frontend/app_js/src/lib/myers-diff"]
+	path = src/frontend/app_js/src/lib/myers-diff
+	url = https://github.com/The-city-not-present/myers-diff.git

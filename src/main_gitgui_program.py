@@ -12,6 +12,7 @@ from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
 from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
 from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status, get_binary_data
+from .textconv import textconv
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
@@ -98,6 +99,7 @@ def main(*argcs,**kwargs):
             'WebResponse': WebResponse,
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,
+            'textconv': textconv,
         },
     }
 

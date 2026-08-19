@@ -8,12 +8,14 @@ import './app_form_control_adjustments.css';
 
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw, prettyprintBytes, genId } from './common_defs/cli';
+import { diff } from './lib/myers-diff/src/index';
+import textconv_js from './textconv_js/index';
+import textconv_backend from './textconv_backend/index';
 import ComponentSectionRollup from './common_components/rollable_sections/index';
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
 import './common_components/css_grid/styles.css';
-import textconv from './textconv/index';
 import { ModalsSite, createModal } from './common_components/modals/modals';
 import RepoInitView from './app/repoinitview/init_repo';
 import MainView from './app/mainview/index';
@@ -77,8 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const errors = ref([]);
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
-      const repoInitRequiresAttention = ref(false)
-      const commands = ref([])
+      const repoInitRequiresAttention = ref(false);
+      const commands = ref([]);
+      const didHadAChanceToRunGitGCToday = ref(false);
 
       function logError(e) {
         try {
@@ -183,7 +186,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await executeGitCommand(args,true);
         if( !(response.returncode===0) || notEmpty(response.stderr) ) {
           const errmsg = `Response from ${args.join(' ')}: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
-          error.value = errmsg;
+          logError(errmsg);
+          logError('Failed when running "executeGitBinaryCommand"');
           throw new Error(errmsg);
         }
         const downloadUrl = `${new URL(response.stdout, window.location.origin)}`.replace('%FILENAME%',filename);
@@ -213,6 +217,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       repoCallbacks.value.executeGitCommand = executeGitCommand;
       repoCallbacks.value.executeGitBinaryCommand = executeGitBinaryCommand;
+
+      repoCallbacks.value.triggerGoodTimeGitGC = () => {
+        if(didHadAChanceToRunGitGCToday.value )
+          return;
+        didHadAChanceToRunGitGCToday.value = true;
+        executeGitCommand(['git','gc']);
+      };
 
       async function gitignoreRead() {
         function handleResponse(response) {
@@ -287,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
-      repoCallbacks.value.updateGitRepoExistence = updateGitRepoExistence
+      repoCallbacks.value.updateGitRepoExistence = updateGitRepoExistence;
 
       async function updateHistory() {
         function handleResponse(response) {
@@ -325,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
       }
-      repoCallbacks.value.updateHistory = updateHistory
+      repoCallbacks.value.updateHistory = updateHistory;
 
       async function setIsOnlineTimer() {
         const fn = async function () {
@@ -348,7 +359,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       repoCallbacks.value.createModal = createModal;
 
-      repoCallbacks.value.textconv = textconv;
+      repoCallbacks.value.textconv_js = textconv_js;
+      repoCallbacks.value.textconv_backend = textconv_backend;
+      repoCallbacks.value.textconv = textconv_backend;
+
+      repoCallbacks.value.diff = diff;
 
       onMounted(async () => {
         await Promise.all([
@@ -358,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
           gitignoreRead(),
           setIsOnlineTimer(),
         ])
-      })
+      });
 
       // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
       watch(isOnline, (newValue, oldValue) => {
@@ -366,7 +381,8 @@ document.addEventListener("DOMContentLoaded", () => {
           // triggered specifically on false → true
           configAskFor()
         }
-      })
+      });
+      
       return {
         errors,
         repoStatus,

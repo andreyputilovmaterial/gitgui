@@ -1,27 +1,27 @@
 
-from bs4 import BeautifulSoup
-import re
-
-
-
-
-def sanitize_dom(classname, txt) -> str:
-    def sanitize_classname(s):
-        def err(i):
-            raise Exception(f'Not valid class name: {i}')
-        s = f'{s}'.split()
-        return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
-
-
-    soup = BeautifulSoup("<div></div>", "html.parser")
-    div = soup.div
-
-    fragment = BeautifulSoup(txt, "html.parser")
-
-    # IMPORTANT: iterate over a copy
-    for child in list(fragment.contents):
-        div.append(child)
-
-    div["class"] = sanitize_classname(classname).split()
-
-    return str(div)
+# from bs4 import BeautifulSoup
+# import re
+#
+#
+#
+#
+# def sanitize_dom(classname, txt) -> str:
+#     def sanitize_classname(s):
+#         def err(i):
+#             raise Exception(f'Not valid class name: {i}')
+#         s = f'{s}'.split()
+#         return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
+#
+#
+#     soup = BeautifulSoup("<div></div>", "html.parser")
+#     div = soup.div
+#
+#     fragment = BeautifulSoup(txt, "html.parser")
+#
+#     # IMPORTANT: iterate over a copy
+#     for child in list(fragment.contents):
+#         div.append(child)
+#
+#     div["class"] = sanitize_classname(classname).split()
+#
+#     return str(div)

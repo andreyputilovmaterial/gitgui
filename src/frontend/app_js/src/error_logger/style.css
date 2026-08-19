@@ -16,6 +16,11 @@
   position: relative;
   flex-direction: row;
 }
+.mdm-ui-error-record.mdm-ui-record > * {
+  padding-top: 0px;
+  padding-bottom: 2px;
+}
+
 .mdm-ui-error-record .timestamp {
   color: #aaa;
   font-weight: 200;

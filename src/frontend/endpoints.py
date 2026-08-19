@@ -18,3 +18,6 @@ from .endpoints_functionality_path import (
 from .endpoints_files_path import (
     handle_request_files_endpoint,
 )
+from .endpoints_textconv_path import (
+    handle_textconv_request,
+)

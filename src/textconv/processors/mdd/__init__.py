@@ -66,7 +66,7 @@ def textconv(data,filename):
         with open(temp_filename,'wb') as f:
             f.write(data)
         try:
-            with MDMDocument(temp_filename,'open') as MDD:
+            with MDMDocument(temp_filename,'join') as MDD:
                 text = MDD.document.Script
         except Exception as e:
             return f'{e}'

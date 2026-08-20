@@ -98,6 +98,7 @@ def render_assets_vendorlibs_font_ibmplexsans(server_instance,config={},added_da
         is_binary = True,
     )
 def render_assets_vendorlibs_font_ibmplexmono(server_instance,config={},added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
     path_with_query = server_instance.path
@@ -135,8 +136,8 @@ endpoints = {
 
 
 def renderer_assets(server_instance,config={},added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
     def not_found(*args,**argv):
-        WebResponse = config.get('iface').get('WebResponse')
         payload = f'Resource not found: {repr(server_instance.path)}'
         return WebResponse(
             status_code = 404,

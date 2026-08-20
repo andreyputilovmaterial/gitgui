@@ -24,5 +24,5 @@ def textconv(data: bytes,filename: str):
         type = detect_type_heuristics(data[:5000],filename)
     processor = processors.get(type,None)
     if not processor:
-        raise Exception(f'textconv: fatal: no associated processor for type {ftype} - it should not be possible, the conversion should always fall back to "text" or "binary" but not leave something unrecognized')
+        raise Exception(f'textconv: fatal: no associated processor for type {type} - it should not be possible, the conversion should always fall back to "text" or "binary" but not leave something unrecognized')
     return processor(data,filename)

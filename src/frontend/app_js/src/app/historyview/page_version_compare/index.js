@@ -23,8 +23,8 @@ const View = {
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
-<div class="mdm-git-gui-historyfileslistview">
-  <p class="description">Compare {{ hashLeft }} and {{ hashRight }}</p>
+<div class="mdm-git-gui-historydiff">
+  <p class="description">Compare revisions {{ hashLeft }} and {{ hashRight }}</p>
   <div class="error">{{ error }}</div>
   <template v-if="!changedFiles && !error">Quering data, please wait...</template>
   <template v-else-if="!!changedFiles">

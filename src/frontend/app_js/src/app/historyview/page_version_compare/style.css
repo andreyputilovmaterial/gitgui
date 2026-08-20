@@ -1,6 +1,6 @@
 
 .mdm-git-gui-diff-records .diff-record {
-  grid-template-columns: 5fr;
+  grid-template-columns: subgrid;
 }
 
 .mdm-git-gui-diff-records .diff-record > * {

@@ -1,4 +1,11 @@
 
+
+.mdm-git-gui-diffview {
+  max-height: 100vh;
+  overflow: auto;
+}
+
+
 .mdm-git-gui-diffview .two-sided-view {
   display: flex;
   flex-direction: row;
@@ -6,7 +13,7 @@
 }
 .mdm-git-gui-diffview .two-sided-view > * {
   width: 50;
-  flex: 1 1 50%;
+  flex: 0 0 50%;
   overflow: auto;
   padding: 0 0 0 14px;
 }

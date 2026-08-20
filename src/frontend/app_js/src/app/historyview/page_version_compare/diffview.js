@@ -208,12 +208,12 @@ const View = {
             }
             const line = {
               lhs: {
-                lineNum: block.lhs.at + Math.max(Math.min(step,block.lhs.items.length-1),0),
+                lineNum: 1 + block.lhs.at + Math.max(Math.min(step,block.lhs.items.length-1),0),
                 content: ltext,
                 status: identifyLineStatus(ltext),
               },
               rhs: {
-                lineNum: block.rhs.at + Math.max(Math.min(step,block.rhs.items.length-1),0),
+                lineNum: 1 + block.rhs.at + Math.max(Math.min(step,block.rhs.items.length-1),0),
                 content: rtext,
                 status: identifyLineStatus(rtext),
               },

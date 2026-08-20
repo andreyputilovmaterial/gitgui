@@ -54,6 +54,7 @@ class Job:
     stdout_pipe: dict | None = None
     stderr: str | None = None
     pipe_process: subprocess.Popen | None = field(default=None, repr=False)
+    pipe_process_lock: Lock = field(default_factory = Lock, repr=False)
     def as_dict(self):
         with self.lock:
             return {
@@ -194,10 +195,12 @@ def worker():
                     except subprocess.TimeoutExpired:
                         process.kill()
                         process.wait()
-                for line in process.stderr:
-                    stderr += line
-                if is_binary:
-                    stderr = stderr.decode("utf-8", errors="replace")
+                stderr = ''
+                with job.pipe_process_lock:
+                    for line in process.stderr:
+                        stderr += line
+                    if is_binary:
+                        stderr = stderr.decode("utf-8", errors="replace")
                 with job.lock:
                     if not job.stderr:
                         job.stderr = ''
@@ -219,27 +222,28 @@ def worker():
 
         elif task.action=="pipe_check_stderr":
             try:
-                process = job.pipe_process
-                is_binary = job.is_binary
-                stderr = ''
-                if not process or isinstance(process,int): # storing returncode when finished - just to reset to soemthing, it is not actually used
-                    raise Exception(f'Can only call subprocess.poll() when process exists (job_id: "{job_id}")')
-                for line in process.stderr:
-                    stderr += line
-                if is_binary:
-                    stderr = stderr.decode("utf-8", errors="replace")
-                with job.lock:
-                    if not job.stderr:
-                        job.stderr = ''
-                    job.stderr += stderr
-                returncode = process.poll()
-                if returncode is not None:
+                with job.pipe_process_lock:
+                    process = job.pipe_process
+                    is_binary = job.is_binary
+                    stderr = ''
+                    if not process or isinstance(process,int): # storing returncode when finished - just to reset to soemthing, it is not actually used
+                        raise Exception(f'Can only call subprocess.poll() when process exists (job_id: "{job_id}")')
+                    for line in process.stderr:
+                        stderr += line
+                    if is_binary:
+                        stderr = stderr.decode("utf-8", errors="replace")
                     with job.lock:
-                        job.status = "done"
-                        job.returncode = returncode
-                        job.pipe_process = returncode
-                        job.execution_finished_at = datetime.now(timezone.utc)
-                        job.last_activity_at = job.execution_finished_at
+                        if not job.stderr:
+                            job.stderr = ''
+                        job.stderr += stderr
+                    returncode = process.poll()
+                    if returncode is not None:
+                        with job.lock:
+                            job.status = "done"
+                            job.returncode = returncode
+                            job.pipe_process = returncode
+                            job.execution_finished_at = datetime.now(timezone.utc)
+                            job.last_activity_at = job.execution_finished_at
             except Exception as ex:
                 with job.lock:
                     job.status = "error"
@@ -263,18 +267,19 @@ def worker():
                     job.is_binary = is_binary
                     job.execution_started_at = datetime.now(timezone.utc)
                     job.last_activity_at = job.execution_started_at
-                process = subprocess.Popen(
-                    command,
-                    stdin = subprocess.PIPE,
-                    stdout = subprocess.PIPE,
-                    stderr = subprocess.PIPE,
-                    text = not is_binary,
-                    encoding = "utf-8" if not is_binary else None,
-                    bufsize = 0,
-                )
-                with job.lock:
-                    job.pipe_process = process
-                    job.last_activity_at = datetime.now(timezone.utc)
+                with job.pipe_process_lock:
+                    process = subprocess.Popen(
+                        command,
+                        stdin = subprocess.PIPE,
+                        stdout = subprocess.PIPE,
+                        stderr = subprocess.PIPE,
+                        text = not is_binary,
+                        encoding = "utf-8" if not is_binary else None,
+                        bufsize = 0,
+                    )
+                    with job.lock:
+                        job.pipe_process = process
+                        job.last_activity_at = datetime.now(timezone.utc)
                 job_message_queue.put( JobMessage( job_id = job_id, task = JobTask( action = "pipe_terminate", ) ) )
             except Exception as ex:
                 with job.lock:
@@ -294,45 +299,45 @@ def worker():
 
         elif task.action=="pipe_message":
             try:
-                process = job.pipe_process
-                is_binary = job.is_binary
-                with job.lock:
-                    job.last_activity_at = datetime.now(timezone.utc)
-                if job.status != "running":
-                    raise Exception(f'Can only call process.stdin.write() on jobs with status "running" (job_id: "{job_id}")')
-                if not process or isinstance(process,int): # storing returncode when finished - just to reset to soemthing, it is not actually used
-                    raise Exception(f'Can only call subprocess.stdin.write() when process exists (job_id: "{job_id}")')
+                with job.pipe_process_lock:
+                    process = job.pipe_process
+                    is_binary = job.is_binary
+                    with job.lock:
+                        job.last_activity_at = datetime.now(timezone.utc)
+                    if job.status != "running":
+                        raise Exception(f'Can only call process.stdin.write() on jobs with status "running" (job_id: "{job_id}")')
+                    if not process or isinstance(process,int): # storing returncode when finished - just to reset to soemthing, it is not actually used
+                        raise Exception(f'Can only call subprocess.stdin.write() when process exists (job_id: "{job_id}")')
 
-                input_request_id, inp, read_convention = task.command
+                    input_request_id, inp, read_convention = task.command
 
-                with job.lock:
-                    if input_request_id in job.stdout_pipe:
-                        raise Exception(f'Can only call process.stdin.write() with new input id, input_id: "{input_request_id}" (job_id: "{job_id}")')
-                    job.stdout_pipe[input_request_id] = {
-                        'stdin': inp,
-                    }
-                    job.last_activity_at = datetime.now(timezone.utc)
-                if not is_binary:
-                    process.stdin.write(inp + "\n")
-                else:
-                    process.stdin.write(inp.encode() + b"\n")
-                process.stdin.flush()
+                    with job.lock:
+                        if input_request_id in job.stdout_pipe:
+                            raise Exception(f'Can only call process.stdin.write() with new input id, input_id: "{input_request_id}" (job_id: "{job_id}")')
+                        job.stdout_pipe[input_request_id] = {
+                            'stdin': inp,
+                        }
+                        job.last_activity_at = datetime.now(timezone.utc)
+                    if not is_binary:
+                        process.stdin.write(inp + "\n")
+                    else:
+                        process.stdin.write(inp.encode() + b"\n")
+                    process.stdin.flush()
 
-                response = read_stdout_per_convention(process,read_convention)
-                with job.lock:
-                    if is_binary:
-                        binary_bucket_id = str(uuid.uuid4())
-                        binary_bucket = BinaryDataBucket(
-                            bucket_id = binary_bucket_id,
-                            data = response,
-                            job_belonging_to_id = job.job_id,
-                        )
-                        binary_responses_storage[binary_bucket_id] = binary_bucket
-                        response = binary_bucket_id
-                    job.last_activity_at = datetime.now(timezone.utc)
-                    job.stdout_pipe[input_request_id]['stdout'] = response
+                    response = read_stdout_per_convention(process,read_convention)
+                    with job.lock:
+                        if is_binary:
+                            binary_bucket_id = str(uuid.uuid4())
+                            binary_bucket = BinaryDataBucket(
+                                bucket_id = binary_bucket_id,
+                                data = response,
+                                job_belonging_to_id = job.job_id,
+                            )
+                            binary_responses_storage[binary_bucket_id] = binary_bucket
+                            response = binary_bucket_id
+                        job.last_activity_at = datetime.now(timezone.utc)
+                        job.stdout_pipe[input_request_id]['stdout'] = response
 
-                raise NotImplementedError('cli_proxy_caller: pipe_message: not implemented')
             except Exception as ex:
                 with job.lock:
                     job.status = "error"

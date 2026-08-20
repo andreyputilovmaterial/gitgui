@@ -26,6 +26,10 @@
 .mdm-git-gui-historyfileslistview .mdm-ui-record > *:last-child {
   padding-right: 0;
 }
+
+.mdm-git-gui-historyfileslistview .files-record .link-view-file, .mdm-git-gui-historyfileslistview .files-record .link-download-file {
+  position: relative;
+}
 .mdm-git-gui-historyfileslistview .files-record .link-view-file > a, .mdm-git-gui-historyfileslistview .files-record .link-download-file > a {
   display: block;
   width: 21px;

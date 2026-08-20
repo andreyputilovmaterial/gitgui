@@ -15,6 +15,7 @@ import ComponentSectionRollup from './common_components/rollable_sections/index'
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
+import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import './common_components/css_grid/styles.css';
 import { ModalsSite, createModal } from './common_components/modals/modals';
 import RepoInitView from './app/repoinitview/init_repo';
@@ -61,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'component-tabbed-panes': ComponentTabbedPanes,
       'component-tabbed-pane': ComponentTabbedPane,
       'component-filter-records-form': ComponentFilterRecordsForm,
+      'component-loader-spinner': ComponentLoaderSpinner,
       'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
       'maingui-view': MainView,
@@ -382,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
           configAskFor()
         }
       });
-      
+
       return {
         errors,
         repoStatus,
@@ -404,6 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-tabbed-panes', ComponentTabbedPanes);
   app.component('component-tabbed-pane', ComponentTabbedPane);
   app.component('component-filter-records-form', ComponentFilterRecordsForm);
+  app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.mount('#gitui_app');
 
 

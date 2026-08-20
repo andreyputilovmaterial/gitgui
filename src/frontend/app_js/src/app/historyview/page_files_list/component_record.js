@@ -22,8 +22,8 @@ const Record = {
   template: `
 <div class="error">{{ error }}</div>
 <div :class="[...['files-record','mdm-ui-record'],...componentFilterRecordsGetClassesCb({'filepath':filepath})]" :key="filepath" :data-recordsfilter-filepath="filepath">
-  <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-1" title="View file"><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
-  <span class="link-download-file mdm-ui-record-col-download-file mdm-ui-record-col-2" title="Download file"><span class="label">Download file: </span><a @click.prevent="handleDownloadFile" href="#!" download>⇩</a></span>
+  <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-1" title="View file"><component-loader-spinner v-if="fileViewLinkBusy" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
+  <span class="link-download-file mdm-ui-record-col-download-file mdm-ui-record-col-2" title="Download file"><component-loader-spinner v-if="fileDownloadLinkBusy" /><span class="label">Download file: </span><a @click.prevent="handleDownloadFile" href="#!" download>⇩</a></span>
   <span class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" title="File path"><span class="label">File path: </span>{{ filepath }}</span>
 </div>
 `,
@@ -32,9 +32,12 @@ const Record = {
   setup(props) {
 
     const error = ref('');
+    const fileViewLinkBusy = ref(false);
+    const fileDownloadLinkBusy = ref(false);
 
     const navigateFileViewPage = async () => {
       try {
+        fileViewLinkBusy.value = true;
         const resourcepath = `${props.hash}:${props.filepath}`;
         const filename = `${resourcepath}`.split('/').pop();
 
@@ -59,14 +62,19 @@ const Record = {
 
         await props.repoCallbacks.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
 
+        fileViewLinkBusy.value = false;
         error.value = '';
 
       } catch(e) {
         if( e instanceof Error ) {
           logError(e);
           logError(`Failed to navigate to page: history-file-view/${props?.hash}`);
+          fileViewLinkBusy.value = false;
           throw e;
         }
+        fileViewLinkBusy.value = false;
+      } finally {
+        fileViewLinkBusy.value = false;
       }
     };
 
@@ -75,6 +83,7 @@ const Record = {
       // git cat-file blob
       const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
       try {
+        fileDownloadLinkBusy.value = true;
         error.value = '';
         const response = await props.repoCallbacks.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],true);
         if( !(response.returncode===0) || notEmpty(response.stderr) ) {
@@ -109,15 +118,19 @@ const Record = {
         // a.click();
         // URL.revokeObjectURL(blobUrl);
         error.value = '';
+        fileDownloadLinkBusy.value = false;
 
       } catch(e) {
         logError(e);
         logError(`Failed fetching file for hash "${props.hash}", path "${props.filepath}"`);
+        fileDownloadLinkBusy.value = false;
         throw e;
+      } finally {
+        fileDownloadLinkBusy.value = false;
       }
     };
 
-    return { navigateFileViewPage, handleDownloadFile, error };
+    return { navigateFileViewPage, handleDownloadFile, fileViewLinkBusy, fileDownloadLinkBusy, error };
   },
 };
 

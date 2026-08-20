@@ -24,9 +24,8 @@ const View = {
 <div class="mdm-git-gui-fileview">
   <form  @submit.prevent="resolve">
     <fieldset class="mdmreport-controls">
-      <p>Hey your file here</p>
+      <h2><template v-if="resourcepathRevisionPart">View file <span class="resource resource-filepath">{{ resourcepathFilepathPart }}</span> from revision <span class="resource resource-revision">{{ resourcepathRevisionPart }}</span></template><template v-else>View file <span class="resource resource-resourcepath">{{ resourcepath }}</span></template></h2>
       <div class="error">{{ error }}</div>
-      <h2>{{ resourcepath }}</h2>
       <textarea readonly disabled class="mdm-git-gui-filecontents">{{ contentAsText }}</textarea>
       <div><input type="submit" value="Close" class="gitgui-button-close"></input></div>
     </fieldset>
@@ -35,9 +34,12 @@ const View = {
 `,
   components: {
   },
-  setup() {
+  setup(props) {
 
     const error = ref('');
+    const isPathWithRevision = v => /^(\w+):(.*)/.test(`${v}`);
+    const resourcepathRevisionPart = ref( isPathWithRevision(props.resourcepath) ? `${props.resourcepath}`.replace(/^(\w+):(.*)$/,'$1') : null );
+    const resourcepathFilepathPart = ref( isPathWithRevision(props.resourcepath) ? `${props.resourcepath}`.replace(/^(\w+):(.*)$/,'$2') : props.resourcepath );
 
     onMounted(async () => {
       await Promise.all([
@@ -47,6 +49,9 @@ const View = {
 
     return {
       error,
+      resourcepathRevisionPart,
+      resourcepathFilepathPart,
+      isPathWithRevision,
     };
   },
 };

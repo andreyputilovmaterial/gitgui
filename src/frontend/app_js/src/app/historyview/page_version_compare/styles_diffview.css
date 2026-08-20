@@ -19,15 +19,33 @@
   margin: 0;
   padding: 1px 0;
 }
-.mdm-git-gui-diffview  .linenumber-and-content-columns {
+.mdm-git-gui-diffview .linenumber-and-content-columns {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
 }
-.mdm-git-gui-diffview  .linenumber-and-content-columns > * {
+.mdm-git-gui-diffview .linenumber-and-content-columns > * {
   flex: 1 1 100%;
 }
-.mdm-git-gui-diffview  .linenumber-and-content-columns > *.linenum-col {
+.mdm-git-gui-diffview .linenumber-and-content-columns > *.linenum-col {
   width: 40px;
   flex: 0 0 40px;
+}
+.mdm-git-gui-diffview .diff-outputs .status-ins {
+  background: #dafbe1;
+}
+.mdm-git-gui-diffview .diff-outputs .status-del {
+  background: #ffebe9;
+}
+.mdm-git-gui-diffview .diff-outputs .status-mod {
+  background: #ffebe9;
+}
+.mdm-git-gui-diffview .diff-outputs .linenum-col .status-ins {
+  background: #aceebb;
+}
+.mdm-git-gui-diffview .diff-outputs .linenum-col .status-del {
+  background: #ffcecb;
+}
+.mdm-git-gui-diffview .diff-outputs .linenum-col .status-mod {
+  background: #f5eec1;
 }

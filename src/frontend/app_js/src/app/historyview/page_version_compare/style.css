@@ -39,5 +39,5 @@
   transform: translateY(-60%);
 }
 .mdm-git-gui-diff-records .diff-record > .mdm-ui-rollup > .mdm-ui-rollup-body {
-
+  padding: 7px;
 }

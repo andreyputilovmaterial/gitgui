@@ -55,7 +55,7 @@ import codecs
 
 
 def does_buffer_include_zero_byte(bytes):
-  return b'0' in bytes
+  return b'\x00' in bytes
 
 
 def detect_bom(data):
@@ -96,14 +96,12 @@ def detect_bom(data):
 
 def detect_type(data, filename):
     encoding, bom, bom_len = detect_bom(data)
-
     if bom:
         try:
             data[bom_len:].decode(encoding=encoding, errors='strict')
             return 'text'
         except UnicodeDecodeError:
             return 'binary'
-
     if does_buffer_include_zero_byte(data):
         return 'binary'
 

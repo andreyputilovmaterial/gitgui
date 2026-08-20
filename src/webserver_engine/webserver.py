@@ -1,15 +1,12 @@
 
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse # for finding handler for the endpoint - we need to know path
-# import html # for sanitizing response on errors
-# import re
 from dataclasses import dataclass
 
 
 
 
 from .helper_logger_funcs import print_console, print_console_err, print_console_err_fulltrace, print_console_green, string_err_fulltrace
-# from .helper_utility_funcs import sanitize_dom
 
 # sorry very stupid
 from .helper_logger_funcs import config as logging_helper_config
@@ -71,9 +68,11 @@ class Webserver:
         try:
             server.serve_forever()
         except KeyboardInterrupt:
-            print("\n\033[31mStopped (keyboard interrupt)\033[32m")
+            print("\n\033[31mStopped (keyboard interrupt)\033[0m")
+            # print("\033[0m", end="", flush=True)
         finally:
             server.server_close()
+            # print("\033[0m", end="", flush=True)
 
     def _get_handler(self,endpoints):
         server = self

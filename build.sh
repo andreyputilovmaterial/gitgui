@@ -27,6 +27,19 @@ echo -
 echo -
 
 
+echo "upd optional dependencies for textconv processors"
+find src/textconv/processors -type f -path '*/requirements.txt' -print0 | 
+while IFS= read -r -d '' requirements; do
+    echo "installing for $requirements:"
+    if ! "$pythonexecutable" -m pip install -r "$requirements"; then
+        echo "WARNING: not installed"
+    fi
+done
+echo "done"
+echo -
+echo -
+
+
 echo "Update program version"
 mkdir -p src/GENERATED
 echo "" >> src/GENERATED/__init__.py

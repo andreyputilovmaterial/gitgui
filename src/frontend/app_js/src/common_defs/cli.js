@@ -11,7 +11,7 @@ export function genId(command) {
 }
 
 
-export const prettyprintBytes = bytes => bytes.length<65 ? `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]`;
+export const prettyprintBytes = bytes => bytes.length>64 ? `[ ${bytes.slice(0,64).map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]`;
 
 
 export function cliCommandRaw(command,is_binary=false) {

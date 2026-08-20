@@ -2,6 +2,7 @@
 
 from .text import textconv as process_text
 from .mdd import textconv as textconv_mdd
+from .markitdown import textconv as textconv_md
 
 matches = [
     ( ['.mdd'], 'mdd' ),
@@ -18,8 +19,8 @@ processors = {
     'spss': lambda d,f: 'TEXTCONV: spss textconv: not implemented',
     'csv': lambda d,f: 'TEXTCONV: csv textconv: not implemented',
     'archive': lambda d,f: 'TEXTCONV: archive textconv: not implemented',
-    'office': lambda d,f: 'TEXTCONV: markitdown textconv: not implemented',
-    'md': lambda d,f: 'TEXTCONV: markitdown textconv: not implemented',
+    'office': textconv_md,
+    'md': textconv_md,
     'mdd': textconv_mdd,
     'xml': lambda d,f: 'TEXTCONV: xml textconv: not implemented',
     'image': lambda d,f: 'TEXTCONV: image textconv: not implemented',

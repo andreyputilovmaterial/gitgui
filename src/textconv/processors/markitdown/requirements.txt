@@ -1,0 +1,1 @@
+markitdown[pdf,xlsx,xlrd,docx,pptx,xls,outlook]

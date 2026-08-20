@@ -58,3 +58,7 @@ Can this be configured in a more detailed way? Like, globally exclude DDF but st
 
 ## When are snapshots captured?
 Only when you make a "commit". Press a button and write a description — that becomes the version name in the history log. However, since it's a CLI command, it can be fully automated, like on Sundays with the week number.
+
+## How to revert back and delete history
+Q: Ok, I played with it and inited some folder as repo. How do I undo?
+A: all history is literally stored in "git repo" folder. Simply delete it, and there are no other traces left. ASimple as is.

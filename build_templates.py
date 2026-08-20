@@ -64,6 +64,8 @@ def scan_folder(path,is_binary=False):
 
 
     for path in root.rglob("*"):
+        def norm(path):
+            return f'{path}'.replace('\\','/')
         if path.is_file():
             if any(part in excluded for part in path.parts):
                 continue
@@ -80,7 +82,7 @@ def scan_folder(path,is_binary=False):
                     print(f'Failed reading {path}: {e}',file=sys.stdout)
                     content = None
 
-                files_data.append((str(rel_path), content))
+                files_data.append((norm(str(rel_path)), content))
             except Exception as e:
                 print(f'Failed processing {path}: {e}',file=sys.stdout)
                 raise e

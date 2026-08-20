@@ -21,6 +21,7 @@ processors = {
     'md': lambda d,f: 'TEXTCONV: markitdown textconv: not implemented',
     'mdd': lambda d,f: 'TEXTCONV: mdd textconv: not implemented',
     'xml': lambda d,f: 'TEXTCONV: xml textconv: not implemented',
+    'image': lambda d,f: 'TEXTCONV: image textconv: not implemented',
     'text': process_text,
     'binary': lambda d,f: 'TEXTCONV: binary file, can\'t be shown as text',
 }

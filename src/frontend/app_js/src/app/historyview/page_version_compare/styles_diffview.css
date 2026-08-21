@@ -6,6 +6,17 @@
 }
 
 
+.mdm-git-gui-diffview .memorysave-form .gitgui-button-show {
+  border: none;
+  color: #4950f0;
+  text-decoration: none;
+  transition: all 600me ease;
+}
+.mdm-git-gui-diffview .memorysave-form .gitgui-button-show:hover {
+  color: #7080ff;
+  text-decoration: underline;
+}
+
 .mdm-git-gui-diffview .two-sided-view {
   display: flex;
   flex-direction: row;

@@ -1,5 +1,5 @@
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 import logError from '../../../error_logger/logError';
 
@@ -98,8 +98,15 @@ const View = {
   template: `
 <div class="mdm-git-gui-diffview">
   <div class="error">{{ error }}</div>
-  <template v-if="(!hasValue(linesLeft) || !hasValue(linesRight)) && !error">Quering data, please wait...</template>
-  <template v-else-if="hasValue(linesLeft) && hasValue(linesRight)">
+  <template v-if="(!hasValue(statisticsLeft.textFileSize) || !hasValue(statisticsRight.textFileSize)) && !error">Quering data, please wait...</template>
+  <template v-else-if="memorysave">
+    <form  @submit.prevent="memorysave=false" class="mdmreport-controls memorysave-form">
+      <fieldset class="mdmreport-controls">
+        <div><button type="submit" class="gitgui-button-show">Click to show all {{ Math.max(statisticsLeft.textLineCount,statisticsRight.textLineCount) }} lines</button></div>
+      </fieldset>
+    </form>
+  </template>
+  <template v-else>
     <div class="two-sided-view">
       <div class="pane pane-left diff-outputs">
         <div class="linenumber-and-content-columns">
@@ -130,6 +137,20 @@ const View = {
     const error = ref('');
     const linesLeft = ref(undefined);
     const linesRight = ref(undefined);
+    const statisticsLeft = ref({});
+    const statisticsRight = ref({});
+    const memorysave = ref(true);
+    const memorySaveOffPromiseContext = {
+      resolve: () => { throw new Error('promise not inited'); },
+      reject: () => { throw new Error('promise not inited'); },
+      promise: undefined,
+    };
+    const memorySaveOff = new Promise((resolve,reject)=>{
+      memorySaveOffPromiseContext.resolve = resolve;
+      memorySaveOffPromiseContext.reject = reject;
+    });
+    memorySaveOffPromiseContext.promise = memorySaveOff;
+
     const hasValue = v => {
       if( v==='' )
         return true;
@@ -149,8 +170,10 @@ const View = {
     const fetchDataLeft = async () => {
       try {
         const binaryDataLeft = await getContentsFromBlob(props.blobIdOld);
-        const txtLinesLeft = await props.repoCallbacks.textconv(binaryDataLeft,props.filepath);
-        return txtLinesLeft;
+        statisticsLeft.value.binaryFileSize = binaryDataLeft.length;
+        const txtLeft = await props.repoCallbacks.textconv(binaryDataLeft,props.filepath);
+        statisticsLeft.value.textFileSize = txtLeft.length;
+        return txtLeft;
       } catch(e) {
         error.value = e;
         logError(e);
@@ -161,8 +184,10 @@ const View = {
     const fetchDataRight = async () => {
       try {
         const binaryDataRight = await getContentsFromBlob(props.blobIdNew);
-        const txtLinesRight = await props.repoCallbacks.textconv(binaryDataRight,props.filepath);
-        return txtLinesRight;
+        statisticsRight.value.binaryFileSize = binaryDataRight.length;
+        const txtRight = await props.repoCallbacks.textconv(binaryDataRight,props.filepath);
+        statisticsRight.value.textFileSize = txtRight.length;
+        return txtRight;
       } catch(e) {
         error.value = e;
         logError(e);
@@ -178,7 +203,16 @@ const View = {
         const leftNomralizedLfCr = normalizeLfCr(left);
         const rightNomralizedLfCr = normalizeLfCr(right);
         const leftLines = leftNomralizedLfCr.split('\n');
+        statisticsLeft.value.textLineCount = leftLines.length;
         const rightLines = rightNomralizedLfCr.split('\n');
+        statisticsRight.value.textLineCount = rightLines.length;
+        if( (leftLines.length>10000) || (rightLines.length>10000) ) {
+          memorysave.value = true;
+        } else {
+          memorysave.value = false;
+          memorySaveOffPromiseContext.resolve(true);
+        }
+        await memorySaveOff;
         const diffLinesPatches = props.repoCallbacks.diff(leftLines,rightLines);
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];
@@ -237,8 +271,12 @@ const View = {
         fetchDataRight(),
       ]).then(prepareDiffs)
     });
+    watch(memorysave,()=>{
+      if(!memorysave.value)
+        memorySaveOffPromiseContext.resolve(true);
+    });
 
-    return { error, linesLeft, linesRight, hasValue };
+    return { error, linesLeft, linesRight, hasValue, statisticsLeft, statisticsRight, memorysave };
   },
 }
 

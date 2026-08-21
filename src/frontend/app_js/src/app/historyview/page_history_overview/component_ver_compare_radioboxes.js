@@ -1,4 +1,5 @@
 
+import { ref } from 'vue';
 
 import './style_ver_compare_form_controls.css';
 
@@ -10,22 +11,32 @@ const FormCompareVersionsControls = {
   ],
   template: `
 <div class="mdmreport-controls-group mdmreport-controls-group-nonegmargin"><fieldset class="mdmreport-controls">
-  <label class="form-fields-compare-left" title="Select as Left for Compare"><input
-    type="radio"
-    v-model="formVerCompareFields.compareLeft"
-    :value="hash"
-    class=""
-  /><span class="description">Left:</span></label>
-  <label class="form-fields-compare-right" title="Select as Right for Compare"><input
+  <label class="form-fields-compare-left" title="Select as Left for Compare">
+    <input
+      v-if="leftIsPossible"
+      type="radio"
+      v-model="formVerCompareFields.compareLeft"
+      :value="hash"
+      class=""
+    />
+    <span v-if="leftIsPossible" class="description">Left:</span>
+  </label>
+  <label class="form-fields-compare-right" title="Select as Right for Compare">
+    <input
+      v-if="rightIsPossible"
       type="radio"
       v-model="formVerCompareFields.compareRight"
       :value="hash"
       class=""
-    /><span class="description">Right:</span></label>
+    />
+    <span v-if="rightIsPossible" class="description">Right:</span>
+  </label>
 </fieldset></div>
 `,
-  setup() {
-    return {};
+  setup(props) {
+    const leftIsPossible = ref( ['worktree','index',].includes(props.hash) ? false : true );
+    const rightIsPossible = ref( ['worktree',].includes(props.hash) ? false : true );
+    return { leftIsPossible, rightIsPossible, };
   },
 };
 

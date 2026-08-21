@@ -30,6 +30,7 @@ const View = {
   <template v-else-if="!!changedFiles">
     <component-filter-records-form :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }" :setComponentFilterRecordsClasses="setComponentFilterChangedfilesRecordsClasses">
       <div class="mdm-git-gui-diff-records diff-records mdm-ui-records">
+        <div v-if="!(changedFiles.length>0)">Nothing to show</div>
         <diff-record
           v-for="h in changedFiles"
           :key="\`\${h.old_mode}-\${h.new_mode}-\${h.old_oid}-\${h.new_oid}-\${h.status}-\${h.path}\`"
@@ -63,7 +64,7 @@ const View = {
       function handleResult(data) {
         // :<old mode> <new mode> <old oid> <new oid> <status>\t<path>\0
 
-        // Helper function to split Uint8Arrays
+        // Helper function to split Uint8Array
         function splitBytes(bytes, separator) {
           const result = [];
           let start = 0;
@@ -215,7 +216,7 @@ const View = {
           else
             throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: not implemented`);
         })();
-        const result = ( props.hashLeft==props.hashRight ? '' : await props.repoCallbacks.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]) );
+        const result = ( props.hashLeft==props.hashRight ? new Uint8Array([]) : await props.repoCallbacks.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]) );
         changedFiles.value = handleResult(result);
         error.value = '';
       } catch(e) {

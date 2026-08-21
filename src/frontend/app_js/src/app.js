@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }));
         }
         try {
-          const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict'])
+          const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict']);
           if( (response.returncode==128) && (/.*does not have any commits.*/.test(response?.stderr)) ) {
             const stdout = '';
             try {
@@ -339,6 +339,67 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       repoCallbacks.value.updateHistory = updateHistory;
+
+      async function checkIfSomethingIsInStagingArea() {
+        function handleResponse(response) {
+          if( response.returncode === 0 )
+            return false;
+          else if( response.returncode === 1 )
+            return true;
+          else
+            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: "${response.stdout}" ( returncode == ${response.returncode}, stderr == "${response.stderr}" )`);
+        }
+        try {
+          const response = await executeGitCommand(['git','diff','--cached','--quiet']);
+          // git diff --cached --quiet
+          // Exit status tells you the answer:
+          // 0 → nothing staged
+          // 1 → something is staged
+          // From Python:
+          // result = subprocess.run(["git", "diff", "--cached", "--quiet"])
+          // has_staged = result.returncode != 0
+          // If you also want to see what is staged, use:
+          // git diff --cached --stat
+          // or:
+          // git diff --cached --stat
+
+          if( response?.stderr )
+            throw response?.stderr;
+          try {
+            repoStatus.value.isSomethingInStagingArea = handleResponse(response);
+          } catch(e) {
+            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: (${response.returncode}) "${response.stdout}": ${e}`);
+          }
+        } catch (e) {
+          logError(e);
+          return;
+        }
+      }
+      repoCallbacks.value.checkIfSomethingIsInStagingArea = checkIfSomethingIsInStagingArea;
+
+      async function getHEAD() {
+        function handleResponse(response) {
+          if( (response.returncode === 0) && !(response.stderr) )
+            return `${response.stdout}`.trim();
+          else
+            throw new Error(`getHEAD: failed to parse response: "${response.stdout}" ( returncode == ${response.returncode}, stderr == "${response.stderr}" )`);
+        }
+        try {
+          const response = await executeGitCommand(['git', 'rev-parse', 'HEAD']);
+
+          if( response?.stderr )
+            throw response?.stderr;
+          try {
+            repoStatus.value.HEAD = handleResponse(response);
+          } catch(e) {
+            throw new Error(`getHEAD: failed to parse response: (${response.returncode}) "${response.stdout}": ${e}`);
+          }
+        } catch (e) {
+          logError(e);
+          return;
+        }
+      }
+      repoCallbacks.value.getHEAD = getHEAD;
 
       async function setIsOnlineTimer() {
         const fn = async function () {
@@ -374,6 +435,8 @@ document.addEventListener("DOMContentLoaded", () => {
           configAskFor(),
           gitignoreRead(),
           setIsOnlineTimer(),
+          checkIfSomethingIsInStagingArea(),
+          getHEAD(),
         ])
       });
 

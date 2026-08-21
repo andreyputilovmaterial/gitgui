@@ -1,6 +1,11 @@
 
 
-
+.mdm-git-gui-historyview .history-record {
+  border: 1px solid transparent;
+}
+.mdm-git-gui-historyview .history-record.history-record-HEAD {
+  /* border-color: #339944; */
+}
 
 .mdm-git-gui-historyview .history-record .hash .label {
   display: none;
@@ -92,6 +97,14 @@
   grid-column: 1 / -1;
   /* margin-top: -8px; /\* move upwards, to stick to base line, as it jumps to the next line with grid-column property *\/
   padding-left: 0; */
+  padding-top: 1px;
+}
+.mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message .note {
+  margin: 0;
+  padding: 0 0 2px;
+}
+.mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message .note .footnote {
+  color: #999;
 }
 @media (min-width: 1650px) {
   .mdm-git-gui-historyview .history-record > .mdm-ui-record-col-message {

@@ -53,6 +53,8 @@ const View = {
     onMounted(async () => {
       await Promise.all([
         props.repoCallbacks.updateHistory(),
+        props.repoCallbacks.getHEAD(),
+        props.repoCallbacks.checkIfSomethingIsInStagingArea(),
         navigateHistoryHomePage(),
       ])
     });

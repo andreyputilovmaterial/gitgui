@@ -21,8 +21,8 @@ const View = {
   ],
   template: `
 <div class="mdm-git-gui-historylogview">
-  <p class="description">History of previous revisions. Each is a snapshot of previous state.</p>
-  <form @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+  <p class="description">History of revisions. Each is a snapshot of your files at that point in time.</p>
+  <form @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <div class="error">{{ error }}</div>
     <div class="error">{{ validationMessage }}</div>
     <template v-if="!repoStatus?.history && !error">
@@ -52,7 +52,7 @@ const View = {
       await props.repoCallbacks.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
     };
 
-    const handleSubmit = async () => {
+    const handleCompare = async () => {
       try {
         isBusy.value = true;
         error.value = '';
@@ -85,7 +85,7 @@ const View = {
       error,
       formVerCompareFields: formFields,
       validationMessage,
-      handleSubmit,
+      handleCompare,
     };
   },
 };

@@ -11,8 +11,7 @@ export function formatDate(val) {
         second: "2-digit",      // omit if not wanted
         timeZoneName: "short",
     });
-    const result = formatter.format(dt)
-    return result
+    return formatter.format(dt);
   }
   // const content = el.innerText||el.textContent;
   const content = `${val}`

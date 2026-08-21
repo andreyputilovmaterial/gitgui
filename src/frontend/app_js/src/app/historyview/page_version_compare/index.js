@@ -181,7 +181,41 @@ const View = {
       }
       try {
         // git diff --raw -z --no-abbrev -M ec18f2c b4c0edf
-        const result = await props.repoCallbacks.executeGitBinaryCommand(['git', 'diff', '--raw', '-z', '--no-abbrev', '-M', props.hashLeft, props.hashRight]);
+        const { leftIsWorktree, leftIsIndex, rightIsWorktree, rightIsIndex, } = {
+          leftIsWorktree: props.hashLeft==='worktree',
+          leftIsIndex: props.hashLeft==='index',
+          rightIsWorktree: props.hashRight==='worktree',
+          rightIsIndex: props.hashRight==='index',
+        };
+        const { leftIsHash, rightIsHash, } = {
+          leftIsHash: !leftIsWorktree && !leftIsIndex,
+          rightIsHash: !rightIsWorktree && !rightIsIndex,
+        };
+        const args = (()=>{
+          if     ( leftIsWorktree && rightIsWorktree )
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: compare same revisions - should not be called`);
+          else if( leftIsWorktree && rightIsIndex )
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we can't show diff when worktree is left source, please select it as right`);
+          else if( leftIsWorktree && rightIsHash )
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we can't show diff when worktree is left source, please select it as right`);
+          else if( leftIsIndex && rightIsWorktree )
+            // return ['--cached'];
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we don't show diff with worktree - please stage files first`);
+          else if( leftIsIndex && rightIsIndex )
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: compare same revisions - should not be called`);
+          else if( leftIsIndex && rightIsHash )
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we can't show diff when index is left source and worktree is right, please select them in reverse order`);
+          else if( leftIsHash && rightIsWorktree )
+            // return [ props.hashLeft ];
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we don't show diff with worktree - please stage files first`);
+          else if( leftIsHash && rightIsIndex )
+            return [ '--cached', props.hashLeft ];
+          else if( leftIsHash && rightIsHash )
+            return [ props.hashLeft, props.hashRight ];
+          else
+            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: not implemented`);
+        })();
+        const result = ( props.hashLeft==props.hashRight ? '' : await props.repoCallbacks.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]) );
         changedFiles.value = handleResult(result);
         error.value = '';
       } catch(e) {

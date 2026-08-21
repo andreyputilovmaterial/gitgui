@@ -27,13 +27,19 @@ class MDMDocument:
             # openConstants_oREADWRITE = 2
             if not(Path(mdd_path).is_file()):
                 raise FileNotFoundError(f'file not found: {mdd_path}')
+            print(f'MDD TEXTCONV: Opening file with method Open(): "{mdd_path}"') # TODO: DEBUG:
             mDocument.Open( mdd_path, "", openConstants_oREAD )
+            print(f'MDD TEXTCONV: Done') # TODO: DEBUG:
             self.document = mDocument
         elif method=='join':
             mDocument = win32com.client.Dispatch("MDM.Document")
             if not(Path(mdd_path).is_file()):
                 raise FileNotFoundError(f'file not found: {mdd_path}')
+            print(f'MDD TEXTCONV: Opening file with method Join(): "{mdd_path}"') # TODO: DEBUG:
+            if 'Question'.lower() in [f'{ctx}'.lower() for ctx in mDocument.Contexts]:
+                mDocument.Contexts.Current = 'Question'
             mDocument.Join(mdd_path, "{..}", 1, 32|16|512)
+            print(f'MDD TEXTCONV: Done') # TODO: DEBUG:
             self.document = mDocument
         else:
             raise ValueError(f'MDM Open: Unknown open method, {method}')
@@ -63,11 +69,19 @@ def textconv(data,filename):
         return f'TEXTCONV MDD: win32com not available - will not be able to show MDD files ({win32com_import_error})'
     with tempfile.TemporaryDirectory() as tmp_dir:
         temp_filename = Path(tmp_dir) / Path(filename).name
+        print(f'MDD TEXTCONV: Preparing local MDD at "{temp_filename}"') # TODO: DEBUG:
         with open(temp_filename,'wb') as f:
             f.write(data)
         try:
-            with MDMDocument(temp_filename,'join') as MDD:
-                text = MDD.document.Script
+            try:
+                print(f'MDD TEXTCONV: Calling for method Open()') # TODO: DEBUG:
+                with MDMDocument(temp_filename,'open') as MDD:
+                    text = MDD.document.Script
+            except Exception as e:
+                print(f'MDD TEXTCONV: Failed with message "{e}"') # TODO: DEBUG:
+                print(f'MDD TEXTCONV: Calling fallback for method Join()') # TODO: DEBUG:
+                with MDMDocument(temp_filename,'join') as MDD:
+                    text = MDD.document.Script
         except Exception as e:
             return f'{e}'
 

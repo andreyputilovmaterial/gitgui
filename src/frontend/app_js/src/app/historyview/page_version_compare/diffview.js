@@ -75,11 +75,13 @@ function identifyLineStatus(line) {
         hasUnchanged = true;
     }
   }
-  if( !!hasInserts && !hasDeletions && !hasUnchanged )
+  if( !!hasInserts && !!hasDeletions )
+    return 'mod';
+  else if( !!hasInserts && !hasDeletions && !hasUnchanged )
     return 'ins';
   else if( !hasInserts && !!hasDeletions && !hasUnchanged )
     return 'del';
-  else if( !!hasInserts && !!hasDeletions && !hasUnchanged )
+  else if( !hasInserts && !hasDeletions && !!hasUnchanged )
     return 'keep';
   else if( !hasInserts && !hasDeletions && !hasUnchanged )
     return 'blank';
@@ -102,11 +104,12 @@ const View = {
   <template v-else-if="memorysave">
     <form  @submit.prevent="memorysave=false" class="mdmreport-controls memorysave-form">
       <fieldset class="mdmreport-controls">
-        <div><button type="submit" class="gitgui-button-show">Click to show all {{ Math.max(statisticsLeft.textLineCount,statisticsRight.textLineCount) }} lines</button></div>
+        <div><button type="submit" class="gitgui-button-show">Click to calc diff ({{ Math.max(statisticsLeft.textLineCount,statisticsRight.textLineCount) }} lines)</button></div>
       </fieldset>
     </form>
   </template>
   <template v-else>
+    <div v-if="!linesLeft || !linesRight" class="note">Calculating diff...</div>
     <div class="two-sided-view">
       <div class="pane pane-left diff-outputs">
         <div class="linenumber-and-content-columns">
@@ -217,10 +220,10 @@ const View = {
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];
         for( const block of diffLinesAllBlocks ) {
-          const steps = Math.max( block.lhs.items.length, block.rhs.items.length );
-          for( let step=0; step<steps; ++step ) {
-            const lline = step<=block.lhs.items.length-1 ? block.lhs.items[step] : '';
-            const rline = step<=block.rhs.items.length-1 ? block.rhs.items[step] : '';
+          const lineNumbersWithinBlock = Math.max( block.lhs.items.length, block.rhs.items.length );
+          for( let lineNumberWithinBlock=0; lineNumberWithinBlock<lineNumbersWithinBlock; ++lineNumberWithinBlock ) {
+            const lline = lineNumberWithinBlock<=block.lhs.items.length-1 ? block.lhs.items[lineNumberWithinBlock] : '';
+            const rline = lineNumberWithinBlock<=block.rhs.items.length-1 ? block.rhs.items[lineNumberWithinBlock] : '';
             const llineSplitByTokens = splitByTokens(lline);
             const rlineSplitByTokens = splitByTokens(rline);
             const diffWithinLine = props.repoCallbacks.diff(llineSplitByTokens,rlineSplitByTokens);
@@ -242,12 +245,12 @@ const View = {
             }
             const line = {
               lhs: {
-                lineNum: 1 + block.lhs.at + Math.max(Math.min(step,block.lhs.items.length-1),0),
+                lineNum: 1 + block.lhs.at + Math.max(Math.min(lineNumberWithinBlock,block.lhs.items.length-1),0),
                 content: ltext,
                 status: identifyLineStatus(ltext),
               },
               rhs: {
-                lineNum: 1 + block.rhs.at + Math.max(Math.min(step,block.rhs.items.length-1),0),
+                lineNum: 1 + block.rhs.at + Math.max(Math.min(lineNumberWithinBlock,block.rhs.items.length-1),0),
                 content: rtext,
                 status: identifyLineStatus(rtext),
               },

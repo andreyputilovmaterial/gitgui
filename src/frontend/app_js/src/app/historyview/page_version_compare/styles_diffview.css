@@ -35,7 +35,15 @@
 .mdm-git-gui-diffview .diff-outputs p {
   white-space: pre;
   margin: 0;
-  padding: 1px 0;
+  padding: 3px 0 3px;
+  font-size: 12px;
+  height: 18px;
+  line-height: 12px;
+  font-weight: 300;
+  color: #222;
+}
+.mdm-git-gui-diffview .diff-outputs p:empty::before {
+  content: "\00a0";
 }
 .mdm-git-gui-diffview .linenumber-and-content-columns {
   display: flex;
@@ -50,13 +58,13 @@
   flex: 0 0 40px;
 }
 .mdm-git-gui-diffview .diff-outputs .status-ins {
-  background: #dafbe1;
+  background: #a0f090;
 }
 .mdm-git-gui-diffview .diff-outputs .status-del {
-  background: #ffebe9;
+  background: #ffa097;
 }
 .mdm-git-gui-diffview .diff-outputs .status-mod {
-  background: #ffebe9;
+  background: #fbd6a6;
 }
 .mdm-git-gui-diffview .diff-outputs .linenum-col .status-ins {
   background: #aceebb;

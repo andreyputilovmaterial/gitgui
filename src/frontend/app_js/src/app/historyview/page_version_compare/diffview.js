@@ -1,5 +1,5 @@
 
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 
 import logError from '../../../error_logger/logError';
 
@@ -216,6 +216,8 @@ const View = {
           memorySaveOffPromiseContext.resolve(true);
         }
         await memorySaveOff;
+        await nextTick();
+        await new Promise(resolve=>setTimeout(resolve,30));
         const diffLinesPatches = props.repoCallbacks.diff(leftLines,rightLines);
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];

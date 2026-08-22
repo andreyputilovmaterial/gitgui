@@ -1,6 +1,21 @@
 
 
 from urllib.parse import urlparse, parse_qs # to detect path within endpoints
+import re
+
+
+
+
+def clean_filename_from_hash(filename):
+	matches = re.match(r'^\s*?(\w+?):(.*)$',filename)
+	if matches:
+		return matches[2]
+	else:
+		return filename
+
+
+
+
 
 def handle_textconv_request(server_instance,config={},added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
@@ -10,6 +25,7 @@ def handle_textconv_request(server_instance,config={},added_data=None):
         method = server_instance.command
         params = parse_qs(parsed.query)
         filename = params.get("filepath", [""])[0]
+        filename = clean_filename_from_hash(filename)
         if method=='POST':
             # Read Content-Length header
             length = int(server_instance.headers["Content-Length"])

@@ -29,13 +29,13 @@ const View = {
         <div class="top-row mdmreport-banner">
           <fieldset class="mdmreport-controls">
             <component-loader-spinner v-if="isBusy" />
-            Cleanup unnecessary files and optimize the local repository: <button  :class="{'click-me-next':!gitPackCompressionIsReady}"type="submit">Start activity</button>
+            Compress and cleanup history: <button  :class="{'click-me-next':!gitPackCompressionIsReady}"type="submit">Start activity</button>
           </fieldset>
         </div>
       </template>
     </form>
     <template v-if="!!repoStatus?.history">
-      <div v-if="!gitPackCompressionIsReady" class="note">Please hit the button above to see packed files.<br /><div class="footnote">WARNING: could take a while</div></div>
+      <div v-if="!gitPackCompressionIsReady" class="note">Please hit the button above to see packed files.<br /><div class="footnote"></div></div>
       <div v-else class="mdm-git-gui-verifypack-inner">
         <div v-if="!allIsReady" class="note">
           Querying data, please wait...
@@ -46,7 +46,7 @@ const View = {
           <div class="">Waiting when info about pack objects is ready... {{ packPhysicalObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
           <div class="">Waiting when appended info from history... {{ packObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
         </div>
-        <component-filter-records-form v-else :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'filePath': 'File path', 'fileMode': 'File Mode', 'length': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
+        <component-filter-records-form v-else :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'revisionAuthor': 'Revision author', 'revisionTimestamp': 'Revision timestamp', 'revisionMessage': 'Revision message', 'filePath': 'File path', 'fileMode': 'File Mode', 'length': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
           <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
             <packobject-record
               v-for="(packObject,hash) in packObjects"
@@ -54,6 +54,9 @@ const View = {
               :hash="packObject.hash"
               :objectType="packObject.objectType"
               :revisionHash="packObject.revisionHash"
+              :revisionAuthor="packObject.revisionAuthor"
+              :revisionTimestamp="packObject.revisionTimestamp"
+              :revisionMessage="packObject.revisionMessage"
               :blobHash="packObject.blobHash"
               :filePath="packObject.filePath"
               :fileMode="packObject.fileMode"
@@ -266,7 +269,7 @@ const View = {
       }
       try {
         const retrievedPackObjects = {};
-        for( const { hash } of props.repoStatus.history) {
+        for( const { hash, author, message, timestamp } of props.repoStatus.history) {
           // 0: Object {
           //   author: The-city-not-present
           //   hash: b4c0edf2997fe2bfef7da19b25b4423635d10323
@@ -274,6 +277,9 @@ const View = {
           //   timestamp: Sun Aug 16 2026 15:12:18 GMT+0300 (Moscow Standard Time)
           // }
           const revisionHash = hash;
+          const revisionAuthor = author;
+          const revisionTimestamp = timestamp;
+          const revisionMessage = message;
           const result = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r',hash,]);
           if( (result.returncode!==0) || !!result?.stderr )
             throw new Error(`returncode ${result.returncode}: ${result?.stderr}`);
@@ -283,12 +289,17 @@ const View = {
             if( /^\s*$/.test(outputsLine) )
               continue;
             const { fileMode, objectType, blobHash, filePath } = parseLsTreeResult( outputsLine );
-            retrievedPackObjects[blobHash] = {
+            if( !retrievedPackObjects[blobHash] )
+              retrievedPackObjects[blobHash] = [];
+            retrievedPackObjects[blobHash].push({
               revisionHash,
+              revisionAuthor,
+              revisionTimestamp,
+              revisionMessage,
               blobHash,
               filePath,
               fileMode,
-            }
+            });
           }
         }
         // packObjects.value = retrievedPackObjects;
@@ -309,16 +320,17 @@ const View = {
         const basePackFilePath = props.repoStatus?.config?.dir_git_repo;
         const packPhysicalObjects = await initGetPackPhysicalObjects(basePackFilePath,packFiles);
         await historyIsReadyPromise;
-        const blobObjects = await initParseHistory();
+        const revisionObjects = await initParseHistory();
         // and finally appended associated data from both together
         const objs = {};
-        for( const [hash,obj] of Object.entries(blobObjects) ) {
-          if(!objs[hash]) objs[hash] = {};
-          objs[hash] = {...objs[hash],...obj};
-        }
         for( const [hash,obj] of Object.entries( packPhysicalObjects) ) {
           if(!objs[hash]) objs[hash] = {};
           objs[hash] = {...objs[hash],...obj};
+        }
+        for( const [hash,revisions] of Object.entries(revisionObjects) ) {
+          if(!objs[hash]) objs[hash] = {};
+          const obj = Array.from(revisions).sort((a, b) => (new Date(b.revisionTimestamp)) - (new Date(a.revisionTimestamp)))[0];
+          objs[hash] = {...obj,...objs[hash]};
         }
         packObjects.value = objs;
       } catch(e) {

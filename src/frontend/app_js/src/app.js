@@ -19,6 +19,7 @@ import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
 import ComponentFormatDate from './common_components/format_date/index';
 import ComponentFormatFilesize from './common_components/format_filesize/index';
+import ComponentFormatHash from './common_components/format_hash/index';
 import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import './common_components/css_grid/styles.css';
 
@@ -93,13 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
 `,
     components: {
       'errorbanner': ErrorView,
-      'component-section-rollup': ComponentSectionRollup,
-      'component-tabbed-panes': ComponentTabbedPanes,
-      'component-tabbed-pane': ComponentTabbedPane,
-      'component-filter-records-form': ComponentFilterRecordsForm,
-      'component-format-date': ComponentFormatDate,
-      'component-format-filesize': ComponentFormatFilesize,
-      'component-loader-spinner': ComponentLoaderSpinner,
       'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
       'page-welcome': PageWelcome,
@@ -525,6 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-filter-records-form', ComponentFilterRecordsForm);
   app.component('component-format-date', ComponentFormatDate);
   app.component('component-format-filesize', ComponentFormatFilesize);
+  app.component('component-format-hash', ComponentFormatHash);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.mount('#gitui_app');
 

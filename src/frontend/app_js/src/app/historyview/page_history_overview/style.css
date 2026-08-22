@@ -123,9 +123,6 @@
 .mdm-git-gui-historyview .history-record > *:last-child {
   padding-right: 0;
 }
-.mdm-git-gui-historyview .history-record .hash-leading {
-  font-weight: 600;
-}
 
 .mdm-git-gui-historyview .history-record .view-files-button, .mdm-git-gui-historyview .history-record .view-files-button:active, .mdm-git-gui-historyview .history-record .view-files-button:link, .mdm-git-gui-historyview .history-record .view-files-button:hover {
   color: #6670bb;

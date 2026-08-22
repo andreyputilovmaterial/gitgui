@@ -14,19 +14,16 @@ import './style.css';
 const Hash = {
   props: [ 'hash', ],
   template: `
-<code><span class="hash-leading">{{ hashLeading }}</span><span class="hash-rest">{{ hashRest }}</span></code>
+<component-format-hash :hash="hash" :highlight="'auto'">
 `,
-  setup(props) {
-    const hash = `${props.hash}`;
-    const hashLeading = ref(hash.slice(0, 7));
-    const hashRest = ref(hash.slice(7));
-    return { hashLeading, hashRest };
+  setup() {
+    return {};
   },
 };
 const HashLocal = {
   props: [],
   template: `
-<code><span class="hash-leading">Worktree</span></code>
+<component-format-hash hash="Worktree" :highlight="'full'">
 `,
   setup() {
     return {};
@@ -35,7 +32,7 @@ const HashLocal = {
 const HashStaged = {
   props: [],
   template: `
-<code><span class="hash-leading">Index</span></code>
+<component-format-hash hash="Index" :highlight="'full'">
 `,
   setup() {
     return {};

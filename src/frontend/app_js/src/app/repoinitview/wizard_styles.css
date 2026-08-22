@@ -75,7 +75,7 @@
   color: #ffffff;
   background: #226633;
   font-weight: 600;
-  forder: 4px solid transparent;
+  border: 4px solid transparent;
 }
 .mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls .click-me-next button:hover, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls button.click-me-next:hover {
   color: #116622;

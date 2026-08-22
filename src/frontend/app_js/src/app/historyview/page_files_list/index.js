@@ -25,7 +25,7 @@ const View = {
 <div class="mdm-git-gui-historyfileslistview">
   <p class="description">View files from revision {{ hash }}</p>
   <div class="error">{{ error }}</div>
-  <template v-if="!filesList && !error">Quering data, please wait...</template>
+  <template v-if="!filesList && !error">Querying data, please wait...</template>
   <template v-else-if="!!filesList">
     <files-records :files="filesList" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :hash="hash" />
   </template>

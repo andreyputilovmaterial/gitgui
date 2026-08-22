@@ -100,7 +100,7 @@ const View = {
   template: `
 <div class="mdm-git-gui-diffview">
   <div class="error">{{ error }}</div>
-  <template v-if="(!hasValue(statisticsLeft.textFileSize) || !hasValue(statisticsRight.textFileSize)) && !error">Quering data, please wait...</template>
+  <template v-if="(!hasValue(statisticsLeft.textFileSize) || !hasValue(statisticsRight.textFileSize)) && !error">Querying data, please wait...</template>
   <template v-else-if="memorysave">
     <form  @submit.prevent="memorysave=false" class="mdmreport-controls memorysave-form">
       <fieldset class="mdmreport-controls">

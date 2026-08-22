@@ -2,3 +2,39 @@
 .mdm-git-gui-verifypack .mdmreport-controls {
   position: relative;
 }
+
+.mdm-git-gui-verifypack .note {
+  margin-top: 7px;
+}
+.mdm-git-gui-verifypack .footnote {
+  color: #666;
+}
+
+
+.mdm-git-gui-verifypack .mdmreport-controls .click-me-next button, .mdm-git-gui-verifypack .mdmreport-controls button.click-me-next {
+  color: #ffffff;
+  background: #226633;
+  font-weight: 600;
+  border: 4px solid transparent;
+}
+.mdm-git-gui-verifypack .mdmreport-controls .click-me-next button:hover, .mdm-git-gui-verifypack .mdmreport-controls button.click-me-next:hover {
+  color: #116622;
+  background: #fff;
+  border-color: #116622;
+}
+
+
+.mdm-git-gui-blob-record .label {
+  display: none;
+}
+
+/* .mdm-git-gui-blob-record .objectType, .mdm-git-gui-blob-record .blobHash, .mdm-git-gui-blob-record .fileMode {
+  display: none;
+  grid-column: 999;
+} */
+
+@media (min-width: 500px) {
+  .mdm-git-gui-pack-files.pack-file-records {
+    grid-template-columns: max-content max-content max-content max-content 2fr max-content max-content max-content max-content max-content max-content max-content max-content max-content max-content;
+  }
+}

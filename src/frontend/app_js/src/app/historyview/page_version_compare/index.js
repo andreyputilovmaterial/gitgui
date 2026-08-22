@@ -26,7 +26,7 @@ const View = {
 <div class="mdm-git-gui-historydiff">
   <p class="description">Compare revisions {{ hashLeft }} and {{ hashRight }}</p>
   <div class="error">{{ error }}</div>
-  <template v-if="!changedFiles && !error">Quering data, please wait...</template>
+  <template v-if="!changedFiles && !error">Querying data, please wait...</template>
   <template v-else-if="!!changedFiles">
     <component-filter-records-form :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }" :setComponentFilterRecordsClasses="setComponentFilterChangedfilesRecordsClasses">
       <div class="mdm-git-gui-diff-records diff-records mdm-ui-records">

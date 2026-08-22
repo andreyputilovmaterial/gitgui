@@ -283,6 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
       async function configAskFor() {
         function handleResponse(response) {
           config.value = response
+          repoStatus.value.config = response;
           // const configPathsFirstCaptured = ref({dir_work_tree:null,dir_git_repo:null,git_paths_hash:null});
           if(!configPathsFirstCaptured.value.dir_work_tree)
             configPathsFirstCaptured.value.dir_work_tree = response.dir_work_tree

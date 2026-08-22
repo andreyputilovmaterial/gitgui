@@ -134,14 +134,14 @@ const WizardConfirmPaths = {
           method: 'HEAD',
           headers: { "Content-Type": "application/json" },
         },
-      )
+      );
       const fetchResultGitRepoDir = fetch(
         '/functionality/dir-git-repo-dir',
         {
           method: 'HEAD',
           headers: { "Content-Type": "application/json" },
         },
-      )
+      );
       fetchResultWorkTree.then(
         result => {
           formContext.value.dir_work_treeExists = parseResponseStatus(result);

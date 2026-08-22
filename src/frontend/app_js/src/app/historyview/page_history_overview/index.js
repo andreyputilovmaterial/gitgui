@@ -26,7 +26,7 @@ const View = {
     <div class="error">{{ error }}</div>
     <div class="error">{{ validationMessage }}</div>
     <template v-if="!repoStatus?.history && !error">
-      Quering data, please wait...
+      Querying data, please wait...
     </template>
     <template v-else-if="!!repoStatus?.history">
       <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>

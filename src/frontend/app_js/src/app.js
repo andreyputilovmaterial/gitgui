@@ -19,12 +19,18 @@ import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import './common_components/css_grid/styles.css';
 import { ModalsSite, createModal } from './common_components/modals/modals';
 import RepoInitView from './app/repoinitview/init_repo';
-import MainView from './app/mainview/index';
 import TerminalSessionView from './app/terminalview/index';
 import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
 import AppOnlineIndicator from './app/onlineindicator';
 import ErrorView from './app/errorview/index';
 import { __access_errorSite } from './error_logger/setup';
+
+
+import PageWelcome from './app/mainview_welcome/index';
+import PageFiles from './app/filesview/index';
+import PageHistory from './app/historyview/index';
+import PageGitignore from './app/repoinitview/section_gitignore';
+import PagePackcompression from './app/packcompression/index';
 
 
 
@@ -46,7 +52,30 @@ document.addEventListener("DOMContentLoaded", () => {
       {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
       <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repo-init-form>
     </div>
-    <maingui-view v-else-if="repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></maingui-view>
+    <div v-else-if="repoStatus.repoExists" class="mdm-git-gui-mainview">
+      <template v-if="!repoStatus?.repoExists">
+        Repo is not inited. Nothing to display.
+      </template>
+      <template v-else>
+        <component-tabbed-panes active="home">
+          <component-tabbed-pane id="home" title="Overview">
+            <page-welcome :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+          </component-tabbed-pane>
+          <component-tabbed-pane id="files" title="Files">
+            <page-files :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+          </component-tabbed-pane>
+          <component-tabbed-pane id="history" title="History">
+            <page-history :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+          </component-tabbed-pane>
+          <component-tabbed-pane id="gitignore" title="gitignore (tracked files)">
+            <page-gitignore :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+          </component-tabbed-pane>
+          <component-tabbed-pane id="packstatus" title="Disk usage">
+            <page-packcompression :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+          </component-tabbed-pane>
+        </component-tabbed-panes>
+      </template>
+    </div>
   </div>
   <div class="mdm-git-gui-app-section-terminal section">
     <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
@@ -65,7 +94,11 @@ document.addEventListener("DOMContentLoaded", () => {
       'component-loader-spinner': ComponentLoaderSpinner,
       'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
-      'maingui-view': MainView,
+      'page-welcome': PageWelcome,
+      'page-files': PageFiles,
+      'page-history': PageHistory,
+      'page-gitignore': PageGitignore,
+      'page-packcompression': PagePackcompression,
       'terminalsession-view': TerminalSessionView,
       'modals': ModalsSite,
       'nav-links-manipulate-dummy-wrapper': ManipulateNavLinksDummyWrapper,
@@ -83,7 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const isOnlinePollingTimer = ref(undefined);
       const repoInitRequiresAttention = ref(false);
       const commands = ref([]);
-      const didHadAChanceToRunGitGCToday = ref(false);
+      const gitRepoReady = new Promise(resolve=>{
+        watch(()=>repoStatus.value.repoExists,async ()=>{
+          if( repoStatus.value.repoExists )
+            resolve();
+        });
+      });
 
       function logError(e) {
         try {
@@ -220,13 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
       repoCallbacks.value.executeGitCommand = executeGitCommand;
       repoCallbacks.value.executeGitBinaryCommand = executeGitBinaryCommand;
 
-      repoCallbacks.value.triggerGoodTimeGitGC = () => {
-        if(didHadAChanceToRunGitGCToday.value )
-          return;
-        didHadAChanceToRunGitGCToday.value = true;
-        executeGitCommand(['git','gc']);
-      };
-
       async function gitignoreRead() {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'gitignore':response}
@@ -350,6 +381,8 @@ document.addEventListener("DOMContentLoaded", () => {
             throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: "${response.stdout}" ( returncode == ${response.returncode}, stderr == "${response.stderr}" )`);
         }
         try {
+          if( !repoStatus.value.repoExists )
+            return;
           const response = await executeGitCommand(['git','diff','--cached','--quiet']);
           // git diff --cached --quiet
           // Exit status tells you the answer:
@@ -385,12 +418,19 @@ document.addEventListener("DOMContentLoaded", () => {
             throw new Error(`getHEAD: failed to parse response: "${response.stdout}" ( returncode == ${response.returncode}, stderr == "${response.stderr}" )`);
         }
         try {
+          if( !repoStatus.value.repoExists )
+            return;
           const response = await executeGitCommand(['git', 'rev-parse', 'HEAD']);
 
+          if( response.returncode==128 ) {
+            repoStatus.value.HEAD = null;
+            return;
+          }
           if( response?.stderr )
             throw response?.stderr;
           try {
             repoStatus.value.HEAD = handleResponse(response);
+            return;
           } catch(e) {
             throw new Error(`getHEAD: failed to parse response: (${response.returncode}) "${response.stdout}": ${e}`);
           }
@@ -435,8 +475,10 @@ document.addEventListener("DOMContentLoaded", () => {
           configAskFor(),
           gitignoreRead(),
           setIsOnlineTimer(),
-          checkIfSomethingIsInStagingArea(),
-          getHEAD(),
+          (()=>{
+            gitRepoReady.then(checkIfSomethingIsInStagingArea);
+            gitRepoReady.then(getHEAD);
+          })(),
         ])
       });
 
@@ -447,6 +489,9 @@ document.addEventListener("DOMContentLoaded", () => {
           configAskFor()
         }
       });
+
+      console.log('[DEBUG]'); // TODO:
+      window.getRepoStatus = () => repoStatus;
 
       return {
         errors,

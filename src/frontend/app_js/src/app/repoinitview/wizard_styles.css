@@ -1,69 +1,84 @@
 
-.git-repo-modal-form-confirm-inner p {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner p {
   margin: 0.5em 0;
 }
 
-.git-repo-modal-form-confirm-inner .config-work-tree-path, .git-repo-modal-form-confirm-inner  .config-git-dir-path {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .config-work-tree-path, .mdm-git-gui-repoinit-wizard-confirm-paths-inner  .config-git-dir-path {
   font-weight: 500;
   font-size: 115%;
   color: #000;
 }
-.git-repo-modal-form-confirm-inner .click-next, .git-repo-modal-form-confirm-inner .click-finish {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-next, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish {
   padding-top: 21px;
 }
-.git-repo-modal-form-confirm-inner .click-next input, .git-repo-modal-form-confirm-inner .click-next button {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-next input, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-next button {
   padding-top: 7px;
   padding-bottom: 7px;
   min-width: 210px;
   font-weight: 500;
 }
-.git-repo-modal-form-confirm-inner .click-next input:hover, .git-repo-modal-form-confirm-inner .click-next button:hover{
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-next input:hover, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-next button:hover{
   color: #fff;
   background: #226633;
 }
-.git-repo-modal-form-confirm-inner .click-finish input, .git-repo-modal-form-confirm-inner .click-finish button {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish input, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish button {
   padding-top: 14px;
   padding-bottom: 14px;
   min-width: 210px;
   font-weight: 500;
   border-radius: 5px;
 }
-.git-repo-modal-form-confirm-inner .click-finish .submit {
-  font-weight: 600;
-  color: #1e881e;
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish .submit {
+  font-weight: 400; /* 600; */
+  color: #111111; /* #1e881e; */
   background: #fff;
   min-width: 210px;
 }
-.git-repo-modal-form-confirm-inner .click-finish .submit:hover {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish .submit:hover {
   color: #ffffff;
   background: #226633;
 }
-.git-repo-modal-form-confirm-inner .click-finish.all-steps-confirmed .submit {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish.all-steps-confirmed .submit {
   color: #ffffff;
   background: #226633;
+  font-weight: 600;
 }
-.git-repo-modal-form-confirm-inner .click-finish.all-steps-confirmed .submit:hover {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish.all-steps-confirmed .submit:hover {
   color: #114a11;
   background: #fff;
 }
-.git-repo-modal-form-confirm-inner .click-finish .cancel {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish .cancel {
   color: #000;
   background: #ffffff;
   margin-left: 21px;
   min-width: 140px;
 }
-.git-repo-modal-form-confirm-inner .click-finish .cancel:hover {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .click-finish .cancel:hover {
   color: #000;
   background: #dfdfdf;
 }
 
 
-.git-repo-modal-form-confirm-inner .step-confirmed .click-next input, .git-repo-modal-form-confirm-inner .step-confirmed .click-next button {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .step-confirmed .click-next input, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .step-confirmed .click-next button {
   position: relative;
 }
-.git-repo-modal-form-confirm-inner .step-confirmed .click-next input:before, .git-repo-modal-form-confirm-inner .step-confirmed .click-next button:before {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .step-confirmed .click-next input:before, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .step-confirmed .click-next button:before {
   content: "✔";
   display: block;
   position: absolute;
   color: #22bb33;
+}
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls button {
+  /* */
+}
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls .click-me-next button, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls button.click-me-next {
+  color: #ffffff;
+  background: #226633;
+  font-weight: 600;
+  forder: 4px solid transparent;
+}
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls .click-me-next button:hover, .mdm-git-gui-repoinit-wizard-confirm-paths-inner .mdmreport-controls button.click-me-next:hover {
+  color: #116622;
+  background: #fff;
+  border-color: #116622;
 }

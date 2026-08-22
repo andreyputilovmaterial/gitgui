@@ -54,7 +54,7 @@ const WizardConfirmPaths = {
     'config',
   ],
   template: `
-<div class="git-repo-modal-form-confirm-inner">
+<div class="mdm-git-gui-repoinit-wizard-confirm-paths-inner">
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <section :class="{'step-1-confirm-dir-work-tree':true,'step-confirmed':formFields.step1Acknowledged}">
       <component-section-rollup header="Step 1: confirm work-tree path" :condensed="!!formFields.step1Acknowledged">
@@ -67,7 +67,7 @@ const WizardConfirmPaths = {
         </div>
         <p style="color: #888;">If this is not the path you wanted, re-launch the python script with updated params in BAT file.</p>
         <div class="click-next">
-          <button type="button" @click="formFields.step1Acknowledged = true">Next</button>
+          <button type="button" :class="{'click-me-next':!formFields.step1Acknowledged}" @click="formFields.step1Acknowledged = true">Next</button>
         </div>
       </component-section-rollup>
     </section>
@@ -81,7 +81,7 @@ const WizardConfirmPaths = {
         </div>
         <p style="color: #888;">If this is not the path you wanted, re-launch the python script with updated params in BAT file.</p>
         <div class="click-next">
-          <button type="button" @click="formFields.step2Acknowledged = true">Next</button>
+          <button type="button" :class="{'click-me-next':!(!formFields.step1Acknowledged || !!formFields.step2Acknowledged)}" @click="formFields.step2Acknowledged = true">Next</button>
         </div>
       </component-section-rollup>
     </section>
@@ -92,7 +92,7 @@ const WizardConfirmPaths = {
         'click-finish':true,
         'all-steps-confirmed': formFields.step1Acknowledged && formFields.step2Acknowledged
         }">
-          <button type="submit" class="submit">Init git with these params now</button>
+          <button type="submit" :class="{'submit':true,'click-me-next':formFields.step1Acknowledged && formFields.step2Acknowledged}">Init git with these params now</button>
           <button type="button" class="cancel" @click="reject">Cancel</button>
         </div>
       </fieldset>

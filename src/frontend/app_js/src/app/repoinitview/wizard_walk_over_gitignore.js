@@ -26,11 +26,11 @@ const WizardWalkOverGitignore = {
     'config',
   ],
   template: `
-<div class="git-repo-modal-form-confirm-inner">
+<div class="mdm-git-gui-repoinit-wizard-confirm-paths-inner">
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <section "class="gitignore">
       <component-section-rollup header="gitignore" :condensed="false">
-        <p>Here you confirm the work-tree path.</p>
+        <p>Here you confirm the gitignore.</p>
       </component-section-rollup>
     </section>
     <section class="step-final">

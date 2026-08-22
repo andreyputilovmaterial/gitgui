@@ -42,3 +42,22 @@
   margin: 0 0 14px;
   border: #ddd solid 1px;
 }
+
+
+
+
+/* .mdm-git-gui-app-section-mainview > .mdm-ui-rollup > .mdm-ui-rollup-body {
+  padding: 0; border: none; margin: -1px;
+} */
+.mdm-git-gui-mainview > .mdm-ui-tabbed-panes > .mdm-ui-tabbed-panes-inner {
+  /* min-height: 300px; */
+}
+
+.mdm-git-gui-mainview, .mdm-git-gui-mainview > .mdm-ui-tabbed-panes, .mdm-git-gui-mainview > .mdm-ui-tabbed-panes > .mdm-ui-tabbed-panes-inner {
+  border-left: none;
+  border-right: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}

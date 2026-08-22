@@ -6,6 +6,17 @@
 .mdmreport-table-wrapper {
     overflow-x: scroll;
 }
+.link-unstyled, .link-unstyled:link, .link-unstyled:active, .link-unstyled:hover {
+  transition: all 600ms ease;
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+.link-unstyled:hover {
+  text-decoration: underline;
+}
 .mdmreport-table, mdmreport-table tbody, .mdmreport-table thead, .mdmreport-table tr, .mdmreport-table td {
     margin: 0;
     padding: 0;

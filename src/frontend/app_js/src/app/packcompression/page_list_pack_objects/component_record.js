@@ -1,7 +1,11 @@
 
+import { h } from 'vue';
+
+import logError from '../../../error_logger/logError';
 
 import './style.css';
 
+import PageFilesList from '../../historyview/page_history_overview/index';
 
 
 const PackRecord = {
@@ -53,7 +57,9 @@ const PackRecord = {
     <div class="inner">
       <span class="revision-hash" title="Revision hash">
         <span class="label">Revision hash: </span>
-        <component-format-hash :hash="revisionHash" highlight="auto" />
+        <a href="#!" @click.prevent="navigateRevisionPage" class="link-unstyled">
+          <component-format-hash :hash="revisionHash" highlight="auto" />
+        </a>
       </span>
       <span class="file-path" title="File path">
         <span class="label">File path: </span>
@@ -93,8 +99,22 @@ const PackRecord = {
   </span>
 </div>
 `,
-  setup() {
-    return {};
+  setup(props) {
+
+    const navigateRevisionPage = async () => {
+      try {
+        await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
+      } catch(e) {
+        if( e instanceof Error ) {
+          logError(e);
+          logError(`Failed to navigate to page: history-files-list/${props?.hash}`);
+          throw e;
+        }
+      }
+    };
+
+    return { navigateRevisionPage };
+
   },
 };
 

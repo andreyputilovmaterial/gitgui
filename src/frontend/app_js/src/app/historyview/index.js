@@ -44,7 +44,7 @@ const View = {
       promiseContextHistoryReady.reject = reject;
     });
 
-    const navigateHistoryHomePage = async () => {
+    const navigateHomePage = async () => {
       await Promise.all([promiseContextHistoryReady.promise,]);
       createPage.value = pagesSite.value.createPage;
       createPage.value(h(PageHistoryOverview,{repoStatus:props.repoStatus,repoCallbacks:{...props.repoCallbacks,createPage:createPage.value}}));
@@ -55,7 +55,7 @@ const View = {
         props.repoCallbacks.updateHistory(),
         props.repoCallbacks.getHEAD(),
         props.repoCallbacks.checkIfSomethingIsInStagingArea(),
-        navigateHistoryHomePage(),
+        navigateHomePage(),
       ])
     });
 

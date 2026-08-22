@@ -14,7 +14,7 @@ import './style.css';
 const Hash = {
   props: [ 'hash', ],
   template: `
-<component-format-hash :hash="hash" :highlight="'auto'">
+<component-format-hash :hash="hash" :highlight="'auto'" />
 `,
   setup() {
     return {};
@@ -23,7 +23,7 @@ const Hash = {
 const HashLocal = {
   props: [],
   template: `
-<component-format-hash hash="Worktree" :highlight="'full'">
+<component-format-hash hash="Worktree" :highlight="'full'" />
 `,
   setup() {
     return {};
@@ -32,7 +32,7 @@ const HashLocal = {
 const HashStaged = {
   props: [],
   template: `
-<component-format-hash hash="Index" :highlight="'full'">
+<component-format-hash hash="Index" :highlight="'full'" />
 `,
   setup() {
     return {};
@@ -81,7 +81,7 @@ const Record = {
     'repoCallbacks',
   ],
   template: `
-<div :class="[...['history-record','mdm-ui-record'],...(isHEAD?['history-record-HEAD']:[]),...componentFilterRecordsGetClassesCb({'hash':hash,'message':'message','timestamp':timestamp,'author':author})]" :key="hash" :data-recordsfilter-hash="hash" :data-recordsfilter-author="author" :data-recordsfilter-timestamp="timestamp" :data-recordsfilter-message="message">
+<div :class="['mdm-git-gui-history-record','history-record','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...componentFilterRecordsGetClassesCb({'hash':hash,'message':'message','timestamp':timestamp,'author':author})]" :key="hash" :data-recordsfilter-hash="hash" :data-recordsfilter-author="author" :data-recordsfilter-timestamp="timestamp" :data-recordsfilter-message="message">
   <div v-if="!isWorktree" class="form-controls mdm-ui-record-col-formcontrols mdm-ui-record-col-1"><form-compare-vers-controls :formVerCompareFields="formVerCompareFields" :hash="hash" /></div><div v-else class="form-controls" />
   <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash">
     <span class="label">Hash: </span>

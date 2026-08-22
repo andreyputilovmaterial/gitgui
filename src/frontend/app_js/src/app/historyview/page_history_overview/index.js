@@ -20,7 +20,7 @@ const View = {
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
-<div class="mdm-git-gui-historylogview">
+<div class="mdm-git-gui-historyoverview mdm-git-gui-page-history-overview">
   <p class="description">History of revisions. Each is a snapshot of your files at that point in time.</p>
   <form @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <div class="error">{{ error }}</div>

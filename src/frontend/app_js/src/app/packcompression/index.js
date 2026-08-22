@@ -202,6 +202,8 @@ const View = {
           // /Users/andrej/work/gitgui/tests-real-sensitive-data/test-project-repo/.git/objects/pack/pack-aab45fb6a2984fd829d0c480193933dc0a483536.pack: ok
           return false;
         else if( /^\w+\s+\w+\s+\d+\s+\d+\s+\d+\b.*/.test(outputsLine) )
+          // <sha> <type> <size> <compressed-size> <offset>=
+          // <sha> <type> <size> <compressed-size> <offset> <depth> <base-sha>
           return true;
         else
           throw new Error(`Processing outputs from git verify-pack: unrecognized line format: "${outputsLine}"`);
@@ -255,11 +257,12 @@ const View = {
     const initParseHistory = async () => {
       function parseLsTreeResult(line) {
         // 100644 blob ce013625030ba8dba906f756967f9e9ca394464a	README.txt
-        const parts = line.split(/\s+/);
-        const fileMode = parts[0];
-        const objectType = parts[1];
-        const blobHash = parts[2];
-        const filePath = parts[3];
+        const partsOuter = line.split('\t');
+        const partsHeader = partsOuter[0].split(/\s+/);
+        const fileMode = partsHeader[0];
+        const objectType = partsHeader[1];
+        const blobHash = partsHeader[2];
+        const filePath = partsOuter[1];
         return {
           fileMode,
           objectType,
@@ -280,12 +283,12 @@ const View = {
           const revisionAuthor = author;
           const revisionTimestamp = timestamp;
           const revisionMessage = message;
-          const result = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r',hash,]);
+          const result = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r','-z',hash,]);
           if( (result.returncode!==0) || !!result?.stderr )
             throw new Error(`returncode ${result.returncode}: ${result?.stderr}`);
           // 100644 blob ce013625030ba8dba906f756967f9e9ca394464a	README.txt
           // 100644 blob 33e0cb25e00b89f3bd9feeb51eb7b62033c54d67	let.me
-          for( const outputsLine of result.stdout.split('\n') ) {
+          for( const outputsLine of result.stdout.split('\0') ) {
             if( /^\s*$/.test(outputsLine) )
               continue;
             const { fileMode, objectType, blobHash, filePath } = parseLsTreeResult( outputsLine );

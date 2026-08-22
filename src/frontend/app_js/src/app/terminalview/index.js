@@ -3,8 +3,6 @@
 import { ref, reactive, nextTick, watch } from 'vue';
 
 
-import { formatDate } from '../../common_defs/functions';
-
 
 import './styles.css';
 
@@ -177,14 +175,14 @@ const TerminalRecord = {
   ],
   template: `
     <div :class="\`terminal-record mdm-ui-record terminal-record-status-\${type}\`">
-      <span class="timestamp mdm-ui-record-col-1">{{ formatDate(timestamp) }}</span>
+      <span class="timestamp mdm-ui-record-col-1"><component-format-date :dt="timestamp" /></span>
       <span class="status mdm-ui-record-col-2">{{ type }}</span>
       <span :class="\`returncode mdm-ui-record-col-3 returncode-status-\${(!!returncode || (returncode===0)?(String(returncode)===String('0')?'success':'nonzero'):'')}\`" title="returncode - %errorlevel%"><span class="label" v-if="!!returncode || (returncode===0)">returncode: </span>{{ returncode }}</span>
       <code class="message mdm-ui-record-col-4">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></code>
     </div>
   `,
   setup() {
-    return { formatDate }
+    return {}
   }
 }
 

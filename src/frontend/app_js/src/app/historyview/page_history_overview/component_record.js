@@ -1,7 +1,6 @@
 
 import { ref, h } from 'vue';
 
-import { formatDate } from '../../../common_defs/functions';
 import logError from '../../../error_logger/logError';
 
 import FormCompareVersionsControls from './component_ver_compare_radioboxes';
@@ -14,7 +13,9 @@ import './style.css';
 
 const Hash = {
   props: [ 'hash', ],
-  template: `<code><span class="hash-leading">{{ hashLeading }}</span><span class="hash-rest">{{ hashRest }}</span></code>`,
+  template: `
+<code><span class="hash-leading">{{ hashLeading }}</span><span class="hash-rest">{{ hashRest }}</span></code>
+`,
   setup(props) {
     const hash = `${props.hash}`;
     const hashLeading = ref(hash.slice(0, 7));
@@ -24,14 +25,18 @@ const Hash = {
 };
 const HashLocal = {
   props: [],
-  template: `<code><span class="hash-leading">Worktree</span></code>`,
+  template: `
+<code><span class="hash-leading">Worktree</span></code>
+`,
   setup() {
     return {};
   },
 };
 const HashStaged = {
   props: [],
-  template: `<code><span class="hash-leading">Index</span></code>`,
+  template: `
+<code><span class="hash-leading">Index</span></code>
+`,
   setup() {
     return {};
   },
@@ -39,7 +44,9 @@ const HashStaged = {
 
 const Author = {
   props: [ 'author', ],
-  template: `{{ author }}`,
+  template: `
+{{ author }}
+`,
   setup() {
     return {};
   },
@@ -47,9 +54,11 @@ const Author = {
 
 const Date = {
   props: [ 'timestamp', ],
-  template: `{{ formatDate(timestamp) }}`,
+  template: `
+<component-format-date :dt="timestamp" />
+`,
   setup() {
-    return { formatDate };
+    return {};
   },
 };
 

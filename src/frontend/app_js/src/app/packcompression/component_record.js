@@ -46,13 +46,13 @@ const PackRecord = {
     <span class="label">File mode: </span>
     {{ fileMode }}
   </span>
-  <span class="blob-record-element length" title="length (size)">
+  <span class="blob-record-element length" title="Length (size)">
     <span class="label">Length (size): </span>
-    {{ length }}
+    <component-format-filesize :size="length" />
   </span>
   <span class="blob-record-element sizeCompressed" title="Size compressed">
     <span class="label">Size compressed: </span>
-    {{ sizeCompressed }}
+    <component-format-filesize :size="sizeCompressed" />
   </span>
   <span class="blob-record-element deltaDepth" title="Delta depth">
     <span class="label">Delta depth: </span>

@@ -5,18 +5,24 @@ import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 import './app.css';
 import './app_form_control_adjustments.css';
 
-
+// tools, helper functions (globally accessible)
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw, prettyprintBytes, genId } from './common_defs/cli';
 import { diff } from './lib/myers-diff/src/index';
 import textconv_js from './textconv_js/index';
 import textconv_backend from './textconv_backend/index';
+
+// all from "common_components"
 import ComponentSectionRollup from './common_components/rollable_sections/index';
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
+import ComponentFormatDate from './common_components/format_date/index';
+import ComponentFormatFilesize from './common_components/format_filesize/index';
 import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import './common_components/css_grid/styles.css';
+
+// all "system" components - modals, pages, environment for showing errors...
 import { ModalsSite, createModal } from './common_components/modals/modals';
 import RepoInitView from './app/repoinitview/init_repo';
 import TerminalSessionView from './app/terminalview/index';
@@ -25,7 +31,7 @@ import AppOnlineIndicator from './app/onlineindicator';
 import ErrorView from './app/errorview/index';
 import { __access_errorSite } from './error_logger/setup';
 
-
+// direct children shown in starting view
 import PageWelcome from './app/mainview_welcome/index';
 import PageFiles from './app/filesview/index';
 import PageHistory from './app/historyview/index';
@@ -91,6 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
       'component-tabbed-panes': ComponentTabbedPanes,
       'component-tabbed-pane': ComponentTabbedPane,
       'component-filter-records-form': ComponentFilterRecordsForm,
+      'component-format-date': ComponentFormatDate,
+      'component-format-filesize': ComponentFormatFilesize,
       'component-loader-spinner': ComponentLoaderSpinner,
       'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
@@ -515,6 +523,8 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-tabbed-panes', ComponentTabbedPanes);
   app.component('component-tabbed-pane', ComponentTabbedPane);
   app.component('component-filter-records-form', ComponentFilterRecordsForm);
+  app.component('component-format-date', ComponentFormatDate);
+  app.component('component-format-filesize', ComponentFormatFilesize);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.mount('#gitui_app');
 

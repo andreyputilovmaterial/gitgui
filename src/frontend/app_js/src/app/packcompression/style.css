@@ -28,10 +28,9 @@
   display: none;
 }
 
-/* .mdm-git-gui-blob-record .objectType, .mdm-git-gui-blob-record .blobHash, .mdm-git-gui-blob-record .fileMode {
+.mdm-git-gui-blob-record .blobHash, .mdm-git-gui-blob-record .fileMode {
   display: none;
-  grid-column: 999;
-} */
+}
 
 @media (min-width: 500px) {
   .mdm-git-gui-pack-files.pack-file-records {

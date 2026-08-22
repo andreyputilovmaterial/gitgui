@@ -1,78 +1,13 @@
 
 import { ref, reactive, watch, computed, onMounted, toRaw } from 'vue';
 
+import PackRecord from './component_record.js';
+
 import './style.css';
 
 import logError from '../../error_logger/logError';
 import { fetchWrapper } from '../../common_defs/networking';
 
-
-
-
-const PackRecord = {
-  props: [
-    'hash',
-    'objectType',
-    'revisionHash',
-    'blobHash',
-    'filePath',
-    'fileMode',
-    'length',
-    'sizeCompressed',
-    'deltaDepth',
-    'deltaBase',
-    'repoStatus',
-    'repoCallbacks',
-    'componentFilterRecordsGetClassesCb',
-  ],
-  template: `
-<div :class="['mdm-ui-record','mdm-git-gui-blob-record',...componentFilterRecordsGetClassesCb({hash,objectType,revisionHash,blobHash,filePath,fileMode,length,sizeCompressed,deltaDepth,deltaBase,})]">
-  <span class="blob-record-element hash" title="Hash">
-    <span class="label">Hash: </span>
-    {{ hash }}
-  </span>
-  <span class="blob-record-element objectType" title="Type">
-    <span class="label">Type: </span>
-    {{ objectType }}
-  </span>
-  <span class="blob-record-element revisionHash" title="Revision ash">
-    <span class="label">Revision hash: </span>
-    {{ revisionHash }}
-  </span>
-  <span class="blob-record-element blobHash" title="Blob Hash">
-    <span class="label">Blob hash: </span>
-    {{ blobHash }}
-  </span>
-  <span class="blob-record-element filePath" title="File path">
-    <span class="label">File path: </span>
-    {{ filePath }}
-  </span>
-  <span class="blob-record-element fileMode" title="fileMode">
-    <span class="label">fileMode: </span>
-    {{ fileMode }}
-  </span>
-  <span class="blob-record-element length" title="length">
-    <span class="label">length: </span>
-    {{ length }}
-  </span>
-  <span class="blob-record-element sizeCompressed" title="sizeCompressed">
-    <span class="label">sizeCompressed: </span>
-    {{ sizeCompressed }}
-  </span>
-  <span class="blob-record-element deltaDepth" title="deltaDepth">
-    <span class="label">deltaDepth: </span>
-    {{ deltaDepth }}
-  </span>
-  <span class="blob-record-element deltaBase" title="deltaBase">
-    <span class="label">deltaBase: </span>
-    {{ deltaBase }}
-  </span>
-</div>
-`,
-  setup() {
-    return {};
-  },
-};
 
 
 
@@ -111,7 +46,7 @@ const View = {
           <div class="">Waiting when info about pack objects is ready... {{ packPhysicalObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
           <div class="">Waiting when appended info from history... {{ packObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
         </div>
-        <component-filter-records-form v-else :columns="{ 'hash': 'Hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'filePath': 'File path', 'fileMode': 'File Mode', 'length': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
+        <component-filter-records-form v-else :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'filePath': 'File path', 'fileMode': 'File Mode', 'length': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
           <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
             <packobject-record
               v-for="(packObject,hash) in packObjects"

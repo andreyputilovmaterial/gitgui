@@ -1,6 +1,9 @@
 # import sys
 from pathlib import Path
 import tempfile
+from threading import Thread, Lock
+
+global_mdd_lock = Lock()
 
 win32com_import_success = None
 win32com_import_error = None
@@ -73,15 +76,16 @@ def textconv(data,filename):
         with open(temp_filename,'wb') as f:
             f.write(data)
         try:
-            try:
-                print(f'MDD TEXTCONV: Calling for method Open()') # TODO: DEBUG:
-                with MDMDocument(temp_filename,'open') as MDD:
-                    text = MDD.document.Script
-            except Exception as e:
-                print(f'MDD TEXTCONV: Failed with message "{e}"') # TODO: DEBUG:
-                print(f'MDD TEXTCONV: Calling fallback for method Join()') # TODO: DEBUG:
-                with MDMDocument(temp_filename,'join') as MDD:
-                    text = MDD.document.Script
+            with global_mdd_lock:
+                try:
+                    print(f'MDD TEXTCONV: Calling for method Open()') # TODO: DEBUG:
+                    with MDMDocument(temp_filename,'open') as MDD:
+                        text = MDD.document.Script
+                except Exception as e:
+                    print(f'MDD TEXTCONV: Failed with message "{e}"') # TODO: DEBUG:
+                    print(f'MDD TEXTCONV: Calling fallback for method Join()') # TODO: DEBUG:
+                    with MDMDocument(temp_filename,'join') as MDD:
+                        text = MDD.document.Script
         except Exception as e:
             return f'{e}'
 

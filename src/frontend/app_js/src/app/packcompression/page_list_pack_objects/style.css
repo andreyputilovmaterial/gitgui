@@ -56,6 +56,12 @@
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
+  padding-left: 14px;
+  border-left: 14px solid #e4e4e4;
+  box-shadow: 0px -10px 10px -10px rgba(127,127,127,.2), 0px 10px 10px -10px rgba(127,127,127,.2);
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 7px;
 }
 
 /* First line */
@@ -76,6 +82,17 @@
   flex-wrap: wrap;
   gap: 14px;
   border-radius: 4px;
+  line-height: 14px;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .filesizes .warning-level-indicator {
+  height: 14px;
+  width: 14px;
+  display: block;
+  background: #ddd;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .filesizes .mdmreport-role-filesize {
+  color: #000;
+  font-weight: 500;
 }
 .mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .length .label {
   display: inline;

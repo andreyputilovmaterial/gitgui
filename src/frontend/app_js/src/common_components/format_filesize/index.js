@@ -32,7 +32,7 @@ const View = {
   props: ['size'],
 
   template: `
-    <span class="mdmreport-role-filesize">{{ formattedNumber }}</span>
+    <span class="mdmreport-role-filesize" :title="\`\${size} bytes\`" :data-value="size">{{ formattedNumber }}</span>
   `,
 
   setup(props) {

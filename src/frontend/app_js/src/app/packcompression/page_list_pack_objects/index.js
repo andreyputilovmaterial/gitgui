@@ -67,6 +67,7 @@ const View = {
                 :sizeCompressed="packObject.sizeCompressed"
                 :deltaDepth="packObject.deltaDepth"
                 :deltaBase="packObject.deltaBase"
+                :statistics="statistics"
                 :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
                 :repoStatus="repoStatus"
                 :repoCallbacks="repoCallbacks"
@@ -99,6 +100,30 @@ const View = {
           resolve();
         }
       });
+    });
+
+    const cumulativeComputedSource = computed(() => {
+      try {
+        if( !packObjects.value ) return NaN;
+        return Object.entries(packObjects.value).map(([hash,obj])=>obj).reduce((acc,e)=>acc+Number(e.sizeSource),0);
+      } catch(e) {
+        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
+    });
+
+    const cumulativeComputedCompressed = computed(() => {
+      try {
+        if( !packObjects.value ) return NaN;
+        return Object.entries(packObjects.value).map(([hash,obj])=>obj).reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
+      } catch(e) {
+        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
     });
 
     const configIsReady = ref(undefined);
@@ -366,6 +391,11 @@ const View = {
       historyIsReady.value
     );
 
+    const statistics = computed(()=>({
+      cumulativeComputedSource: cumulativeComputedSource.value,
+      cumulativeComputedCompressed: cumulativeComputedCompressed.value,
+    }));
+
 
     return {
       error,
@@ -385,6 +415,8 @@ const View = {
       packFiles,
       packPhysicalObjects,
       packObjects,
+
+      statistics,
 
       componentFilterRecordsGetClassesCb,
       setComponentFilterRecordsClasses,

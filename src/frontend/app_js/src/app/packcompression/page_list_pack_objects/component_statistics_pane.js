@@ -35,7 +35,9 @@ const StatisticsPane = {
     const error = ref('');
 
     const cumulativeComputedSource = computed(() => {
+      // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
       try {
+        if( !props.packObjects ) return NaN;
         return Object.entries(props.packObjects).map(([hash,obj])=>obj).reduce((acc,e)=>acc+Number(e.sizeSource),0);
       } catch(e) {
         logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
@@ -46,7 +48,9 @@ const StatisticsPane = {
     });
 
     const cumulativeComputedCompressed = computed(() => {
+      // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
       try {
+        if( !props.packObjects ) return NaN;
         return Object.entries(props.packObjects).map(([hash,obj])=>obj).reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
       } catch(e) {
         logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent

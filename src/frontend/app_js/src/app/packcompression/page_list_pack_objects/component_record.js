@@ -1,11 +1,51 @@
 
-import { h } from 'vue';
+import { h, computed } from 'vue';
 
 import logError from '../../../error_logger/logError';
 
 import './style.css';
 
 import PageFilesList from '../../historyview/page_history_overview/index';
+
+
+
+function cap(level, low, high) {
+  return ( level<low ? low : ( level>high ? high : ( ((level>=low)&&(level<=high)) ? level : level ) ) );
+}
+
+function calcWarningLevel(size,statistics) {
+  const levelAbsoluteScale = cap( (Math.log(Number(size))/Math.log(1000000000))**5.88, 0, 1 );
+  const levelRelativeScale = Number(size) / Number(statistics.cumulativeComputedCompressed);
+  const weightRelative = cap( (Math.log(Number(size))/Math.log(1000000000))**1.69, 0, 1 );
+  return levelRelativeScale * weightRelative + levelAbsoluteScale * (1-weightRelative);
+}
+
+function calcWarningColor(level) {
+  if( !isFinite(level) )
+    return '#ffffff';
+  const point = cap( level, 0, 1 );
+  const pointFlatNumber = (point*255)|0;
+
+  // const low = [ 0xF0, 0xF0, 0xF0 ];
+  // const high = [ 0xF0, 0x40, 0x4A ];
+  // return `#${Number((low[0]+(-low[0]+high[0])*point)|0).toString(16)}${Number((low[1]+(-low[1]+high[1])*point)|0).toString(16)}${Number((low[2]+(-low[2]+high[2])*point)|0).toString(16)}`;
+
+  const keyColorFrames = {
+    0:       [ 0xF1, 0xF1, 0xF1 ],
+    63:      [ 0xFF, 0xF8, 0xCC ],
+    127:     [ 0xFF, 0xE0, 0x66 ],
+    191:     [ 0xFF, 0xAD, 0x4D ],
+    255:     [ 0xFF, 0x44, 0x44 ],
+    100000:  [ 0xFF, 0x44, 0x44 ],
+  };
+  const k1 = Math.max( ...Object.keys(keyColorFrames).map(a=>Number(a)).filter(a=>a<=pointFlatNumber) );
+  const k2 = Math.min( ...Object.keys(keyColorFrames).map(a=>Number(a)).filter(a=>a>=pointFlatNumber) );
+  const low = keyColorFrames[k1];
+  const high = keyColorFrames[k2];
+  const pointRelative = k2>k1 ? ( pointFlatNumber - k1 ) / ( k2 - k1 ) : 0;
+  return `#${Number((low[0]+(-low[0]+high[0])*pointRelative)|0).toString(16)}${Number((low[1]+(-low[1]+high[1])*pointRelative)|0).toString(16)}${Number((low[2]+(-low[2]+high[2])*pointRelative)|0).toString(16)}`;
+
+}
 
 
 const PackRecord = {
@@ -23,6 +63,7 @@ const PackRecord = {
     'sizeCompressed',
     'deltaDepth',
     'deltaBase',
+    'statistics',
     'repoStatus',
     'repoCallbacks',
     'componentFilterRecordsGetClassesCb',
@@ -43,6 +84,11 @@ const PackRecord = {
   </span>
   <span class="blob-record-element filesizes">
     <div class="inner">
+      <span
+        class="warning-level-indicator"
+        :style="{ backgroundColor: objectSizeWarningColor }"
+        :title="( objectSizeWarningLevel<0.069249 ? 'Not in warning territory' : ( objectSizeWarningLevel<0.3 ? 'Nothing to worry about' : 'Worth noticing this file has significant size, compared to others' ) )"
+      ></span>
       <span class="length" title="Size of source object">
         <span class="label">Size of source object: </span>
         <component-format-filesize :size="sizeSource" />
@@ -101,6 +147,9 @@ const PackRecord = {
 `,
   setup(props) {
 
+    const objectSizeWarningLevel = computed(()=>calcWarningLevel(props.sizeCompressed,props.statistics));
+    const objectSizeWarningColor = computed(()=>calcWarningColor(objectSizeWarningLevel.value));
+
     const navigateRevisionPage = async () => {
       try {
         await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
@@ -113,7 +162,7 @@ const PackRecord = {
       }
     };
 
-    return { navigateRevisionPage };
+    return { navigateRevisionPage, objectSizeWarningColor, objectSizeWarningLevel };
 
   },
 };

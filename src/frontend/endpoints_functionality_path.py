@@ -7,7 +7,7 @@ from pathlib import Path # for resolving paths to resources
 import os # accessing physical files - gitignore, gitattributes, work-tree path, git repo path...
 import subprocess # execute git rev-parse
 from datetime import datetime # format dates in json responses
-
+import re
 
 
 from .common_functions import JSONEncoder, get_matching_endpoint
@@ -335,11 +335,38 @@ def handle_git_list_pack_files(server_instance,config={},added_data=None):
                 content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
         )
 
-def handle_git_dirstat_pack_files(server_instance,config={},added_data=None):
+def handle_dir_sizeof_files(server_instance,config={},added_data=None):
+    def parse_path(path_parts):
+        return path_parts[3]
     WebResponse = config.get('iface').get('WebResponse')
     method = server_instance.command
     path_git_repo = Path(config.get("dir_git_repo")).resolve()
-    path_fs = path_git_repo / '.git' / 'objects' / 'pack'
+    path_worktree = Path(config.get("dir_work_tree")).resolve()
+    path_with_query = server_instance.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    path_parts = path_parsed.split('/')
+    resource_id = None
+    path_fs = None
+    try:
+        resource_id = parse_path(path_parts)
+    except:
+        resource_id = None
+    if not resource_id:
+        return WebResponse(
+            status_code = 404,
+                content_type = 'application/json', body = json.dumps(None, cls=JSONEncoder), headers = [],
+        )
+    if resource_id=='git_repo':
+        path_fs = path_git_repo
+    elif resource_id=='worktree':
+        path_fs = path_worktree
+    elif resource_id=='git_pack_objects':
+        path_fs = path_git_repo / '.git' / 'objects' / 'pack'
+    if not path_fs:
+        return WebResponse(
+            status_code = 404,
+                content_type = 'application/json', body = json.dumps(None, cls=JSONEncoder), headers = [],
+        )
     if method=='GET':
         size = sum(file.stat().st_size for file in path_fs.rglob("*") if file.is_file())
         return WebResponse(
@@ -361,7 +388,7 @@ endpoints = {
     '/dir-work-tree': handle_fspath_worktree,
     '/dir-git-repo-dir': handle_fspath_gitrepodir,
     '/git-ls-pack-files': handle_git_list_pack_files,
-    '/git-sizeof-pack-files': handle_git_dirstat_pack_files,
+    re.compile(r'^/dir-sizeof\b.*'): handle_dir_sizeof_files,
     '/config': handle_config,
     '/isup.txt': handle_isup,
 }

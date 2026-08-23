@@ -51,10 +51,32 @@ export function cliCommandRaw(command,is_binary=false) {
       job_id: null,
       status: 'prepare',
       pollTimerId: null,
+      jobCreatedAt: new Date(),
+      commandSentAt: null,
+      commandConfirmationReceivedAt: null,
+      pollIntervalSetAt: null,
+      numberOfPolls: 0,
+      currentPollInterval: null,
+    }
+    async function checkIfNeedResetInterval() {
+      const cutoffs = {
+        0: 207,
+        3: 807,
+        15: 2970,
+        30: 4970,
+      };
+      const goodInterval = cutoffs[Math.max(...Object.keys(cutoffs).map(a=>Number(a)).filter(a=>a<context.numberOfPolls))];
+      if( context.currentPollInterval<goodInterval ) {
+        clearInterval(context.pollTimerId);
+        context.currentPollInterval = goodInterval;
+        context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
+      }
     }
     async function pendStatus() {
       console.log('[DEBUG]: pending request status, job_id now is ',context.job_id)
       try{
+        context.numberOfPolls++;
+        await checkIfNeedResetInterval();
         const response = await fetch(
           `/command/${context.job_id}`,
           {
@@ -96,7 +118,8 @@ export function cliCommandRaw(command,is_binary=false) {
     const promise = new Promise((resolve,reject)=> {
       context.promiseResolve = resolve
       context.promiseReject = reject
-      const sendCommandPromise = sendCommand(command)
+      const sendCommandPromise = sendCommand(command);
+      context.commandSentAt = new Date();
       sendCommandPromise.then(
         result => {
           context.status = 'in-progress'
@@ -105,18 +128,24 @@ export function cliCommandRaw(command,is_binary=false) {
           console.log('[DEBUG]: setting job_id to',context.job_id)
         },
         err => {reject(err)}
-      )
+      );
+      sendCommandPromise.then(()=>{
+        context.commandConfirmationReceivedAt = new Date();
+      });
       sendCommandPromise.then(
         (job_id) => {
-          context.pollTimerId = setInterval(pendStatus,207)
+          context.currentPollInterval = 207;
+          context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
+          context.pollIntervalSetAt = new Date();
+          context.numberOfPolls = 0;
         }
       )
       context.status = 'initiated'
       console.log('[DEBUG]',context)
     })
     promise.then(
-      result => {clearInterval(context.pollTimerId)},
-      err => {clearInterval(context.pollTimerId)}
+      result => { clearInterval(context.pollTimerId); },
+      err => {    clearInterval(context.pollTimerId); }
     )
     promise.then(
       result => {console.log('[DEBUG]: initiating a new command: success')},

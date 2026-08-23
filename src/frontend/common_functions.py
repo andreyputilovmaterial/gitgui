@@ -48,6 +48,8 @@ class JSONEncoder(json.JSONEncoder):
             return f'{obj}'
         if isinstance(obj, datetime):
             return obj.isoformat()
+        if isinstance(obj, Exception):
+            return f'{obj}'
         return super().default(obj)
 
 

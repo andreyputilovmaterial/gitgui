@@ -335,6 +335,23 @@ def handle_git_list_pack_files(server_instance,config={},added_data=None):
                 content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
         )
 
+def handle_git_dirstat_pack_files(server_instance,config={},added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
+    method = server_instance.command
+    path_git_repo = Path(config.get("dir_git_repo")).resolve()
+    path_fs = path_git_repo / '.git' / 'objects' / 'pack'
+    if method=='GET':
+        size = sum(file.stat().st_size for file in path_fs.rglob("*") if file.is_file())
+        return WebResponse(
+            status_code = 200,
+                content_type = 'application/json', body = json.dumps(size, cls=JSONEncoder), headers = [],
+        )
+    else:
+        return WebResponse(
+            status_code = 405,
+                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
+        )
+
 
 endpoints = {
     # for each path, we need to know: 1. which command to execute, 2. how to process results (note: command is platform-dependent)
@@ -344,6 +361,7 @@ endpoints = {
     '/dir-work-tree': handle_fspath_worktree,
     '/dir-git-repo-dir': handle_fspath_gitrepodir,
     '/git-ls-pack-files': handle_git_list_pack_files,
+    '/git-sizeof-pack-files': handle_git_dirstat_pack_files,
     '/config': handle_config,
     '/isup.txt': handle_isup,
 }

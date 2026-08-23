@@ -2,6 +2,7 @@
 import { ref, reactive, watch, computed, onMounted, toRaw } from 'vue';
 
 import PackRecord from './component_record.js';
+import StatisticsPane from './component_statistics_pane';
 
 import './style.css';
 
@@ -46,36 +47,40 @@ const View = {
           <div class="">Waiting when info about pack objects is ready... {{ packPhysicalObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
           <div class="">Waiting when appended info from history... {{ packObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
         </div>
-        <component-filter-records-form v-else :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'revisionAuthor': 'Revision author', 'revisionTimestamp': 'Revision timestamp', 'revisionMessage': 'Revision message', 'filePath': 'File path', 'fileMode': 'File Mode', 'length': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
-          <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
-            <packobject-record
-              v-for="(packObject,hash) in packObjects"
-              :key="packObject.hash"
-              :hash="packObject.hash"
-              :objectType="packObject.objectType"
-              :revisionHash="packObject.revisionHash"
-              :revisionAuthor="packObject.revisionAuthor"
-              :revisionTimestamp="packObject.revisionTimestamp"
-              :revisionMessage="packObject.revisionMessage"
-              :blobHash="packObject.blobHash"
-              :filePath="packObject.filePath"
-              :fileMode="packObject.fileMode"
-              :length="packObject.length"
-              :sizeCompressed="packObject.sizeCompressed"
-              :deltaDepth="packObject.deltaDepth"
-              :deltaBase="packObject.deltaBase"
-              :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
-              :repoStatus="repoStatus"
-              :repoCallbacks="repoCallbacks"
-            />
-          </div>
-        </component-filter-records-form>
+        <template v-else>
+        <statistics :packObjects="packObjects" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+          <component-filter-records-form :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'revisionAuthor': 'Revision author', 'revisionTimestamp': 'Revision timestamp', 'revisionMessage': 'Revision message', 'filePath': 'File path', 'fileMode': 'File Mode', 'sizeSource': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
+            <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
+              <packobject-record
+                v-for="(packObject,hash) in packObjects"
+                :key="packObject.hash"
+                :hash="packObject.hash"
+                :objectType="packObject.objectType"
+                :revisionHash="packObject.revisionHash"
+                :revisionAuthor="packObject.revisionAuthor"
+                :revisionTimestamp="packObject.revisionTimestamp"
+                :revisionMessage="packObject.revisionMessage"
+                :blobHash="packObject.blobHash"
+                :filePath="packObject.filePath"
+                :fileMode="packObject.fileMode"
+                :sizeSource="packObject.sizeSource"
+                :sizeCompressed="packObject.sizeCompressed"
+                :deltaDepth="packObject.deltaDepth"
+                :deltaBase="packObject.deltaBase"
+                :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
+                :repoStatus="repoStatus"
+                :repoCallbacks="repoCallbacks"
+              />
+            </div>
+          </component-filter-records-form>
+        </template>
       </div>
     </template>
   </div>
 `,
   components: {
     'packobject-record': PackRecord,
+    'statistics': StatisticsPane,
   },
   setup(props) {
 
@@ -216,15 +221,15 @@ const View = {
         const parts = line.split(/\s+/);
         const hash = parts[0];
         const objectType = parts[1];
-        const length = parts[2];
-        const sizeCompressed = parts[3];
+        const sizeSource = isFinite(Number(parts[2])) ? Number(parts[2]) : parts[2];
+        const sizeCompressed = isFinite(Number(parts[3])) ? Number(parts[3]) : parts[3];
         // const offset = parts[4]; // useless
         const deltaDepth = parts[5]; // might be "undefined" but that's absolutely not a problem
         const deltaBase = parts[6]; // might be "undefined" but that's absolutely not a problem
         return {
           hash,
           objectType,
-          length,
+          sizeSource,
           sizeCompressed,
           deltaDepth,
           deltaBase,

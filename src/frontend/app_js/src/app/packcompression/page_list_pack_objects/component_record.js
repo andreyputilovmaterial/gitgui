@@ -19,7 +19,7 @@ const PackRecord = {
     'blobHash',
     'filePath',
     'fileMode',
-    'length',
+    'sizeSource',
     'sizeCompressed',
     'deltaDepth',
     'deltaBase',
@@ -28,7 +28,7 @@ const PackRecord = {
     'componentFilterRecordsGetClassesCb',
   ],
   template: `
-<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...componentFilterRecordsGetClassesCb({hash,objectType,revisionHash,revisionAuthor,revisionTimestamp,revisionMessage,blobHash,filePath,fileMode,length,sizeCompressed,deltaDepth,deltaBase,})]">
+<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...componentFilterRecordsGetClassesCb({hash,objectType,revisionHash,revisionAuthor,revisionTimestamp,revisionMessage,blobHash,filePath,fileMode,sizeSource,sizeCompressed,deltaDepth,deltaBase,})]">
   <span class="blob-record-element hash" title="Pack object hash">
     <span class="label">Pack object hash: </span>
     <component-format-hash :hash="hash" highlight="auto" />
@@ -45,7 +45,7 @@ const PackRecord = {
     <div class="inner">
       <span class="length" title="Size of source object">
         <span class="label">Size of source object: </span>
-        <component-format-filesize :size="length" />
+        <component-format-filesize :size="sizeSource" />
       </span>
       <span class="size-compressed" title="Size compressed">
         <span class="label">Size compressed: </span>

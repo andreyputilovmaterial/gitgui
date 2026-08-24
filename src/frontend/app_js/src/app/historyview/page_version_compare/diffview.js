@@ -8,52 +8,77 @@ import './styles_diffview.css';
 
 
 function* diffAllParts(lhs, rhs, patches) {
-    let li = 0;
-    let ri = 0;
+    let lastl = 0;
+    let lastr = 0;
     for (const patch of patches) {
-        const l = patch.lhs;
-        const r = patch.rhs;
-        // Unchanged part before this patch.
-        const keep = l.at - li;
-        if (keep > 0) {
-            yield {
-                type: "keep",
-                lhs: { at: li, length: keep, items: lhs.slice(li, li + keep), },
-                rhs: { at: ri, length: keep, items: lhs.slice(li, li + keep), },
-            };
-            li += keep;
-            ri += keep;
+        // Unchanged part
+        const skipl = patch.lhs.at - lastl;
+        const skipr = patch.rhs.at - lastr;
+        if( !(skipl===skipr) ) throw new Error(`diff: please verify results, internal qc is not matching for skipped part in left and right: ${skipl} !== ${skipr}`);
+        if( (skipl>0)||(skipr>0) ) {
+          yield {
+              type: "keep",
+              lhs: {
+                  at: lastl,
+                  length: skipl,
+                  items: lhs.slice(lastl, lastl + skipl),
+              },
+              rhs: {
+                  at: lastr,
+                  length: skipr,
+                  items: rhs.slice(lastr, lastr + skipr),
+              }
+          };
         }
-        // Changed part.
+        lastl = patch.lhs.at;
+        lastr = patch.rhs.at;
+        // Changed part
         yield {
             type: "patch",
             lhs: {
-                at: li,
-                length: l.del,
-                items: lhs.slice(li, li + l.del)
+                at: patch.lhs.at,
+                length: patch.lhs.del,
+                items: lhs.slice(patch.lhs.at, patch.lhs.at + patch.lhs.del),
             },
             rhs: {
-                at: ri,
-                length: r.add,
-                items: rhs.slice(ri, ri + r.add)
+                at: patch.rhs.at,
+                length: patch.rhs.add,
+                items: rhs.slice(patch.rhs.at, patch.rhs.at + patch.rhs.add),
             }
         };
-        li += l.del;
-        ri += r.add;
+        lastl = patch.lhs.at + patch.lhs.del;
+        lastr = patch.rhs.at + patch.rhs.add;
     }
-    // Anything remaining is unchanged.
-    const keep = lhs.length - li;
-    if (keep > 0) {
-        yield {
-            type: "keep",
-            lhs: { at: li, length: keep, items: lhs.slice(li, li + keep) },
-            rhs: { at: ri, length: keep, items: rhs.slice(ri, ri + keep) },
-        };
-        li += keep;
-        ri += keep;
+    // Anything remaining is unchanged
+    const patch = {
+      lhs: {
+        at: lhs.length,
+        del: 0,
+        add: 0,
+      },
+      rhs: {
+        at: rhs.length,
+        del: 0,
+        add: 0,
+      },
+    };
+    const skipl = patch.lhs.at - lastl;
+    const skipr = patch.rhs.at - lastr;
+    if( (skipl>0)||(skipr>0) ) {
+      yield {
+          type: "keep",
+          lhs: {
+              at: lastl,
+              length: skipl,
+              items: lhs.slice(lastl, lastl + skipl),
+          },
+          rhs: {
+              at: lastr,
+              length: skipr,
+              items: rhs.slice(lastr, lastr + skipr),
+          }
+      };
     }
-    // If lengths can differ in a way not represented by patches,
-    // you could handle remaining rhs here as well.
 }
 
 function splitByTokens(txt) {

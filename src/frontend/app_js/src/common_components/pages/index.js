@@ -42,6 +42,20 @@ const Page = {
 </div>
 `,
   setup() {
+
+    const scrollPageToTop = async () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    };
+
+    onMounted(async () => {
+      await Promise.all([
+        scrollPageToTop(),
+      ])
+    });
+
     return { }
   }
 }

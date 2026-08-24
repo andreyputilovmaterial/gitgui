@@ -1,4 +1,7 @@
 import codecs
+import sys # for error reporting
+
+from .report_error import report_unicode_decode_error
 
 
 def detect_bom(data):
@@ -57,4 +60,12 @@ def textconv(data: bytes, filename: str):
     """
     encoding, bom, bom_len = detect_bom(data)
 
-    return data[bom_len:].decode(encoding=encoding)
+    try:
+        return data[bom_len:].decode(encoding=encoding,errors=replace)
+    except UnicodeDecodeError as e:
+        try:
+            detailed_err_msg = report_unicode_decode_error(e,data,filename,encoding,bom,bom_len)
+            print(detailed_err_msg,file=sys.stderr)
+        except:
+            pass
+        raise e

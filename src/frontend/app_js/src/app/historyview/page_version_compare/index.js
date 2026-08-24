@@ -66,112 +66,67 @@ const View = {
 
     const getFiles = async data => {
       function handleResult(data) {
-        // :<old mode> <new mode> <old oid> <new oid> <status>\t<path>\0
+        const decoder = new TextDecoder();
 
-        // Helper function to split Uint8Array
         function splitBytes(bytes, separator) {
           const result = [];
           let start = 0;
+
           for (let i = 0; i <= bytes.length; i++) {
             if (i === bytes.length || bytes[i] === separator) {
               result.push(bytes.subarray(start, i));
               start = i + 1;
             }
           }
+
           return result;
         }
 
-        // A helper function to split by whitespace and decode to strings (like Python's default split)
         function splitWhitespace(bytes) {
-          const text = new TextDecoder().decode(bytes);
-          return text.trim().split(/\s+/);
+          return decoder.decode(bytes).trim().split(/\s+/);
         }
-
-        // for record in data.split(b"\0"):
-        //     if not record:
-        //         continue
-        //
-        //     header, path = record.split(b"\t", 1)
-        //
-        //     fields = header.split()
-        //
-        //     old_mode = fields[0][1:]   # remove ':'
-        //     new_mode = fields[1]
-        //     old_oid  = fields[2]
-        //     new_oid  = fields[3]
-        //     status   = fields[4]
-        //
-        //     print(old_mode, new_mode, old_oid, new_oid, status, path)
-
-        const results = [];
-
-        // // 1. Split data by null byte \0 (ASCII 0)
-        // const records = splitBytes(data, 0);
-        //
-        // for (const record of records) {
-        //   // Check if record is empty
-        //   if (record.length === 0) {
-        //     continue;
-        //   }
-        //
-        //   // 2. Split into [header, path] by tab \t (ASCII 9). Maxsplit = 1
-        //   const tabIndex = record.indexOf(9);
-        //   if (tabIndex === -1) continue; // Safety check
-        //
-        //   const headerBytes = record.subarray(0, tabIndex);
-        //   const pathBytes = record.subarray(tabIndex + 1);
-        //
-        //   // Decode path to string
-        //   const path = new TextDecoder().decode(pathBytes);
-        //
-        //   // 3. Split header fields by whitespace
-        //   const fields = splitWhitespace(headerBytes);
-        //
-        //   // 4. Extract fields (removing leading ':' from the first field)
-        //   const old_mode = fields[0].substring(1);
-        //   const new_mode = fields[1];
-        //   const old_oid  = fields[2];
-        //   const new_oid  = fields[3];
-        //   const status   = fields[4];
-        //
-        //   // 5. Output the results
-        //   results.push({
-        //     old_mode,
-        //     new_mode,
-        //     old_oid,
-        //     new_oid,
-        //     status,
-        //     path,
-        //   });
-        // }
 
         const parts = splitBytes(data, 0);
-        const records = [];
-        for (const [index,part] of parts.entries()) {
-          if((index&1)===0)
-            records.push({headerBytes:part,pathBytes:null});
-          else
-            records[records.length-1].pathBytes = part;
-        }
-        for (const record of records) {
-            const { headerBytes, pathBytes } = record;
-            if( (headerBytes.length==0) && !pathBytes )
-              continue;
+        const results = [];
 
-            // Decode path to string
-            const path = new TextDecoder().decode(pathBytes);
+        let i = 0;
 
-            // 3. Split header fields by whitespace
-            const fields = splitWhitespace(headerBytes);
+        while (i < parts.length) {
+          const headerBytes = parts[i++];
 
-            // 4. Extract fields (removing leading ':' from the first field)
-            const old_mode = fields[0].substring(1);
-            const new_mode = fields[1];
-            const old_oid  = fields[2];
-            const new_oid  = fields[3];
-            const status   = fields[4];
+          // Ignore trailing NUL
+          if (headerBytes.length === 0) {
+            continue;
+          }
 
-            // 5. Output the results
+          const fields = splitWhitespace(headerBytes);
+
+          const old_mode = fields[0].substring(1);
+          const new_mode = fields[1];
+          const old_oid = fields[2];
+          const new_oid = fields[3];
+          const status = fields[4];
+
+          // R = rename, C = copy; both have two paths.
+          const isRenameOrCopy =
+            status.startsWith("R") || status.startsWith("C");
+
+          if (isRenameOrCopy) {
+            const old_path = decoder.decode(parts[i++]);
+            const new_path = decoder.decode(parts[i++]);
+
+            results.push({
+              old_mode,
+              new_mode,
+              old_oid,
+              new_oid,
+              status,
+              old_path,
+              new_path,
+            });
+          } else {
+            const path = decoder.decode(parts[i++]);
+
             results.push({
               old_mode,
               new_mode,
@@ -180,10 +135,12 @@ const View = {
               status,
               path,
             });
+          }
         }
 
         return results;
       }
+
       try {
         // git diff --raw -z --no-abbrev -M ec18f2c b4c0edf
         const { leftIsWorktree, leftIsIndex, rightIsWorktree, rightIsIndex, } = {

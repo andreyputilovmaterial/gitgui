@@ -44,32 +44,34 @@ function gitModeToString(mode) {
 }
 
 function gitStatusToString(status) {
-// A	Added — new file
-// M	Modified — file contents and/or mode changed
-// D	Deleted — file removed
-// R	Renamed — old path → new path
-// C	Copied — file copied from another path
-// T	Type changed — e.g. regular file ↔ symlink
-// U	Unmerged — unresolved merge conflict
-  switch (status) {
+  // A  Added — new file
+  // M  Modified — file contents and/or mode changed
+  // D  Deleted — file removed
+  // R  Renamed — old path → new path
+  // C  Copied — file copied from another path
+  // T  Type changed — e.g. regular file ↔ symlink
+  // U  Unmerged — unresolved merge conflict
+
+  switch (status[0]) {
     case "A":
-      return "Added"; // Added - new file
+      return "Added";
     case "M":
-      return "Modified"; // Modified - file contents and/or mode changed
+      return "Modified";
     case "D":
-      return "Deleted"; // Deleted - file removed
+      return "Deleted";
     case "R":
-      return "Renamed"; // Renamed - old path → new path
+      return "Renamed";
     case "C":
-      return "Copied"; // Copied - file copied from another path
+      return "Copied";
     case "T":
-      return "Type changed"; // Type changed - e.g. regular file ↔ symlink
+      return "Type changed";
     case "U":
-      return "Unmerged"; // Unmerged - unresolved merge conflict
+      return "Unmerged";
     default:
-      return status
+      return status;
   }
 }
+
 
 const Status = {
   props: [ 'status' ],

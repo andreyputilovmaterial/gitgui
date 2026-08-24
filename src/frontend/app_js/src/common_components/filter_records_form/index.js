@@ -3,6 +3,9 @@ import { ref, computed, onMounted } from 'vue';
 
 import logError from '../../error_logger/logError';
 
+import matchText from './match/text';
+import matchNumericRange from './match/numeric_range';
+
 // import { genId } from './helpers';
 
 import './styles.css';
@@ -23,13 +26,23 @@ const FormWrapper = {
     <div class="mdmreport-controls-group">
       <div v-for="col in Object.keys(columnsSanitized)" :key="col">
         <label>{{ columnsSanitized[col].label }}:
-          <input
-            :type="columnsSanitized[col].type"
+          <component
+            :is="
+              columnsSanitized[col].type === 'number'
+              ? 'component-input-numericrange'
+              : 'input'
+            "
+            v-bind="
+              columnsSanitized[col].type === 'number'
+              ? {}
+              : { type: columnsSanitized[col].type }
+            "
             :value="formFields.columns[col]"
             class="mdmreport-control"
             @input="handleChange(col, $event)"
             placeholder="Type to filter..."
-          /></label>
+          />
+        </label>
       </div>
     </div>
   </div>
@@ -105,19 +118,21 @@ const FormWrapper = {
 
     const handleChange = async (col,$event) => {
       try{
-        const value = event.target.value;
+        console.log(`[DEBUG-filtering]: change fired, with `,col,$event); // TODO: DEBUG
+        const value = $event.target.value;
         formFields.value.columns[col] = value;
+        console.log(`[DEBUG-filtering]: value == `,value); // TODO: DEBUG
 
         const filteringClassesCb = colValues => {
           // console.log(`[DEBUG]: mdm-ui-recordsfilter component: generateFileringCssClasses called`); // TODO: debug
-          const norm = v => `${v}`.toLowerCase();
           const shouldBeShown = (colValues) => {
             var result = true;
             Object.keys(columnsSanitized.value).forEach(col=>{
               const value = formFields.value.columns[col];
-              if(!!value&&!(/^\s*$/.test(value))) {
-                result = result && norm(colValues[col]).includes(norm(value));
-              }
+              let match = matchText;
+              if( columnsSanitized.value[col].type==='number' )
+                match = matchNumericRange;
+              result = result && match(colValues[col],value);
             });
             return result;
           };

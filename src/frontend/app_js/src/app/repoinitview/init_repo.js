@@ -22,7 +22,7 @@ const RepoInitViewInitTheRepo = {
   template: `
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls mdm-git-gui-app-git-repo-init-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <h3>Init as git repo</h3>
-    <div class="error form-validation-error">{{ validationailureMsg }}</div>
+    <div class="error form-validation-error">{{ validationaFailureMsg }}</div>
     <fieldset class="mdmreport-controls">
       <button type="submit" class="init-repo-action-call-button submit" value="Init git"><span class="desc-line-1">Init git<br></span><span class="desc-line-2">at specified folders<br></span><span class="desc-line-3">and start to manage backups and track history.<br /><br /></span><span class="desc-line-4">Press here, and we'll guide you through.</span></button>
     </fieldset>
@@ -31,7 +31,7 @@ const RepoInitViewInitTheRepo = {
 setup(props) {
 
   const isBusy = ref(false)
-  const validationailureMsg = ref('')
+  const validationaFailureMsg = ref('')
   const formFields = reactive({
 
   })
@@ -39,7 +39,7 @@ setup(props) {
 
      try {
        isBusy.value = true;
-       validationailureMsg.value = '';
+       validationaFailureMsg.value = '';
        console.log('[DEBUG-initrepo-form-submit]: confirm first...')
 
        // step 1: let user confirm the paths
@@ -57,7 +57,7 @@ setup(props) {
          const stderr = gitInitCommandResult.payload.stderr;
          const stdout = gitInitCommandResult.payload.stdout;
          if( /^\s*?fatal\s*?:/.test(stderr)) {
-           validationailureMsg.value = stderr;
+           validationaFailureMsg.value = stderr;
          } else {
            throw new Error(`"git init" is executed but the repo is still not inited:\n${stdout}\n${stderr}`);
          }
@@ -70,7 +70,7 @@ setup(props) {
        console.log('[DEBUG-initrepo-form-submit]: after await')
      } catch (error) {
        if(error instanceof Error) {
-         validationailureMsg.value = error;
+         validationaFailureMsg.value = error;
          logError('Init-the-repo Form submission failed');
          logError(error);
          console.error("Init-the-repo Form submission failed:", error);
@@ -88,7 +88,7 @@ setup(props) {
      formFields.gitignore = props.repoStatus.gitignore;
    })
 
-  return { formFields, handleSubmit, isBusy, validationailureMsg }
+  return { formFields, handleSubmit, isBusy, validationaFailureMsg }
   }
 }
 

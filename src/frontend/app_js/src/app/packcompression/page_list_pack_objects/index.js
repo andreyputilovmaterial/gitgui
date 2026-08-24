@@ -40,17 +40,30 @@ const View = {
       <div v-else class="mdm-git-gui-verifypack-inner">
         <div v-if="!allIsReady" class="note">
           Querying data, please wait...
-          <div class="">Waiting when history is compressed... {{ gitPackCompressionIsReady ? 'ok!' : 'working on it...' }}</div>
-          <div class="">Waiting when config is ready... {{ configIsReady ? 'ok!' : 'working on it...' }}</div>
-          <div class="">Waiting when history is ready... {{ historyIsReady ? 'ok!' : 'working on it...' }}</div>
-          <div class="">Waiting when info about pack files is ready... {{ packFilesIsReady ? 'ok!' : 'working on it...' }}</div>
-          <div class="">Waiting when info about pack objects is ready... {{ packPhysicalObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
-          <div class="">Waiting when appended info from history... {{ packObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
+          <div>Waiting when history compression is ready... {{ gitPackCompressionIsReady ? 'ok!' : 'working on it...' }}</div>
+          <div>Waiting when config is ready... {{ configIsReady ? 'ok!' : 'working on it...' }}</div>
+          <div>Waiting when history is ready... {{ historyIsReady ? 'ok!' : 'working on it...' }}</div>
+          <div>Waiting when pack file info is ready... {{ packFilesIsReady ? 'ok!' : 'working on it...' }}</div>
+          <div>Waiting when pack object info is ready... {{ packPhysicalObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
+          <div>Waiting when appended history info is ready... {{ packObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
         </div>
         <template v-else>
         <statistics :packObjects="packObjects" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
           <component-filter-records-form
-            :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'revisionAuthor': 'Revision author', 'revisionTimestamp': 'Revision timestamp', 'revisionMessage': 'Revision message', 'filePath': 'File path', 'fileMode': 'File Mode', 'sizeSource': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }"
+            :columns="{
+              hash: 'Pack object hash',
+              objectType: 'Object type',
+              revisionHash: 'Revision hash',
+              revisionAuthor: 'Revision author',
+              revisionTimestamp: { label: 'Revision timestamp', type:'datetime' },
+              revisionMessage: 'Revision message',
+              filePath: 'File path',
+              fileMode: 'File Mode',
+              sizeSource: { label: 'Size of file', type:'number' },
+              sizeCompressed: { label: 'Size Compressed', type:'number' },
+              deltaDepth: 'Delta Depth',
+              deltaBase: 'Delta Base',
+            }"
             :needSort="true"
             ref="filteringComponent"
           >

@@ -117,7 +117,7 @@ const PackRecord = {
       </span>
       <span class="revision-timestamp" title="Revision timestamp">
         <span class="label">Revision timestamp: </span>
-        <component-format-date :dt="revisionTimestamp" />
+        <component-format-datetime :dt="revisionTimestamp" />
       </span>
       <span class="revision-author" title="Revision author">
         <span class="label">Revision author: </span>

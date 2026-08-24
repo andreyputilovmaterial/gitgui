@@ -52,7 +52,7 @@ const Author = {
 const Date = {
   props: [ 'timestamp', ],
   template: `
-<component-format-date :dt="timestamp" />
+<component-format-datetime :dt="timestamp" />
 `,
   setup() {
     return {};

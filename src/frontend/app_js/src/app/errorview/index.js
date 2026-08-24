@@ -11,7 +11,7 @@ const ErrorRecord = {
     'error': true,
   }"
 >
-  <span class="timestamp mdm-ui-record-col-1"><component-format-date :dt="time" /></span>
+  <span class="timestamp mdm-ui-record-col-1"><component-format-datetime :dt="time" /></span>
   <span class="label mdm-ui-record-col-2">Error:</span>
   <span class="errorbody error mdm-ui-record-col-3" style="color: #990000;">{{ error }}</span>
 </div>

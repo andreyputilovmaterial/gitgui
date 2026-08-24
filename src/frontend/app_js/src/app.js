@@ -17,9 +17,10 @@ import ComponentSectionRollup from './common_components/rollable_sections/index'
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
-import ComponentFormatDate from './common_components/format_date/index';
+import ComponentFormatDatetime from './common_components/format_datetime/index';
 import ComponentFormatFilesize from './common_components/format_filesize/index';
 import ComponentFormatHash from './common_components/format_hash/index';
+import ComponentInputNumericRange from './common_components/input_numeric_range/index';
 import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import './common_components/css_grid/styles.css';
 
@@ -523,9 +524,10 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-tabbed-panes', ComponentTabbedPanes);
   app.component('component-tabbed-pane', ComponentTabbedPane);
   app.component('component-filter-records-form', ComponentFilterRecordsForm);
-  app.component('component-format-date', ComponentFormatDate);
+  app.component('component-format-datetime', ComponentFormatDatetime);
   app.component('component-format-filesize', ComponentFormatFilesize);
   app.component('component-format-hash', ComponentFormatHash);
+  app.component('component-input-numericrange',ComponentInputNumericRange);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.mount('#gitui_app');
 

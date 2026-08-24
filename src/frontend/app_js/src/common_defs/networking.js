@@ -1,5 +1,9 @@
 
 
+// hmm, not sure I need it
+// it is doing both, fetch and decide json
+// probably a common pattern
+// but this is not used a lot, I can just make normal native fetch and check if response.ok
 export class FetchError extends Error { name = 'FetchError' }
 export async function fetchWrapper(method,endpoint,payload) {
   const response = await fetch(

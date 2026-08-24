@@ -26,7 +26,7 @@ const ModalConfirmContinueIfPathsNotVerified = {
   <p>It looks the paths do not exist or not accesible, but we can still try to continue with git init. Should we?</p>
   <div>
     <button type="submit" class="gitgui-button-close">Yes, continue</Button>
-    <button type="botton" class="gitgui-button-close" @click.prevent="reject">No, get me back</Button>
+    <button type="button" class="gitgui-button-close" @click.prevent="reject">No, get me back</Button>
   </div>
 </form>
 `,

@@ -49,10 +49,14 @@ const View = {
         </div>
         <template v-else>
         <statistics :packObjects="packObjects" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
-          <component-filter-records-form :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'revisionAuthor': 'Revision author', 'revisionTimestamp': 'Revision timestamp', 'revisionMessage': 'Revision message', 'filePath': 'File path', 'fileMode': 'File Mode', 'sizeSource': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
+          <component-filter-records-form
+            :columns="{ 'hash': 'Pack object hash', 'objectType': 'Object type', 'revisionHash': 'Revision hash', 'revisionAuthor': 'Revision author', 'revisionTimestamp': 'Revision timestamp', 'revisionMessage': 'Revision message', 'filePath': 'File path', 'fileMode': 'File Mode', 'sizeSource': 'Size of file', 'sizeCompressed': 'Size Compressed', 'deltaDepth': 'Delta Depth', 'deltaBase': 'Delta Base', }"
+            :needSort="true"
+            ref="filteringComponent"
+          >
             <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
               <packobject-record
-                v-for="(packObject,hash) in packObjects"
+                v-for="(packObject,hash) in packObjectsSorted"
                 :key="packObject.hash"
                 :hash="packObject.hash"
                 :objectType="packObject.objectType"
@@ -68,7 +72,7 @@ const View = {
                 :deltaDepth="packObject.deltaDepth"
                 :deltaBase="packObject.deltaBase"
                 :statistics="statistics"
-                :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
+                :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
                 :repoStatus="repoStatus"
                 :repoCallbacks="repoCallbacks"
               />
@@ -88,8 +92,8 @@ const View = {
     const error = ref('');
     const validationMessage = ref('');
     const isBusy = ref(false);
-    const componentFilterRecordsGetClassesCb = ref(()=>[]);
-    const setComponentFilterRecordsClasses = cb => componentFilterRecordsGetClassesCb.value = cb;
+    const generateFileringCssClasses = ref(()=>[]);
+    const setComponentFilterRecordsClasses = cb => generateFileringCssClasses.value = cb;
     const gitPackCompressionIsReady = ref(false);
     const packFiles = ref(undefined);
     const packPhysicalObjects = ref(undefined); // purely parsed from git verify-output
@@ -396,6 +400,8 @@ const View = {
       cumulativeComputedCompressed: cumulativeComputedCompressed.value,
     }));
 
+    const filteringComponent = ref(null);
+    const packObjectsSorted = computed(()=> !!filteringComponent && !!filteringComponent?.sort ? filteringComponent?.sort(packObjects.value) : packObjects.value );
 
     return {
       error,
@@ -418,8 +424,8 @@ const View = {
 
       statistics,
 
-      componentFilterRecordsGetClassesCb,
-      setComponentFilterRecordsClasses,
+      filteringComponent,
+      packObjectsSorted,
     };
   },
 };

@@ -343,7 +343,7 @@ td.mdmreport-contentcell label {
 .mdmreport-controls.mdmreport-controls-checkboxfulltext label input[type="checkbox"]:checked:before, .mdmreport-controls .mdmreport-controls-checkboxfulltext label input[type="checkbox"]:checked:before, .mdmreport-controls label.mdmreport-controls-checkboxfulltext input[type="checkbox"]:checked:before {
     content: "\002A09\0000A0Show";
 }
-.mdmreport-controls-group input.mdmreport-controls[type="text"], .mdmreport-controls .mdmreport-controls-group input[type="text"] {
+.mdmreport-controls-group input.mdmreport-controls[type="text"], .mdmreport-controls .mdmreport-controls-group input[type="text"], .mdmreport-controls .mdmreport-controls-group .mdmreport-control {
     display: block;
     line-height: 1em;
     padding: 0.35em;

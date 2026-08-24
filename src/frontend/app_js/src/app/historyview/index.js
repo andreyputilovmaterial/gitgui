@@ -6,7 +6,7 @@ import logError from '../../error_logger/logError';
 
 import PagesSite from '../../common_components/pages/index';
 
-import PageHistoryOverview from './page_history_overview/index';
+import PageHistoryOverview from './page_revisions_list/index';
 
 import './style.css';
 

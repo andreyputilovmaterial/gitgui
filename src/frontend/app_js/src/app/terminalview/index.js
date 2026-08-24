@@ -123,7 +123,7 @@ const TerminalSubmitForm = {
         <div class="error">{{ formFields.validationError }}</div>
         <div class="mdmreport-controls-group mdmreport-controls-group-nonegmargin">
           <label style="display: none;">COMMAND:  </label>
-          <input type="text" name="command" value="" placeholder="git command: " v-model="formFields.command"></input>
+          <input type="text" name="command" value="" placeholder="git command: " class="mdmreport-control" v-model="formFields.command"></input>
           <input type="submit" value="Execute" class="submit"></input>
           <p class="hint"><small>Note: every command gets --git-dir path... --work-tree path... --no-pager params appended</small></p>
         </div>

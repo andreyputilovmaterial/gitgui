@@ -5,7 +5,7 @@ import logError from '../../../error_logger/logError';
 
 import './style.css';
 
-import PageFilesList from '../../historyview/page_history_overview/index';
+import PageFilesList from '../../historyview/page_files_list/index';
 
 
 
@@ -66,10 +66,10 @@ const PackRecord = {
     'statistics',
     'repoStatus',
     'repoCallbacks',
-    'componentFilterRecordsGetClassesCb',
+    'generateFileringCssClasses',
   ],
   template: `
-<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...componentFilterRecordsGetClassesCb({hash,objectType,revisionHash,revisionAuthor,revisionTimestamp,revisionMessage,blobHash,filePath,fileMode,sizeSource,sizeCompressed,deltaDepth,deltaBase,})]">
+<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...filteringClasses]">
   <span class="blob-record-element hash" title="Pack object hash">
     <span class="label">Pack object hash: </span>
     <component-format-hash :hash="hash" highlight="auto" />
@@ -150,19 +150,21 @@ const PackRecord = {
     const objectSizeWarningLevel = computed(()=>calcWarningLevel(props.sizeCompressed,props.statistics));
     const objectSizeWarningColor = computed(()=>calcWarningColor(objectSizeWarningLevel.value));
 
+    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
+
     const navigateRevisionPage = async () => {
       try {
-        await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
+        await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.revisionHash}));
       } catch(e) {
         if( e instanceof Error ) {
           logError(e);
-          logError(`Failed to navigate to page: history-files-list/${props?.hash}`);
+          logError(`Failed to navigate to page: history-files-list/${props?.revisionHash}`);
           throw e;
         }
       }
     };
 
-    return { navigateRevisionPage, objectSizeWarningColor, objectSizeWarningLevel };
+    return { navigateRevisionPage, objectSizeWarningColor, objectSizeWarningLevel, filteringClasses };
 
   },
 };

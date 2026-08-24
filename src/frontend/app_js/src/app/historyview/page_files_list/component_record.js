@@ -1,5 +1,5 @@
 
-import { ref, h } from 'vue';
+import { ref, h, computed } from 'vue';
 
 import PageFileView from '../../../app/fileviewerview/index';
 
@@ -15,13 +15,13 @@ const Record = {
   props: [
     'filepath',
     'hash',
-    'componentFilterRecordsGetClassesCb',
+    'generateFileringCssClasses',
     'repoStatus',
     'repoCallbacks',
   ],
   template: `
 <div class="error">{{ error }}</div>
-<div :class="[...['files-record','mdm-ui-record'],...componentFilterRecordsGetClassesCb({'filepath':filepath})]" :key="filepath" :data-recordsfilter-filepath="filepath">
+<div :class="[...['files-record','mdm-ui-record'],...filteringClasses]" :key="filepath" :data-recordsfilter-filepath="filepath">
   <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-1" title="View file"><component-loader-spinner v-if="fileViewLinkBusy" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
   <span class="link-download-file mdm-ui-record-col-download-file mdm-ui-record-col-2" title="Download file"><component-loader-spinner v-if="fileDownloadLinkBusy" /><span class="label">Download file: </span><a @click.prevent="handleDownloadFile" href="#!" download>⇩</a></span>
   <span class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" title="File path"><span class="label">File path: </span>{{ filepath }}</span>
@@ -34,6 +34,8 @@ const Record = {
     const error = ref('');
     const fileViewLinkBusy = ref(false);
     const fileDownloadLinkBusy = ref(false);
+
+    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
 
     const navigateFileViewPage = async () => {
       try {
@@ -130,7 +132,14 @@ const Record = {
       }
     };
 
-    return { navigateFileViewPage, handleDownloadFile, fileViewLinkBusy, fileDownloadLinkBusy, error };
+    return {
+      navigateFileViewPage,
+      handleDownloadFile,
+      fileViewLinkBusy,
+      fileDownloadLinkBusy,
+      error,
+      filteringClasses,
+    };
   },
 };
 

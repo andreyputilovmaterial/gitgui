@@ -1,6 +1,6 @@
 
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 import Record from './component_record';
 
@@ -14,13 +14,17 @@ const Records = {
     'repoCallbacks',
   ],
   template: `
-<component-filter-records-form :columns="{'filepath':'File path'}" :setComponentFilterRecordsClasses="setComponentFilterRecordsClasses">
+<component-filter-records-form
+  :columns="{'filepath':'File path'}"
+  :needSort="true"
+  ref="filteringComponent"
+>
   <div class="files-records mdm-ui-records">
     <files-record
       v-for="h in files"
       :key="h"
       :filepath="h"
-      :componentFilterRecordsGetClassesCb="componentFilterRecordsGetClassesCb"
+      :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
       :repoStatus="repoStatus"
       :repoCallbacks="repoCallbacks"
       :hash="hash"
@@ -32,9 +36,12 @@ const Records = {
     'files-record': Record,
   },
   setup(props) {
-    const componentFilterRecordsGetClassesCb = ref(()=>[]);
-    const setComponentFilterRecordsClasses = cb => componentFilterRecordsGetClassesCb.value = cb;
-    return { componentFilterRecordsGetClassesCb, setComponentFilterRecordsClasses };
+    const filteringComponent = ref(null);
+    const filesSorted = computed(()=> !!filteringComponent && !!filteringComponent?.sort ? filteringComponent?.sort(props.files) : props.files );
+    return {
+      filteringComponent,
+      filesSorted,
+    };
   },
 };
 

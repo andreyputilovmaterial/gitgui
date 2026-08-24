@@ -1,5 +1,5 @@
 
-import { ref, h } from 'vue';
+import { ref, h, computed } from 'vue';
 
 import logError from '../../../error_logger/logError';
 
@@ -76,12 +76,12 @@ const Record = {
     'message',
     'timestamp',
     'formVerCompareFields',
-    'componentFilterRecordsGetClassesCb',
+    'generateFileringCssClasses',
     'repoStatus',
     'repoCallbacks',
   ],
   template: `
-<div :class="['mdm-git-gui-history-record','history-record','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...componentFilterRecordsGetClassesCb({'hash':hash,'message':'message','timestamp':timestamp,'author':author})]" :key="hash" :data-recordsfilter-hash="hash" :data-recordsfilter-author="author" :data-recordsfilter-timestamp="timestamp" :data-recordsfilter-message="message">
+<div :class="['mdm-git-gui-history-record','history-record','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...filteringClasses]" :key="hash" :data-recordsfilter-hash="hash" :data-recordsfilter-author="author" :data-recordsfilter-timestamp="timestamp" :data-recordsfilter-message="message">
   <div v-if="!isWorktree" class="form-controls mdm-ui-record-col-formcontrols mdm-ui-record-col-1"><form-compare-vers-controls :formVerCompareFields="formVerCompareFields" :hash="hash" /></div><div v-else class="form-controls" />
   <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash">
     <span class="label">Hash: </span>
@@ -122,6 +122,8 @@ const Record = {
     const isWorktree = ref(props.hash==='worktree');
     const isIndex = ref(props.hash==='index');
 
+    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
+
     const navigateFilesListPage = async () => {
       try {
         await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
@@ -134,7 +136,13 @@ const Record = {
       }
     };
 
-    return { navigateFilesListPage, isHEAD, isWorktree, isIndex };
+    return {
+      navigateFilesListPage,
+      isHEAD,
+      isWorktree,
+      isIndex,
+      filteringClasses,
+    };
   },
 };
 

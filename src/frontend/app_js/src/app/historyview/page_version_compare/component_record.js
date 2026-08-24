@@ -1,5 +1,5 @@
 
-import { h } from 'vue';
+import { h, computed } from 'vue';
 
 import DiffView from './diffview';
 
@@ -100,7 +100,7 @@ const RecordHeader = {
 
 const Record = {
   props: [
-    'componentFilterRecordsGetClassesCb',
+    'generateFileringCssClasses',
   	'repoStatus',
   	'repoCallbacks',
   	'old_mode',
@@ -112,7 +112,7 @@ const Record = {
     'repoStatus', 'repoCallbacks',
   ],
   template: `
-<div :class="[...['diff-record','mdm-ui-record'],...componentFilterRecordsGetClassesCb({old_mode,new_mode,old_oid,new_oid,status,path})]">
+<div :class="[...['diff-record','mdm-ui-record'],...filteringClasses]">
   <component-section-rollup :header="h(RecordHeader,{'status':status,'filepath':path,})" :condensed="false">
     <diff :filepath="path" :blobIdOld="old_oid" :blobIdNew="new_oid" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
   </component-section-rollup>
@@ -121,8 +121,13 @@ const Record = {
   components: {
     'diff': DiffView,
   },
-  setup() {
-    return { h, RecordHeader };
+  setup(props) {
+    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
+    return {
+      h,
+      RecordHeader,
+      filteringClasses,
+    };
   },
 };
 

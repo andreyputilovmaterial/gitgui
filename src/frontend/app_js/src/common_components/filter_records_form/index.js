@@ -1,5 +1,5 @@
 
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 import logError from '../../error_logger/logError';
 
@@ -15,17 +15,18 @@ import './styles.css';
 const FormWrapper = {
   props: [
     'columns',
-    'setComponentFilterRecordsClasses',
+    'needSort',
   ],
   template: `
 <form :class="{'mdm-ui-recordsfilter': true}" @submit.prevent="handleSubmit">
   <div class="mdm-ui-recordsfilter-form mdmreport-banner mdmreport-controls">
     <div class="mdmreport-controls-group">
-      <div v-for="col in Object.keys(columns)" :key="col">
-        <label>{{ columns[col] }}:
+      <div v-for="col in Object.keys(columnsSanitized)" :key="col">
+        <label>{{ columnsSanitized[col].label }}:
           <input
-            type="text"
-            :value="formFields[col]"
+            :type="columnsSanitized[col].type"
+            :value="formFields.columns[col]"
+            class="mdmreport-control"
             @input="handleChange(col, $event)"
             placeholder="Type to filter..."
           /></label>
@@ -41,48 +42,96 @@ const FormWrapper = {
 
     // const thisId = ref(`mdm_ui_recordsfilter_${genId()}`);
 
-    const validateColumns = cols => ((Object.keys(cols).filter(a=>!a||(/^\s*$/.test(a)))).length===0) && (new Set(Object.keys(cols)).size === Object.keys(cols).length) && ((Object.keys(cols).filter(a=>!(/^[a-z0-9_]+$/ig.test(a)))).length===0);
-    if(!validateColumns(props.columns)) {
-      logError('mdm-ui-recordsfilter component: failed to init: col ids are not allowed');
-      throw new Error('mdm-ui-recordsfilter component: failed to init: col ids are not allowed');
-    }
+    const columnsSanitized = computed(() => {
+      const columns = {};
+      for (const [key, value] of Object.entries(props.columns)) {
+        columns[key] = (column => {
+          if( typeof column==='object' )
+            return { type: 'text', ...column, };
+          else if( typeof column==='string' )
+            return { type: 'text', label: column };
+          else {
+            const e = new Error(`filter-records component: columns property does not follow format (${column})`);
+            logError('Failed to initialize filter-records component');
+            logError(e);
+            throw e;
+          }
+        })(value);
+      }
+      return columns;
+    });
 
-    const formFields = ref(Object.fromEntries(
-      Object.entries(props.columns).map(([prop, _]) => [prop, ''])
-    ));
+    const formFields = ref({
+      columns: Object.fromEntries(
+        Object.entries(columnsSanitized).map(([prop, _]) => [prop, ''])
+      ),
+      sortingColumn: null,
+      sortingAscending: true,
+    });
+
+    const generateFileringCssClasses = ref(() => []);
+
+    const sortComparator = (a,b) => {
+      const type = a.type;
+      if( !formFields.value.sortingColumn || !Object.keys(columnsSanitized).includes(formFields.value.sortingColumn) ) {
+        const e = new Error(`mdm-ui-recordsfilter component: sort: impossible column ("${formFields.value.sortingColumn}")`);
+        logError(e);
+        throw e;
+      }
+      if( type==='text' ) {
+        if( sortingAscending )
+          return a[formFields.value.sortingColumn].localeCompare(b[formFields.value.sortingColumn]);
+        else
+          return b[formFields.value.sortingColumn].localeCompare(a[formFields.value.sortingColumn]);
+      } else if( type==='number' ) {
+        if( sortingAscending )
+          return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];
+        else
+          return b[formFields.value.sortingColumn] - a[formFields.value.sortingColumn];
+      } else if( type==='datetime' ) {
+        if( sortingAscending )
+          return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];
+        else
+          return b[formFields.value.sortingColumn] - a[formFields.value.sortingColumn];
+      } else {
+        if( sortingAscending )
+          return `${a[formFields.value.sortingColumn]}`.localeCompare(`${b[formFields.value.sortingColumn]}`);
+        else
+          return `${b[formFields.value.sortingColumn]}`.localeCompare(`${a[formFields.value.sortingColumn]}`);
+      }
+    };
+    // or ref(), not computed()? Anyway, passed columns are unlikely to change, so probably not a big difference
+    const sort = computed(() => !props.needSort || !formFields.value.sortingColumn ? records => records : records => records.sort(sortComparator));
 
     const handleChange = async (col,$event) => {
       try{
         const value = event.target.value;
-        formFields.value[col] = value;
-        const filteringCLassesCb = colValues => {
+        formFields.value.columns[col] = value;
+
+        const filteringClassesCb = colValues => {
+          // console.log(`[DEBUG]: mdm-ui-recordsfilter component: generateFileringCssClasses called`); // TODO: debug
           const norm = v => `${v}`.toLowerCase();
-          const shouldBeShown = colValues => {
+          const shouldBeShown = (colValues) => {
             var result = true;
-            Object.keys(props.columns).forEach(col=>{
-              const value = formFields.value[col];
+            Object.keys(columnsSanitized.value).forEach(col=>{
+              const value = formFields.value.columns[col];
               if(!!value&&!(/^\s*$/.test(value))) {
                 result = result && norm(colValues[col]).includes(norm(value));
               }
             });
             return result;
           };
-          if( shouldBeShown(colValues) )
+          const assessment = shouldBeShown({...colValues});
+          // console.log(`[DEBUG]: mdm-ui-recordsfilter component: generateFileringCssClasses: result is ready, that would be "${assessment}", with col == "${col}", value == "${value}", colValues == "${JSON.stringify(colValues)}"`); // TODO: debug
+          if( assessment )
             return ['mdm-ui-recordsfilter-status-shown'];
           else
             return ['mdm-ui-recordsfilter-status-hidden'];
         };
-        props.setComponentFilterRecordsClasses(filteringCLassesCb);
-        // if(!!el.value) {
-        //   function escapeCssString(value) {
-        //     return String(value)
-        //       .replace(/\\/g, '\\\\')
-        //       .replace(/"/g, '\\"')
-        //       .replace(/\n/g, '\\A ');
-        //   }
-        //   const selectorAll = Object.keys(props.columns).map(id=>`#${thisId} [data-recordsfilter-${id}]`).join(', ');
-        //   const recordsEl = Array.from(el.value.querySelectorAll(selectorAll));
-        // }
+
+        generateFileringCssClasses.value = filteringClassesCb;
+        // console.log(`[DEBUG]: mdm-ui-recordsfilter component: generateFileringCssClasses updated`); // TODO: debug
+
       } catch(e) {
         logError(e);
         logError('mdm-ui-recordsfilter component: failed when handling onChange');
@@ -90,15 +139,16 @@ const FormWrapper = {
       }
     };
 
-    const handleSubmit = async () => {
-      return undefined;
-    };
+    const handleSubmit = () => undefined;
 
     return {
       // thisId,
       handleSubmit,
       handleChange,
       formFields,
+      columnsSanitized,
+      generateFileringCssClasses,
+      sort,
     };
   },
 };

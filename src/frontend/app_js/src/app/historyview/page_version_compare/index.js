@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 
 import DiffRecord from './component_record';
 
@@ -28,13 +28,17 @@ const View = {
   <div class="error">{{ error }}</div>
   <template v-if="!changedFiles && !error">Querying data, please wait...</template>
   <template v-else-if="!!changedFiles">
-    <component-filter-records-form :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }" :setComponentFilterRecordsClasses="setComponentFilterChangedfilesRecordsClasses">
+    <component-filter-records-form
+      :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }"
+      :needSort="true"
+      ref="filteringComponent"
+    >
       <div class="mdm-git-gui-diff-records diff-records mdm-ui-records">
         <div v-if="!(changedFiles.length>0)">Nothing to show</div>
         <diff-record
-          v-for="h in changedFiles"
+          v-for="h in changedFilesSorted"
           :key="\`\${h.old_mode}-\${h.new_mode}-\${h.old_oid}-\${h.new_oid}-\${h.status}-\${h.path}\`"
-          :componentFilterRecordsGetClassesCb="componentFilterChangedfilesRecordsGetClassesCb"
+          :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
           :repoStatus="repoStatus"
           :repoCallbacks="repoCallbacks"
           :old_mode="h.old_mode"
@@ -227,6 +231,9 @@ const View = {
       }
     };
 
+    const filteringComponent = ref(null);
+    const changedFilesSorted = computed(()=> !!filteringComponent && !!filteringComponent?.sort ? filteringComponent?.sort(changedFiles.value) : changedFiles.value );
+
     onMounted(async () => {
       await Promise.all([
         getFiles(),
@@ -236,7 +243,8 @@ const View = {
     return {
       error,
       changedFiles,
-      componentFilterChangedfilesRecordsGetClassesCb, setComponentFilterChangedfilesRecordsClasses,
+      changedFilesSorted,
+      filteringComponent,
     };
   },
 };

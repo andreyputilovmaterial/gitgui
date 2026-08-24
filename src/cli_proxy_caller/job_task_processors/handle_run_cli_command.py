@@ -22,6 +22,9 @@ def handler(job,context):
         job.execution_started_at = datetime.now(timezone.utc)
         job.last_activity_at = job.execution_started_at
 
+    if None in command:
+        raise Exception(f'cli proxy caller: Invalid arguments passed to subprocess.run(): {repr(command)}')
+
     result = subprocess.run(
         command,
         capture_output=True,

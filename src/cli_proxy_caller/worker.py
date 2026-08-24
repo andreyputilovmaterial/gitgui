@@ -47,10 +47,19 @@ def processor_handle_job(context,task,job_id):
         job.is_binary = task.is_binary
         processor(job,context)
     except Exception as e:
+        associated_info = None
+        try:
+            associated_info = {
+                'task': task,
+                'job_id': job_id,
+            }
+            associated_info['job'] = context.jobs.get(job_id,None);
+        except:
+            pass
         with job.lock:
             job.status = "error"
             job.error = e
-            print_error(e)
+            print_error(e,associated_info)
 
 
 task_processors = {

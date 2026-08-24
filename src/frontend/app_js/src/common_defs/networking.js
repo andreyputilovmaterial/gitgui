@@ -14,10 +14,10 @@ export async function fetchWrapper(method,endpoint,payload) {
   if (!response.ok) {
     let error = `HTTP ${response.status}`
     try {
-      const err = await response.json();
-      error = err.error
+      error = await response.json();
+      error = error.payload.error
     } catch(e) {
-      error = `HTTP ${response.status}`
+      error = `HTTP ${response.status}: ${error}`
     }
     throw new FetchError(error)
   }

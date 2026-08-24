@@ -12,7 +12,12 @@ async function textconv(data,filename) {
       body: data,
     });
     if( !response.ok ) {
-      throw new Error(`Failed requesting /textconv: HTTP ${response.status}`);
+      let error = `Failed requesting /textconv: HTTP ${response.status}`;
+      try {
+        error = await response.text();
+        error = `Failed requesting /textconv: HTTP ${response.status}: ${error}`;
+      } catch(e) {}
+      throw new Error(error);
     }
     return await response.text();
   } catch(e) {

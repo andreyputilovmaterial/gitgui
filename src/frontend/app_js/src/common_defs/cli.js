@@ -34,10 +34,10 @@ export function cliCommandRaw(command,is_binary=false) {
       if (!response.ok) {
         let error = `HTTP ${response.status}`
         try {
-          const err = await response.json();
-          error = err.error
+          error = await response.json();
+          error = error.payload.error
         } catch(e) {
-          error = `HTTP ${response.status}`
+          error = `HTTP ${response.status}: ${error}`
         }
         throw new Error(error)
       }
@@ -87,15 +87,14 @@ export function cliCommandRaw(command,is_binary=false) {
           },
         )
         if (!response.ok) {
-          let errmsg = `HTTP ${response.status}`
+          let error = `HTTP ${response.status}`
           try {
-            const data = await response.json();
-            console.log('[DEBUG-catch-error-on-git-command]: ',data,data?.error,data?.payload,data?.payload?.error)
-            errmsg = data.payload.error
+            error = await response.json();
+            error = error.payload.error
           } catch(e) {
-            errmsg = `HTTP ${response.status}`
+            error = `HTTP ${response.status}: ${error}`
           }
-          throw new Error(errmsg)
+          throw new Error(error)
                   }
         const data = await response.json()
         data.id = genId(`response:/command/${context.job_id}`);
@@ -103,11 +102,11 @@ export function cliCommandRaw(command,is_binary=false) {
         if( data.status=='done' )
           return context.promiseResolve(data)
         else if( data.status=='error' ) {
-          let errmsg = data
+          let error = data
           try {
-            errmsg = data.error
+            error = data?.payload?.error
           } catch(e) { }
-          throw new Error(errmsg)
+          throw new Error(error)
         }
       } catch(e) {
         console.log('[DEBUG]: fail while pending!: ',e)

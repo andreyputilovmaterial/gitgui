@@ -152,12 +152,18 @@ document.addEventListener("DOMContentLoaded", () => {
       function executeGitCommand(args,is_binary=false) {
         const formatArgsString = args => {
           const formatArg = str => {
-            const hasSpaces = /\s/.test(str)
-            if(!hasSpaces)
+            const hasSpaces = str => /\s/.test(str);
+            const isEmpty = str => {
+              if( /^\s*$/.test(str) )
+                return true;
+              if( typeof str==='number' )
+                return false;
+              return !str;
+            };
+            if( !!hasSpaces(str) || isEmpty(str) )
+              return '"' + ( isEmpty(str) ? '' : `${str}`.replaceAll('"','\\"') ) + '"';
+            else
               return str;
-            else {
-              return '"' + str.replaceAll('"','\\"') + '"'
-            }
           }
           return args.map(formatArg).join(' ')
         };

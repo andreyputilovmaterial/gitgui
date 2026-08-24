@@ -5,9 +5,12 @@ import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
 import './app.css';
 import './app_form_control_adjustments.css';
 
-// tools, helper functions (globally accessible)
+// global tools
 import { FetchError, fetchWrapper } from './common_defs/networking';
 import { cliCommandRaw, prettyprintBytes, genId } from './common_defs/cli';
+import ConcurrencyManager from './common_defs/concurrency_manager';
+
+// tools/libs used in app
 import { diff } from './lib/myers-diff/src/index';
 import textconv_js from './textconv_js/index';
 import textconv_backend from './textconv_backend/index';
@@ -33,7 +36,7 @@ import AppOnlineIndicator from './app/onlineindicator';
 import ErrorView from './app/errorview/index';
 import { __access_errorSite } from './error_logger/setup';
 
-// direct children shown in starting view
+// direct children shown in starting view in app
 import PageWelcome from './app/mainview_welcome/index';
 import PageFiles from './app/filesview/index';
 import PageHistory from './app/historyview/index';
@@ -153,7 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
       __access_errorSite().promiseResolve(logError);
       __access_errorSite().promise = Promise.resolve(logError);
 
-      function executeGitCommand(args,is_binary=false) {
+      const gitCommandConcurrencyManager = new ConcurrencyManager(5);
+      function _executeGitCommand(args,is_binary=false) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -232,10 +236,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return {...response.payload,id:response.id};
         });
       };
-      async function executeGitBinaryCommand(args) {
+      async function _executeGitBinaryCommand(args) {
         const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
         const filename = 'file'; // we don't care what the name is, and that's not important
-        const response = await executeGitCommand(args,true);
+        const response = await _executeGitCommand(args,true);
         if( !(response.returncode===0) || notEmpty(response.stderr) ) {
           const errmsg = `Response from ${args.join(' ')}: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
           logError(errmsg);
@@ -267,6 +271,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch(e) {}
         return fileDataByteArray;
       }
+      const executeGitCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitCommand(...args));
+      const executeGitBinaryCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitBinaryCommand(...args));
       repoCallbacks.value.executeGitCommand = executeGitCommand;
       repoCallbacks.value.executeGitBinaryCommand = executeGitBinaryCommand;
 

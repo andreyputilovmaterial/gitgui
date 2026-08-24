@@ -85,11 +85,13 @@ const RecordHeader = {
   props: [
     'status',
     'filepath',
+    'old_path',
+    'new_path',
   ],
   template: `
 <div class="mdm-git-gui-diff-fileheader">
   <span :class="['status', \`status-\${status}\`]"><status :status="status" /></span>
-  <span class="filepath"><code>{{ filepath }}</code></span>
+  <span class="filepath"><code>{{ !!old_path||!!new_path ? \`\${old_path||filepath} -> \${new_path||filepath}\` : filepath }}</code></span>
 </div>
 `,
   components: {
@@ -110,12 +112,15 @@ const Record = {
   	'old_oid',
   	'new_oid',
   	'status',
-  	'path',
-    'repoStatus', 'repoCallbacks',
+    'path',
+    'old_path',
+    'new_path',
+    'repoStatus',
+    'repoCallbacks',
   ],
   template: `
 <div :class="[...['diff-record','mdm-ui-record'],...filteringClasses]">
-  <component-section-rollup :header="h(RecordHeader,{'status':status,'filepath':path,})" :condensed="false">
+  <component-section-rollup :header="h(RecordHeader,{status,filepath:path,old_path,new_path})" :condensed="false">
     <diff :filepath="path" :blobIdOld="old_oid" :blobIdNew="new_oid" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
   </component-section-rollup>
 </div>
@@ -124,7 +129,7 @@ const Record = {
     'diff': DiffView,
   },
   setup(props) {
-    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
+    const filteringClasses = computed(()=>props.generateFileringCssClasses({...props,path:`${props.path||''}${props.new_path||''}${props.old_path||''}`}));
     return {
       h,
       RecordHeader,

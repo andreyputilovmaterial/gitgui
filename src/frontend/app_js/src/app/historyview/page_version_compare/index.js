@@ -46,7 +46,9 @@ const View = {
           :old_oid="h.old_oid"
           :new_oid="h.new_oid"
           :status="h.status"
-          :path="h.path"
+          :path="h.path || h.new_path"
+          :old_path="h.old_path"
+          :new_path="h.new_path"
         />
       </div>
     </component-filter-records-form>

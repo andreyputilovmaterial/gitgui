@@ -2,7 +2,7 @@
 
 import { ref, reactive, nextTick, watch } from 'vue';
 
-
+import Lock from '../../common_defs/lock';
 
 import './styles.css';
 
@@ -112,10 +112,21 @@ export function parseCommand(txt) {
 
 
 
+function grabAdditionsFromCommandString(lhs,rhs,diffPathces) {
+  let result = '';
+  for( const patch of diffPathces) {
+    result += rhs.slice(patch.rhs.at, patch.rhs.at + patch.rhs.add);
+  }
+  return result;
+}
+
+
+
+
 
 const TerminalSubmitForm = {
   props: [
-    'executeGitCommand',
+    'repoCallbacks',
   ],
   template: `
     <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
@@ -134,7 +145,8 @@ const TerminalSubmitForm = {
     // const { ref, reactive } = Vue
 
 
-    const isBusy = ref(false)
+    const isBusy = ref(false);
+    const lock = new Lock();
 
     const formFields = reactive({
       command: '',
@@ -142,19 +154,24 @@ const TerminalSubmitForm = {
     })
      const handleSubmit = async () => {
 
+       const releaseLock = await lock.acquire();
        try {
          isBusy.value = true
-         const command = parseCommand(formFields.command)
-         const result = await props.executeGitCommand(command)
-         formFields.command = ''
-         formFields.validationError = ''
+         const commandAccepted = formFields.command;
+         const command = parseCommand(commandAccepted);
+         const result = await props.repoCallbacks.executeGitCommand(command);
+         const commandNewState = formFields.command;
+         const commandAdditions = grabAdditionsFromCommandString(commandAccepted,commandNewState,props.repoCallbacks.diff(commandAccepted,commandNewState)); // whatever user typed while validation was processing
+         formFields.command = commandAdditions;
+         formFields.validationError = '';
 
        } catch (error) {
          console.error("Form submission failed:", error)
          formFields.validationError = error
 
        } finally {
-         isBusy.value = false
+         releaseLock();
+         isBusy.value = false;
         //  formFields.command = ''
        }
      }
@@ -189,12 +206,14 @@ const TerminalRecord = {
 const TerminalSessionView = {
   props: [
     'commands',
-    'executeGitCommand',
+    'repoCallbacks',
   ],
   template: `
 <component-section-rollup header="Commands View" :condensed="false">
   <div class="mdm-git-gui-terminal">
-    <terminal-submit-form :executeGitCommand="executeGitCommand"></terminal-submit-form>
+    <terminal-submit-form
+      :repoCallbacks="repoCallbacks"
+    />
     <div class="terminal-records mdm-ui-records" ref="commandsEl" @scroll="onScroll">
       <terminal-record
         v-for="cmd in commands"

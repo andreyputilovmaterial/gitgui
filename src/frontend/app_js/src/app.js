@@ -86,7 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   </div>
   <div class="mdm-git-gui-app-section-terminal section">
-    <terminalsession-view :commands="commands" :executeGitCommand="executeGitCommand"></terminalsession-view>
+    <terminalsession-view
+      :commands="commands"
+      :repoCallbacks="repoCallbacks"
+    />
   </div>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>

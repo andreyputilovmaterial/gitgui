@@ -16,12 +16,13 @@ const Records = {
   template: `
 <component-filter-records-form
   :columns="{'filepath':'File path'}"
+  :records="files"
   :needSort="true"
   ref="filteringComponent"
 >
   <div class="files-records mdm-ui-records">
     <files-record
-      v-for="h in files"
+      v-for="h in filesSorted"
       :key="h"
       :filepath="h"
       :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
@@ -37,7 +38,15 @@ const Records = {
   },
   setup(props) {
     const filteringComponent = ref(null);
-    const filesSorted = computed(()=> !!filteringComponent && !!filteringComponent?.sort ? filteringComponent?.sort(props.files) : props.files );
+
+    const filesSorted = computed(()=> {
+      if( filteringComponent.value?.paginateAndSort ) {
+        return filteringComponent.value?.paginateAndSort(props.files);
+      } else {
+        return props.files;
+      }
+    });
+
     return {
       filteringComponent,
       filesSorted,

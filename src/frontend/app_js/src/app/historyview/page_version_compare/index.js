@@ -30,6 +30,7 @@ const View = {
   <template v-else-if="!!changedFiles">
     <component-filter-records-form
       :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }"
+      :records="changedFiles"
       :needSort="true"
       ref="filteringComponent"
     >
@@ -191,7 +192,14 @@ const View = {
     };
 
     const filteringComponent = ref(null);
-    const changedFilesSorted = computed(()=> !!filteringComponent && !!filteringComponent?.sort ? filteringComponent?.sort(changedFiles.value) : changedFiles.value );
+
+    const changedFilesSorted = computed(()=> {
+      if( filteringComponent.value?.paginateAndSort ) {
+        return filteringComponent.value?.paginateAndSort(changedFiles.value);
+      } else {
+        return changedFiles.value;
+      }
+    });
 
     onMounted(async () => {
       await Promise.all([

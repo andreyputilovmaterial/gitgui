@@ -12,16 +12,36 @@ import './styles.css';
 
 
 
+const DEFAULT_RECORDS_PER_PAGE = 25;
+
+
+
+const PageNav = {
+  props: [
+    'index',
+    'active',
+    'selectPage',
+  ],
+  template: `
+<a :class="{'nav-page':true,'active':!!active}" href="#!" @click.prevent="selectPage">{{ index+1 }}</a>
+`,
+  setup() {
+    return {};
+  },
+}
+
 
 
 
 const FormWrapper = {
   props: [
     'columns',
+    'records',
     'needSort',
+    'recordsPerPage'
   ],
   template: `
-<form :class="{'mdm-ui-recordsfilter': true}" @submit.prevent="handleSubmit">
+<form :class="{'mdm-ui-recordsfilter': true,'mdm-ui-recordsfilter-filtering': true,}" @submit.prevent="handleSubmit">
   <div class="mdm-ui-recordsfilter-form mdmreport-banner mdmreport-controls">
     <div class="mdmreport-controls-group">
       <div v-for="col in Object.keys(columnsSanitized)" :key="col">
@@ -46,11 +66,25 @@ const FormWrapper = {
       </div>
     </div>
   </div>
+  <div class="mdm-ui-recordsfilter-pagination mdmreport-banner mdmreport-controls">
+    Page: <span class="pagination-page-indices">
+      <page-nav
+        v-for="p in pagination"
+        :key="p.index"
+        :index="p.index"
+        :active="p.active"
+        :selectPage="()=>{ formFields.page = p.index }"
+      />
+    </span>
+  </div>
   <div class="mdm-ui-recordsfilter-content">
     <slot />
   </div>
 </form>
 `,
+  components: {
+    'page-nav': PageNav,
+  },
   setup(props) {
 
     // const thisId = ref(`mdm_ui_recordsfilter_${genId()}`);
@@ -74,12 +108,35 @@ const FormWrapper = {
       return columns;
     });
 
+    const recordsPerPage = ref((()=>{
+      if(props.recordsPerPage==0)
+        return len(props.records);
+      else if(props.recordsPerPage>0)
+        return props.recordsPerPage|0;
+      else
+        return DEFAULT_RECORDS_PER_PAGE;
+    })());
+
+    const numPages = computed(()=>Math.ceil(props.records.length/recordsPerPage.value));
+
     const formFields = ref({
-      columns: Object.fromEntries(
-        Object.entries(columnsSanitized).map(([prop, _]) => [prop, ''])
-      ),
+      columns: Object.entries(columnsSanitized.value).map(([prop, _]) => [prop, '']),
       sortingColumn: null,
       sortingAscending: true,
+      page: 0,
+    });
+
+    const pagination = computed(()=>{
+      const pages = [];
+      for(let i=0;i<Number(numPages.value);++i) {
+        pages.push({
+          index: i,
+          start: i*recordsPerPage.value,
+          end: (i+1)*recordsPerPage.value,
+          active: i==formFields.value.page,
+        });
+      }
+      return pages;
     });
 
     const generateFileringCssClasses = ref(() => []);
@@ -92,29 +149,36 @@ const FormWrapper = {
         throw e;
       }
       if( type==='text' ) {
-        if( sortingAscending )
+        if( formFields.value.sortingAscending )
           return a[formFields.value.sortingColumn].localeCompare(b[formFields.value.sortingColumn]);
         else
           return b[formFields.value.sortingColumn].localeCompare(a[formFields.value.sortingColumn]);
       } else if( type==='number' ) {
-        if( sortingAscending )
+        if( formFields.value.sortingAscending )
           return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];
         else
           return b[formFields.value.sortingColumn] - a[formFields.value.sortingColumn];
       } else if( type==='datetime' ) {
-        if( sortingAscending )
+        if( formFields.value.sortingAscending )
           return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];
         else
           return b[formFields.value.sortingColumn] - a[formFields.value.sortingColumn];
       } else {
-        if( sortingAscending )
+        if( formFields.value.sortingAscending )
           return `${a[formFields.value.sortingColumn]}`.localeCompare(`${b[formFields.value.sortingColumn]}`);
         else
           return `${b[formFields.value.sortingColumn]}`.localeCompare(`${a[formFields.value.sortingColumn]}`);
       }
     };
-    // or ref(), not computed()? Anyway, passed columns are unlikely to change, so probably not a big difference
-    const sort = computed(() => !props.needSort || !formFields.value.sortingColumn ? records => records : records => records.sort(sortComparator));
+    const paginateAndSort = sourceRecords => {
+      // first, sort
+      let records = [...sourceRecords];
+      if( !!props.needSort && !!formFields.value.sortingColumn )
+        records = records.sort(sortComparator);
+      const paginationStart = formFields.value.page*recordsPerPage.value;
+      const paginationEnd = (formFields.value.page+1)*recordsPerPage.value;
+      return records.slice(paginationStart,paginationEnd);
+    };
 
     const handleChange = async (col,$event) => {
       try{
@@ -163,7 +227,10 @@ const FormWrapper = {
       formFields,
       columnsSanitized,
       generateFileringCssClasses,
-      sort,
+      paginateAndSort,
+      recordsPerPage,
+      numPages,
+      pagination,
     };
   },
 };

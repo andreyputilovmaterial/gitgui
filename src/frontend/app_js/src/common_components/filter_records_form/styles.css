@@ -6,3 +6,43 @@
 .mdm-ui-recordsfilter-status-hidden {
   display: none!important;
 }
+
+
+.mdm-ui-recordsfilter-pagination {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: true;
+  gap: 7px;
+}
+.mdm-ui-recordsfilter-pagination .pagination-page-indices {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: true;
+  gap: 7px;
+  margin-top: 1px;
+}
+.mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:active, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:link, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:visited, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:hover {
+  font-size: 600px;
+  transition: all 400ms ease;
+  color: #000;
+  line-height: 16px;
+  font-size: 16px;
+  text-decoration: none;
+  outline: none;
+  border: 1px solid #e0e0e0;
+  display: block;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 28px;
+  height: 28px;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  margin-top: -5px;
+  margin-bottom: -5px;
+}
+.mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:hover {
+  color: #7067ff;
+}
+.mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page.active {
+  border-color: #33aa22;
+}

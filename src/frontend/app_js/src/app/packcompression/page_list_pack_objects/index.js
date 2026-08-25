@@ -64,12 +64,13 @@ const View = {
               deltaDepth: 'Delta Depth',
               deltaBase: 'Delta Base',
             }"
+            :records="packObjects"
             :needSort="true"
             ref="filteringComponent"
           >
             <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
               <packobject-record
-                v-for="(packObject,hash) in packObjectsSorted"
+                v-for="packObject in packObjectsSorted"
                 :key="packObject.hash"
                 :hash="packObject.hash"
                 :objectType="packObject.objectType"
@@ -122,7 +123,7 @@ const View = {
     const cumulativeComputedSource = computed(() => {
       try {
         if( !packObjects.value ) return NaN;
-        return Object.entries(packObjects.value).map(([hash,obj])=>obj).reduce((acc,e)=>acc+Number(e.sizeSource),0);
+        return packObjects.value.reduce((acc,e)=>acc+Number(e.sizeSource),0);
       } catch(e) {
         logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         logError('Git Pack View: Failed retrieving data');
@@ -134,7 +135,7 @@ const View = {
     const cumulativeComputedCompressed = computed(() => {
       try {
         if( !packObjects.value ) return NaN;
-        return Object.entries(packObjects.value).map(([hash,obj])=>obj).reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
+        return packObjects.value.reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
       } catch(e) {
         logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         logError('Git Pack View: Failed retrieving data');
@@ -279,6 +280,7 @@ const View = {
       }
       try {
         const retrievedPackPhysicalObjects = {};
+        let i = 1;
         for( const path of packFiles ) {
           const packFileFullPath = ref(`${`${basePath}`.replace(/[\\/]+$/, '')}/${`${path}`.replace(/^[\\/]+/, '')}`);
           const result = await props.repoCallbacks.executeGitCommand(['git', 'verify-pack', '-v',packFileFullPath.value]);
@@ -288,7 +290,8 @@ const View = {
             if( !detectIfValidPackPhysicalObjectLine(outputsLine) )
               continue;
             const retrievedPackPhysicalObject = parseVerifyPackResultLine(outputsLine);
-            retrievedPackPhysicalObjects[retrievedPackPhysicalObject.hash] = retrievedPackPhysicalObject;
+            retrievedPackPhysicalObjects[retrievedPackPhysicalObject.hash] = {...retrievedPackPhysicalObject,order:i};
+            ++i;
           };
         };
         packPhysicalObjects.value = retrievedPackPhysicalObjects;
@@ -352,7 +355,6 @@ const View = {
             });
           }
         }
-        // packObjects.value = retrievedPackObjects;
         return retrievedPackObjects;
       } catch(e) {
         logError(e);
@@ -382,7 +384,11 @@ const View = {
           const obj = Array.from(revisions).sort((a, b) => (new Date(b.revisionTimestamp)) - (new Date(a.revisionTimestamp)))[0];
           objs[hash] = {...obj,...objs[hash]};
         }
-        packObjects.value = objs;
+        for( const [key,o] of Object.entries(objs) ) {
+          if( !o.order )
+            o.order = 0;
+        }
+        packObjects.value = Object.entries(objs).map(([hash,o])=>({...o,hash})).sort((a,b)=>a.order-b.order);
       } catch(e) {
         logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         logError('Git Pack View: Failed retrieving data');
@@ -414,7 +420,15 @@ const View = {
     }));
 
     const filteringComponent = ref(null);
-    const packObjectsSorted = computed(()=> !!filteringComponent && !!filteringComponent?.sort ? filteringComponent?.sort(packObjects.value) : packObjects.value );
+
+    const packObjectsSorted = computed(()=> {
+      if( filteringComponent.value?.paginateAndSort ) {
+        return filteringComponent.value?.paginateAndSort(packObjects.value);
+      } else {
+        return packObjects.value;
+      }
+    });
+    // const packObjectsSorted = computed(()=> !!filteringComponent && !!filteringComponent?.value?.paginateAndSort ? filteringComponent?.value?.paginateAndSort(packObjects.value) : packObjects.value );
 
     return {
       error,

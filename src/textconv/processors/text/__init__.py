@@ -61,7 +61,7 @@ def textconv(data: bytes, filename: str):
     encoding, bom, bom_len = detect_bom(data)
 
     try:
-        return data[bom_len:].decode(encoding=encoding,errors=replace)
+        return data[bom_len:].decode(encoding=encoding,errors='replace')
     except UnicodeDecodeError as e:
         try:
             detailed_err_msg = report_unicode_decode_error(e,data,filename,encoding,bom,bom_len)

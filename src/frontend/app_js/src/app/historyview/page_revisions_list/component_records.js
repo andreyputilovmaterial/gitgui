@@ -1,6 +1,6 @@
 
 
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 
 import Record from './component_record';
 
@@ -16,6 +16,7 @@ const Records = {
   template: `
 <component-filter-records-form
   :columns="{'hash':'Hash','author':'Author','timestamp':{label:'Date/time',type:'datetime',},'message':'Commit message'}"
+  :keyField="'hash'"
   :records="historyWithRecordsForWorktreeAndIndex"
   :needSort="true"
   ref="filteringComponent"
@@ -29,7 +30,7 @@ const Records = {
       :timestamp="h.timestamp"
       :message="h.message"
       :formVerCompareFields="formVerCompareFields"
-      :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
+      :componentRecordsFiltData="h.componentRecordsFiltData"
       :repoStatus="repoStatus"
       :repoCallbacks="repoCallbacks"
     />

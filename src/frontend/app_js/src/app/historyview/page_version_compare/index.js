@@ -30,6 +30,7 @@ const View = {
   <template v-else-if="!!changedFiles">
     <component-filter-records-form
       :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }"
+      :keyField="'path'"
       :records="changedFiles"
       :needSort="true"
       ref="filteringComponent"
@@ -39,7 +40,7 @@ const View = {
         <diff-record
           v-for="h in changedFilesSorted"
           :key="\`\${h.old_mode}-\${h.new_mode}-\${h.old_oid}-\${h.new_oid}-\${h.status}-\${h.path}\`"
-          :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
+          :componentRecordsFiltData="h.componentRecordsFiltData"
           :repoStatus="repoStatus"
           :repoCallbacks="repoCallbacks"
           :old_mode="h.old_mode"

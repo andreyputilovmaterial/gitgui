@@ -71,8 +71,10 @@ function showPopup({ value, inputEl, event, validationCb }) {
   context.promise.then(
     () => {},
     e => {
-      logError('Numeric range picker popup widget: error in promise');
-      logError(e);
+      if( e instanceof Error ) {
+        logError('Numeric range picker popup widget: error in promise');
+        logError(e);
+      };
       throw e;
     },
   );

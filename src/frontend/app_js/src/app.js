@@ -1,6 +1,6 @@
 
 // import { Vue } from "./vue.js";
-import { createApp, ref, onMounted, onUnmounted, toRaw, watch } from 'vue'
+import { createApp, ref, onMounted, onUnmounted, toRaw, watch, isReactive, version } from 'vue'
 
 import './app.css';
 import './app_form_control_adjustments.css';
@@ -497,6 +497,11 @@ document.addEventListener("DOMContentLoaded", () => {
           (()=>{
             gitRepoReady.then(checkIfSomethingIsInStagingArea);
             gitRepoReady.then(getHEAD);
+          })(),
+          (()=>{
+            // console.log(`[DEBUG]: vue version is ${version}`);
+            window.isReactive = isReactive;
+            window.vueVersion = version;
           })(),
         ])
       });

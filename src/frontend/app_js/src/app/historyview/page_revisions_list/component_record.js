@@ -76,12 +76,19 @@ const Record = {
     'message',
     'timestamp',
     'formVerCompareFields',
-    'generateFileringCssClasses',
+    'componentRecordsFiltData',
     'repoStatus',
     'repoCallbacks',
   ],
   template: `
-<div :class="['mdm-git-gui-history-record','history-record','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...filteringClasses]" :key="hash" :data-recordsfilter-hash="hash" :data-recordsfilter-author="author" :data-recordsfilter-timestamp="timestamp" :data-recordsfilter-message="message">
+<div
+  :class="['mdm-git-gui-history-record','history-record','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...(componentRecordsFiltData?.cssClasses||[])]"
+  :key="hash"
+  :data-recordsfilter-hash="hash"
+  :data-recordsfilter-author="author"
+  :data-recordsfilter-timestamp="timestamp"
+  :data-recordsfilter-message="message"
+>
   <div v-if="!isWorktree" class="form-controls mdm-ui-record-col-formcontrols mdm-ui-record-col-1"><form-compare-vers-controls :formVerCompareFields="formVerCompareFields" :hash="hash" /></div><div v-else class="form-controls" />
   <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash">
     <span class="label">Hash: </span>
@@ -122,8 +129,6 @@ const Record = {
     const isWorktree = ref(props.hash==='worktree');
     const isIndex = ref(props.hash==='index');
 
-    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
-
     const navigateFilesListPage = async () => {
       try {
         await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
@@ -141,7 +146,6 @@ const Record = {
       isHEAD,
       isWorktree,
       isIndex,
-      filteringClasses,
     };
   },
 };

@@ -49,7 +49,7 @@ const View = {
           error.value = errmsg;
           throw new Error(errmsg);
         }
-        filesList.value = response.stdout.split('\n').filter(a=>a!=='');
+        filesList.value = response.stdout.split('\n').filter(a=>a!=='').map(filepath=>({filepath}));
       } catch(e) {
         logError(e);
         logError(`Failed fetching file list for hash "${props.hash}"`);

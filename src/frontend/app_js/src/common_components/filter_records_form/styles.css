@@ -1,10 +1,26 @@
 
+
+
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-form.mdmreport-banner, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby.mdmreport-banner {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby.mdmreport-banner, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-pagination-top.mdmreport-banner {
+  border-top: none;
+}
+
+
+
 .mdm-ui-recordsfilter-form .mdmreport-controls-group {
   display: flex; flex-direction: row; flex-wrap: wrap;
 }
 
-.mdm-ui-recordsfilter-status-hidden {
+.mdm-ui-recordsfilter-content > .hidden, .mdm-ui-recordsfilter-content > * > .hidden {
   display: none!important;
+}
+.mdm-ui-recordsfilter-content .hidden, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-content .hidden {
+  display: none;
 }
 
 
@@ -25,17 +41,17 @@
   font-size: 600px;
   transition: all 400ms ease;
   color: #000;
-  line-height: 16px;
-  font-size: 16px;
+  line-height: 14px;
+  font-size: 14px;
   text-decoration: none;
   outline: none;
   border: 1px solid #e0e0e0;
   display: block;
-  border-radius: 4px;
+  border-radius: 6px;
   text-align: center;
   min-width: 28px;
   height: 28px;
-  padding-top: 5px;
+  padding-top: 6px;
   padding-bottom: 6px;
   margin-top: -5px;
   margin-bottom: -5px;
@@ -44,5 +60,25 @@
   color: #7067ff;
 }
 .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page.active {
-  border-color: #33aa22;
+  /* border-color: #33aa22; */
+  border-color: #d0d0d0;
+  border-width: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby label, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby .mdmreport-controls-group label {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby label select, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby label select.mdmreport-control {
+  width: auto;
+}
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby label span {
+line-height: 1em;
+padding: .35em 0 0.35em;
+min-height: 1.3em;
+border: 1px solid transparent;
+border-radius: .18em;
 }

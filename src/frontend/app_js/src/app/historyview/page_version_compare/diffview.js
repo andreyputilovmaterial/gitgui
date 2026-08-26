@@ -7,6 +7,11 @@ import './style.css';
 import './styles_diffview.css';
 
 
+
+
+const MEMORYSAVE_LIMES_LIMIT = 1000;
+
+
 function* diffAllParts(lhs, rhs, patches) {
     let lastl = 0;
     let lastr = 0;
@@ -135,6 +140,7 @@ const View = {
   </template>
   <template v-else>
     <div v-if="!linesLeft || !linesRight" class="note">Calculating diff...</div>
+    <div class="stats">Left file: <component-format-filesize :size="statisticsLeft?.binaryFileSize" />, right file: <component-format-filesize :size="statisticsRight?.binaryFileSize" /></div>
     <div class="two-sided-view">
       <div class="pane pane-left diff-outputs">
         <div class="linenumber-and-content-columns">
@@ -197,6 +203,7 @@ const View = {
 
     const fetchDataLeft = async () => {
       try {
+        statisticsLeft.value.binaryFileSize = '???';
         const binaryDataLeft = await getContentsFromBlob(props.blobIdOld);
         statisticsLeft.value.binaryFileSize = binaryDataLeft.length;
         const txtLeft = await props.repoCallbacks.textconv(binaryDataLeft,props.filepath);
@@ -211,6 +218,7 @@ const View = {
     };
     const fetchDataRight = async () => {
       try {
+        statisticsRight.value.binaryFileSize = '???';
         const binaryDataRight = await getContentsFromBlob(props.blobIdNew);
         statisticsRight.value.binaryFileSize = binaryDataRight.length;
         const txtRight = await props.repoCallbacks.textconv(binaryDataRight,props.filepath);
@@ -234,7 +242,7 @@ const View = {
         statisticsLeft.value.textLineCount = leftLines.length;
         const rightLines = rightNomralizedLfCr.split('\n');
         statisticsRight.value.textLineCount = rightLines.length;
-        if( (leftLines.length>10000) || (rightLines.length>10000) ) {
+        if( (leftLines.length>MEMORYSAVE_LIMES_LIMIT) || (rightLines.length>MEMORYSAVE_LIMES_LIMIT) ) {
           memorysave.value = true;
         } else {
           memorysave.value = false;

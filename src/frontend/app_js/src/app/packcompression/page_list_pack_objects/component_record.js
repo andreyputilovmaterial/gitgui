@@ -66,10 +66,10 @@ const PackRecord = {
     'statistics',
     'repoStatus',
     'repoCallbacks',
-    'generateFileringCssClasses',
+    'componentRecordsFiltData',
   ],
   template: `
-<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...filteringClasses]">
+<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...(componentRecordsFiltData?.cssClasses||[])]">
   <span class="blob-record-element hash" title="Pack object hash">
     <span class="label">Pack object hash: </span>
     <component-format-hash :hash="hash" highlight="auto" />
@@ -150,8 +150,6 @@ const PackRecord = {
     const objectSizeWarningLevel = computed(()=>calcWarningLevel(props.sizeCompressed,props.statistics));
     const objectSizeWarningColor = computed(()=>calcWarningColor(objectSizeWarningLevel.value));
 
-    const filteringClasses = computed(()=>props.generateFileringCssClasses(props));
-
     const navigateRevisionPage = async () => {
       try {
         await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.revisionHash}));
@@ -164,7 +162,11 @@ const PackRecord = {
       }
     };
 
-    return { navigateRevisionPage, objectSizeWarningColor, objectSizeWarningLevel, filteringClasses };
+    return {
+      navigateRevisionPage,
+      objectSizeWarningColor,
+      objectSizeWarningLevel,
+    };
 
   },
 };

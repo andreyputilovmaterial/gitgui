@@ -1,6 +1,19 @@
 
-import { createApp, ref, reactive } from 'vue';
+import { createApp, ref, reactive, nextTick, onMounted } from 'vue';
 import logError from '../../error_logger/logError';
+
+
+
+function hasValue(value) {
+  if( typeof value==='number' )
+    return true;
+  else if( typeof value==='string' )
+    return !(/^\s*$/.test(value))
+  else
+    return !!value;
+}
+
+
 
 
 const mountToComponent = (targetEl,outerResolve,outerReject,oldValue,validationCb) => {
@@ -28,12 +41,14 @@ const mountToComponent = (targetEl,outerResolve,outerReject,oldValue,validationC
       type="number"
       class="mdmreport-control"
       v-model="formFields.from"
+      ref="refInputLow"
     />
     to
     <input
       type="number"
       class="mdmreport-control"
       v-model="formFields.to"
+      ref="refInputHigh"
     />.
   </fieldset>
   <fieldset class="mdmreport-controls line2">
@@ -43,16 +58,23 @@ const mountToComponent = (targetEl,outerResolve,outerReject,oldValue,validationC
 </form>
 `,
     setup() {
+
       const error = ref('');
       const validationaFailureMsg = ref('');
+      const isBusy = ref(false);
+
+      const refInputLow = ref(null);
+      const refInputHigh = ref(null);
+
       const formFields = reactive({
         from: oldValue?.from,
         to: oldValue?.to,
       });
-      const isBusy = ref(false);
+
       const handleCancel = async () => {
         internalPromiseContext.reject(null);
       };
+
       const handleSubmit = async () => {
         try {
           isBusy.value = true;
@@ -75,6 +97,24 @@ const mountToComponent = (targetEl,outerResolve,outerReject,oldValue,validationC
         }
       };
 
+      const focusInput = async () => {
+        await nextTick();
+        const shouldTargetHigh =
+          hasValue(formFields.to) &&
+          !hasValue(formFields.from);
+        if (shouldTargetHigh) {
+          refInputHigh.value?.focus();
+        } else {
+          refInputLow.value?.focus();
+        }
+      };
+
+      onMounted(async () => {
+        await Promise.all([
+          focusInput(),
+        ])
+      });
+
       return {
         formFields,
         handleSubmit,
@@ -82,6 +122,8 @@ const mountToComponent = (targetEl,outerResolve,outerReject,oldValue,validationC
         isBusy,
         validationaFailureMsg,
         error,
+        refInputLow,
+        refInputHigh,
       };
     },
   });

@@ -16,6 +16,7 @@ const Records = {
   template: `
 <component-filter-records-form
   :columns="{'filepath':'File path'}"
+  :keyField="'filepath'"
   :records="files"
   :needSort="true"
   ref="filteringComponent"
@@ -23,9 +24,9 @@ const Records = {
   <div class="files-records mdm-ui-records">
     <files-record
       v-for="h in filesSorted"
-      :key="h"
-      :filepath="h"
-      :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
+      :key="h.filepath"
+      :filepath="h.filepath"
+      :componentRecordsFiltData="h.componentRecordsFiltData"
       :repoStatus="repoStatus"
       :repoCallbacks="repoCallbacks"
       :hash="hash"

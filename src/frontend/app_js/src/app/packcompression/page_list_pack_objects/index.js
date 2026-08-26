@@ -64,29 +64,30 @@ const View = {
               deltaDepth: 'Delta Depth',
               deltaBase: 'Delta Base',
             }"
+            :keyField="'hash'"
             :records="packObjects"
             :needSort="true"
             ref="filteringComponent"
           >
             <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
               <packobject-record
-                v-for="packObject in packObjectsSorted"
-                :key="packObject.hash"
-                :hash="packObject.hash"
-                :objectType="packObject.objectType"
-                :revisionHash="packObject.revisionHash"
-                :revisionAuthor="packObject.revisionAuthor"
-                :revisionTimestamp="packObject.revisionTimestamp"
-                :revisionMessage="packObject.revisionMessage"
-                :blobHash="packObject.blobHash"
-                :filePath="packObject.filePath"
-                :fileMode="packObject.fileMode"
-                :sizeSource="packObject.sizeSource"
-                :sizeCompressed="packObject.sizeCompressed"
-                :deltaDepth="packObject.deltaDepth"
-                :deltaBase="packObject.deltaBase"
+                v-for="h in packObjectsSorted"
+                :key="h.hash"
+                :hash="h.hash"
+                :objectType="h.objectType"
+                :revisionHash="h.revisionHash"
+                :revisionAuthor="h.revisionAuthor"
+                :revisionTimestamp="h.revisionTimestamp"
+                :revisionMessage="h.revisionMessage"
+                :blobHash="h.blobHash"
+                :filePath="h.filePath"
+                :fileMode="h.fileMode"
+                :sizeSource="h.sizeSource"
+                :sizeCompressed="h.sizeCompressed"
+                :deltaDepth="h.deltaDepth"
+                :deltaBase="h.deltaBase"
                 :statistics="statistics"
-                :generateFileringCssClasses="!!filteringComponent ? filteringComponent?.generateFileringCssClasses : ()=>[]"
+                :componentRecordsFiltData="h.componentRecordsFiltData"
                 :repoStatus="repoStatus"
                 :repoCallbacks="repoCallbacks"
               />
@@ -106,8 +107,6 @@ const View = {
     const error = ref('');
     const validationMessage = ref('');
     const isBusy = ref(false);
-    const generateFileringCssClasses = ref(()=>[]);
-    const setComponentFilterRecordsClasses = cb => generateFileringCssClasses.value = cb;
     const gitPackCompressionIsReady = ref(false);
     const packFiles = ref(undefined);
     const packPhysicalObjects = ref(undefined); // purely parsed from git verify-output
@@ -428,7 +427,6 @@ const View = {
         return packObjects.value;
       }
     });
-    // const packObjectsSorted = computed(()=> !!filteringComponent && !!filteringComponent?.value?.paginateAndSort ? filteringComponent?.value?.paginateAndSort(packObjects.value) : packObjects.value );
 
     return {
       error,

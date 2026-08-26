@@ -104,7 +104,7 @@ const RecordHeader = {
 
 const Record = {
   props: [
-    'generateFileringCssClasses',
+    'componentRecordsFiltData',
   	'repoStatus',
   	'repoCallbacks',
   	'old_mode',
@@ -119,7 +119,7 @@ const Record = {
     'repoCallbacks',
   ],
   template: `
-<div :class="[...['diff-record','mdm-ui-record'],...filteringClasses]">
+<div :class="[...['diff-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]">
   <component-section-rollup :header="h(RecordHeader,{status,filepath:path,old_path,new_path})" :condensed="false">
     <diff :filepath="path" :blobIdOld="old_oid" :blobIdNew="new_oid" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
   </component-section-rollup>
@@ -129,11 +129,9 @@ const Record = {
     'diff': DiffView,
   },
   setup(props) {
-    const filteringClasses = computed(()=>props.generateFileringCssClasses({...props,path:`${props.path||''}${props.new_path||''}${props.old_path||''}`}));
     return {
       h,
       RecordHeader,
-      filteringClasses,
     };
   },
 };

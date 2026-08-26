@@ -27,13 +27,13 @@
 .mdm-ui-recordsfilter-pagination {
   display: flex;
   flex-direction: row;
-  flex-wrap: true;
+  flex-wrap: wrap;
   gap: 7px;
 }
 .mdm-ui-recordsfilter-pagination .pagination-page-indices {
   display: flex;
   flex-direction: row;
-  flex-wrap: true;
+  flex-wrap: wrap;
   gap: 7px;
   margin-top: 1px;
 }

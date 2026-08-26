@@ -9,7 +9,8 @@ import './styles_diffview.css';
 
 
 
-const MEMORYSAVE_LIMES_LIMIT = 1000;
+const MEMORYSAVE_LINES_LIMIT = 1000;
+const MEMORYSAVE_CHARS_PER_LINE_LIMIT = 100;
 
 
 function* diffAllParts(lhs, rhs, patches) {
@@ -259,7 +260,9 @@ const View = {
         statisticsLeft.value.textLineCount = leftLines.length;
         const rightLines = rightNomralizedLfCr.split('\n');
         statisticsRight.value.textLineCount = rightLines.length;
-        if( (leftLines.length>MEMORYSAVE_LIMES_LIMIT) || (rightLines.length>MEMORYSAVE_LIMES_LIMIT) ) {
+        const leftLinesOrLinePartsCount = leftLines.reduce( (count, line) => count + Math.ceil((line.length+1) / MEMORYSAVE_CHARS_PER_LINE_LIMIT), 0 );
+        const rightLinesOrLinePartsCount = rightLines.reduce( (count, line) => count + Math.ceil((line.length+1) / MEMORYSAVE_CHARS_PER_LINE_LIMIT), 0 );
+        if( (leftLinesOrLinePartsCount>MEMORYSAVE_LINES_LIMIT) || (rightLinesOrLinePartsCount>MEMORYSAVE_LINES_LIMIT) ) {
           memorysave.value = true;
         } else {
           memorysave.value = false;

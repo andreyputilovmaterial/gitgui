@@ -15,11 +15,23 @@ const MEMORYSAVE_LIMES_LIMIT = 1000;
 function* diffAllParts(lhs, rhs, patches) {
     let lastl = 0;
     let lastr = 0;
-    for (const patch of patches) {
+    let lnothingfollows = false;
+    let rnothingfollows = false;
+    // for (const patch of patches) {
+    for (const [patchIndex, patch] of patches.entries()) {
         // Unchanged part
+        const islastpatch = patchIndex === patches.length - 1;
+        lnothingfollows = false;
+        rnothingfollows = false;
+        if( islastpatch && !(patch.lhs.del>0) )
+          lnothingfollows = true;
+        if( islastpatch && !(patch.rhs.add>0) )
+          rnothingfollows = true;
         const skipl = patch.lhs.at - lastl;
         const skipr = patch.rhs.at - lastr;
-        if( !(skipl===skipr) ) throw new Error(`diff: please verify results, internal qc is not matching for skipped part in left and right: ${skipl} !== ${skipr}`);
+        if( ! ( lnothingfollows || rnothingfollows ) )
+          if( !(skipl===skipr) )
+            throw new Error(`diff: please verify results, internal qc is not matching for skipped part in left and right: ${skipl} !== ${skipr}`);
         if( (skipl>0)||(skipr>0) ) {
           yield {
               type: "keep",
@@ -69,6 +81,11 @@ function* diffAllParts(lhs, rhs, patches) {
     };
     const skipl = patch.lhs.at - lastl;
     const skipr = patch.rhs.at - lastr;
+    // lnothingfollows = true;
+    // rnothingfollows = true;
+    // if( ! ( lnothingfollows || rnothingfollows ) )
+    //   if( !(skipl===skipr) )
+    //     throw new Error(`diff: please verify results, internal qc is not matching for skipped part in left and right: ${skipl} !== ${skipr}`);
     if( (skipl>0)||(skipr>0) ) {
       yield {
           type: "keep",

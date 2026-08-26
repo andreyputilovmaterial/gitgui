@@ -65,9 +65,6 @@ const View = {
     const error = ref('');
     const changedFiles = ref(null);
 
-    const componentFilterChangedfilesRecordsGetClassesCb = ref(()=>[]);
-    const setComponentFilterChangedfilesRecordsClasses = cb => componentFilterChangedfilesRecordsGetClassesCb.value = cb;
-
     const getFiles = async data => {
       function handleResult(data) {
         const decoder = new TextDecoder();
@@ -198,7 +195,8 @@ const View = {
       if( filteringComponent.value?.paginateAndSort ) {
         return filteringComponent.value?.paginateAndSort(changedFiles.value);
       } else {
-        return changedFiles.value;
+        return [];
+        // return changedFiles.value; // returning all unfiltered results in full list rendered and crash on memory
       }
     });
 

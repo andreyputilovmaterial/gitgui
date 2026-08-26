@@ -44,7 +44,8 @@ const Records = {
       if( filteringComponent.value?.paginateAndSort ) {
         return filteringComponent.value?.paginateAndSort(props.files);
       } else {
-        return props.files;
+        // return props.files; // returning all unfiltered results in full list rendered and crash on memory
+        return [];
       }
     });
 

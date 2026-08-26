@@ -424,7 +424,8 @@ const View = {
       if( filteringComponent.value?.paginateAndSort ) {
         return filteringComponent.value?.paginateAndSort(packObjects.value);
       } else {
-        return packObjects.value;
+        // return packObjects.value; // returning all unfiltered results in full list rendered and crash on memory
+        return [];
       }
     });
 

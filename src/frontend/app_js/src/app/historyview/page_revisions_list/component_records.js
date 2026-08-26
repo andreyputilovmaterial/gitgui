@@ -54,7 +54,8 @@ const Records = {
       if( filteringComponent.value?.paginateAndSort ) {
         return filteringComponent.value?.paginateAndSort(historyWithRecordsForWorktreeAndIndex.value);
       } else {
-        return historyWithRecordsForWorktreeAndIndex.value;
+        // return historyWithRecordsForWorktreeAndIndex.value; // returning all unfiltered results in full list rendered and crash on memory
+        return [];
       }
     });
 

@@ -12,7 +12,7 @@ import './styles.css';
 
 
 
-const DEFAULT_RECORDS_PER_PAGE = 20;
+const DEFAULT_RECORDS_PER_PAGE = 25;
 
 
 

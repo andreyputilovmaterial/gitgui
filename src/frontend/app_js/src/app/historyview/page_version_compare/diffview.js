@@ -324,8 +324,10 @@ const View = {
       await Promise.all([
         fetchDataLeft(),
         fetchDataRight(),
+        (async () => { console.log(`[DEBUG-diffview-component]: mounted: `,props); return true; })(),
       ]).then(prepareDiffs)
     });
+
     watch(memorysave,()=>{
       if(!memorysave.value)
         memorySaveOffPromiseContext.resolve(true);

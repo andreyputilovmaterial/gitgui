@@ -5,6 +5,7 @@ import logError from '../../error_logger/logError';
 
 import matchText from './match/text';
 import matchNumericRange from './match/numeric_range';
+import matchDatetimeRange from './match/datetime_range';
 
 // import { genId } from './helpers';
 
@@ -49,14 +50,22 @@ const FormWrapper = {
         <label>{{ columnsSanitized[col].label }}:
           <component
             :is="
-              columnsSanitized[col].type === 'number'
-              ? 'component-input-numericrange'
-              : 'input'
+              (
+                columnsSanitized[col].type === 'number'
+                ? 'component-input-numericrange'
+                : (
+                  columnsSanitized[col].type === 'datetime'
+                  ? 'component-input-datetimerange'
+                  : 'input'
+                )
+              )
             "
             v-bind="
-              columnsSanitized[col].type === 'number'
-              ? {}
-              : { type: columnsSanitized[col].type }
+              (
+                ['number','datetime'].includes( columnsSanitized[col].type )
+                ? {}
+                : { type: columnsSanitized[col].type }
+              )
             "
             :value="formFields.columns[col]"
             class="mdmreport-control"
@@ -179,6 +188,8 @@ const FormWrapper = {
         let match = matchText;
         if( columnsSanitized.value[col].type==='number' )
           match = matchNumericRange;
+        else if( columnsSanitized.value[col].type==='datetime' )
+          match = matchDatetimeRange;
         result = result && match(colValues[col],value);
       });
       return result;

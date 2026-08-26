@@ -11,6 +11,13 @@
     5fr;
 }
 
+.mdm-git-gui-historyfileslistview .files-record {
+  transition: all 100ms ease;
+}
+.mdm-git-gui-historyfileslistview .files-record:hover {
+  background: #f3f3f3;
+}
+
 .mdm-git-gui-historyfileslistview .mdm-ui-records {
     grid-template-columns:
       max-content

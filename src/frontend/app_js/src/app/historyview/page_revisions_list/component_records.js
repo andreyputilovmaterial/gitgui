@@ -15,7 +15,12 @@ const Records = {
   ],
   template: `
 <component-filter-records-form
-  :columns="{'hash':'Hash','author':'Author','timestamp':{label:'Date/time',type:'datetime',},'message':'Commit message'}"
+  :columns="{
+    'hash': 'Hash',
+    'author': 'Author',
+    'timestamp': {label:'Date/time',type:'datetime',},
+    'message': 'Commit message'
+  }"
   :keyField="'hash'"
   :records="historyWithRecordsForWorktreeAndIndex"
   :needSort="true"

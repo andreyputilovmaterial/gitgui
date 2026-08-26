@@ -15,7 +15,9 @@ const Records = {
   ],
   template: `
 <component-filter-records-form
-  :columns="{'filepath':'File path'}"
+  :columns="{
+    'filepath':'File path',
+  }"
   :keyField="'filepath'"
   :records="files"
   :needSort="true"

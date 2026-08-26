@@ -29,7 +29,14 @@ const View = {
   <template v-if="!changedFiles && !error">Querying data, please wait...</template>
   <template v-else-if="!!changedFiles">
     <component-filter-records-form
-      :columns="{'path': 'path', 'status': 'status', 'old_mode': 'old_mode', 'new_mode': 'new_mode', 'old_oid': 'old_oid', 'new_oid': 'new_oid', }"
+      :columns="{
+        'path': 'path',
+        'status': 'status',
+        'old_mode': 'old_mode',
+        'new_mode': 'new_mode',
+        'old_oid': 'old_oid',
+        'new_oid': 'new_oid',
+      }"
       :keyField="'path'"
       :records="changedFiles"
       :needSort="true"

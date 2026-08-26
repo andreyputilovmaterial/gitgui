@@ -56,6 +56,7 @@
 .mdm-git-gui-diffview .linenumber-and-content-columns > *.linenum-col {
   width: 40px;
   flex: 0 0 40px;
+  background: linear-gradient(to right, #fff 0%, #f2f2f2 100%);
 }
 .mdm-git-gui-diffview .diff-outputs .status-ins {
   background: #a0f090;

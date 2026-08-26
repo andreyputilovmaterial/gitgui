@@ -24,6 +24,7 @@ import ComponentFormatDatetime from './common_components/format_datetime/index';
 import ComponentFormatFilesize from './common_components/format_filesize/index';
 import ComponentFormatHash from './common_components/format_hash/index';
 import ComponentInputNumericRange from './common_components/input_numeric_range/index';
+import ComponentInputDatetimeRange from './common_components/input_datetime_range/index';
 import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import './common_components/css_grid/styles.css';
 
@@ -542,6 +543,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-format-filesize', ComponentFormatFilesize);
   app.component('component-format-hash', ComponentFormatHash);
   app.component('component-input-numericrange',ComponentInputNumericRange);
+  app.component('component-input-datetimerange',ComponentInputDatetimeRange);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.mount('#gitui_app');
 

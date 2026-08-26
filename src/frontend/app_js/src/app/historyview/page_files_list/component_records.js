@@ -1,10 +1,15 @@
 
 
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
+
+import logError from '../../../error_logger/logError';
+
+import ModalChooseDestPath from './component_bulk_restore_choose_path_modal';
 
 import Record from './component_record';
 
 import './style.css';
+import './style_bulk_restore_form.css';
 
 const Records = {
   props: [
@@ -14,33 +19,132 @@ const Records = {
     'repoCallbacks',
   ],
   template: `
-<component-filter-records-form
-  :columns="{
-    'filepath':'File path',
-  }"
-  :keyField="'filepath'"
-  :records="files"
-  :needSort="true"
-  ref="filteringComponent"
->
-  <div class="files-records mdm-ui-records">
-    <files-record
-      v-for="h in filesSorted"
-      :key="h.filepath"
-      :filepath="h.filepath"
-      :componentRecordsFiltData="h.componentRecordsFiltData"
-      :repoStatus="repoStatus"
-      :repoCallbacks="repoCallbacks"
-      :hash="hash"
-    />
+<form @submit.prevent="handleBulkRestore" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}  \${inBulkRestoreMode ? 'mdm-git-gui-bulk-form' : ''} \`">
+  <div class="error">{{ error }}</div>
+  <div class="error">{{ bulkRestoreValidationMessage }}</div>
+  <p class="note bulk-restore-notice mdmreport-banner" v-if="!inBulkRestoreMode">Or <a href="#!" class="build-restore-link" @click.prevent="inBulkRestoreMode=true">bulk-restore</a> files directly to disk, without downloading large files from operating memory.</p>
+  <div v-if="inBulkRestoreMode" class="bulk-restore-submit-controls mdmreport-banner mdmreport-controls">
+    <div class="mdmreport-controls-group restore-submit-controls-line">
+      <button
+        type="button"
+        class="mdmreport-control button-check-all"
+        @click.prevent="Object.entries(formFields.rows).forEach(([key, row]) => { row.checked = true; })"
+      >
+        Select all
+      </button>
+      <button
+        type="button"
+        class="mdmreport-control button-check-none"
+        @click.prevent="Object.entries(formFields.rows).forEach(([key, row]) => { row.checked = false; })"
+      >
+        Select none
+      </button>
+      <button
+        type="submit"
+        class="mdmreport-control button-go"
+      >
+        Restore selected
+      </button>
+    </div>
   </div>
-</component-filter-records-form>
+  <div class="bulk-restore-success-message">{{ bulkRestoreSuccessMessage }}</div>
+  <component-filter-records-form
+    :columns="{
+      'filepath':'File path',
+    }"
+    :keyField="'filepath'"
+    :records="files"
+    :needSort="true"
+    ref="filteringComponent"
+  >
+    <div class="files-records mdm-ui-records">
+      <files-record
+        v-for="h in filesSorted"
+        :key="h.filepath"
+        :filepath="h.filepath"
+        :componentRecordsFiltData="h.componentRecordsFiltData"
+        :repoStatus="repoStatus"
+        :repoCallbacks="repoCallbacks"
+        :hash="hash"
+        :bulkRestoreVModel="formFields.rows[h.filepath]"
+        :showBulkRestoreCheckbox="inBulkRestoreMode"
+      />
+    </div>
+  </component-filter-records-form>
+</form>
 `,
   components: {
     'files-record': Record,
   },
   setup(props) {
+
     const filteringComponent = ref(null);
+
+    const isBusy = ref(false);
+    const formFields = reactive({
+      rows: Object.fromEntries(props.files.map(({filepath})=>([filepath,{checked:false}]))),
+    });
+    const bulkRestoreValidationMessage = ref('');
+    const bulkRestoreSuccessMessage = ref('');
+    const error = ref('');
+    const inBulkRestoreMode = ref(false);
+
+    const handleBulkRestore = async () => {
+      try {
+        isBusy.value = true;
+        bulkRestoreValidationMessage.value = '';
+        const selectedFiles = Object.entries(formFields.rows).filter(([key,value])=>value.checked).map(([key,value])=>key);
+        if( !(selectedFiles.length>0) ) {
+          bulkRestoreValidationMessage.value = 'Please select some files. Nothing selected.'
+          return false;
+        }
+        const dest = await props.repoCallbacks.createModal(ModalChooseDestPath);
+        const commandArgs = [ 'git', 'archive', props.hash, '--', ...selectedFiles, '|', 'tar', '-x', '-C', dest ]
+        const result = await props.repoCallbacks.executeGitCommand(commandArgs);
+        if( (result.returncode!==0) || (!!result.stderr) ) {
+          error.value = `git archive: failed with returncode ${result.returncode}: ${result.stderr}`;
+          logError('"Restore files" failed');
+          logError(error.value);
+          isBusy.value = false;
+          return;
+        }
+
+
+        // import subprocess
+        // import tarfile
+        // from pathlib import Path
+        //
+        // destination = Path("/some/new/location")
+        // destination.mkdir(parents=True, exist_ok=True)
+        //
+        // proc = subprocess.Popen(
+        //     ["git", "archive", "REV", "--", "README.txt", "docs/", "src/foo.c"],
+        //     stdout=subprocess.PIPE,
+        //     stderr=subprocess.PIPE,
+        // )
+        //
+        // try:
+        //     with tarfile.open(fileobj=proc.stdout, mode="r|") as archive:
+        //         archive.extractall(destination)
+        //
+        //     if proc.wait() != 0:
+        //         raise subprocess.CalledProcessError(proc.returncode, proc.args)
+        // finally:
+        //     if proc.stdout:
+        //         proc.stdout.close()
+        //     if proc.stderr:
+        //         proc.stderr.close()
+        bulkRestoreSuccessMessage.value = `Successfully restored ${selectedFiles.length} files to "${dest}"`
+        bulkRestoreValidationMessage.value = '';
+      } catch(e) {
+        if(e instanceof Error)
+          logError(e);
+        isBusy.value = false;
+        return;
+      } finally {
+        isBusy.value = false;
+      }
+    };
 
     const filesSorted = computed(()=> {
       if( filteringComponent.value?.paginateAndSort ) {
@@ -52,8 +156,15 @@ const Records = {
     });
 
     return {
+      isBusy,
+      error,
+      bulkRestoreValidationMessage,
+      bulkRestoreSuccessMessage,
+      handleBulkRestore,
+      formFields,
       filteringComponent,
       filesSorted,
+      inBulkRestoreMode,
     };
   },
 };

@@ -1,0 +1,140 @@
+
+.mdm-git-gui-historyfileslistview .build-restore-link, .mdm-git-gui-historyfileslistview .build-restore-link:active, .mdm-git-gui-historyfileslistview .build-restore-link:visited, .mdm-git-gui-historyfileslistview .build-restore-link:link, .mdm-git-gui-historyfileslistview .build-restore-link:hover {
+    display: inline-block;
+    line-height: 1em;
+    padding: .35em 1em;
+    border: 1px solid #dfdfdf;
+    border-radius: 4px;
+    background: none;
+    text-decoration: none;
+    color: #000;
+    margin-left: 7px;
+    margin-right: 7px;
+    outline: none;
+    transition: all 600ms ease;
+    cursor: pointer;
+}
+.mdm-git-gui-historyfileslistview .build-restore-link:hover {
+  color: 454090;
+}
+.mdm-git-gui-historyfileslistview .bulk-restore-success-message {
+  color: #226633;
+  font-weight: 500;
+}
+
+.mdm-git-gui-historyfileslistview .mdm-git-gui-bulk-form .files-record {
+  padding-left: 42px;
+}
+.mdm-git-gui-historyfileslistview .restore-submit-controls-line {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+}
+.mdm-git-gui-historyfileslistview .restore-submit-controls-line > *, .mdm-git-gui-historyfileslistview .restore-submit-controls-line > *.mdmreport-control {
+  width: auto;
+}
+.mdm-git-gui-historyfileslistview .files-record .bulk-restore-checkbox-outer {
+  display: none;
+  position: absolute;
+  appearance: none;
+-webkit-appearance: none;
+
+width: 1em;
+height: 1em;
+margin: 0;
+}
+.mdm-git-gui-historyfileslistview .mdm-git-gui-bulk-form .files-record .bulk-restore-checkbox-outer {
+  display: block;
+}
+.mdm-git-gui-historyfileslistview .files-record .bulk-restore-checkbox-outer .mdmreport-control {
+  width: 1em;
+  height: 1em;
+}
+
+
+
+.mdm-git-gui-historyfileslistview .files-record .bulk-restore-checkbox-outer input {
+    -webkit-appearance: none;
+    appearance: none;
+
+    width: 1em;
+    height: 1em;
+    min-width: 1em;
+    min-height: 1em;
+    flex: 0 0 1em;
+
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    display: inline-grid;
+    place-content: center;
+
+    background: white;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+}
+.mdm-git-gui-historyfileslistview .files-record .bulk-restore-checkbox-outer input::after {
+    content: "";
+    width: 0.3em;
+    height: 0.6em;
+
+    border: solid #555;
+    border-width: 0 0.12em 0.12em 0;
+
+    transform: rotate(45deg) scale(0);
+}
+.mdm-git-gui-historyfileslistview .files-record .bulk-restore-checkbox-outer input:checked {
+    background: white;
+    border-color: #888;
+}
+.mdm-git-gui-historyfileslistview .files-record .bulk-restore-checkbox-outer input:checked::after {
+    transform: rotate(45deg) scale(1);
+}
+
+.git-repo-modal-form-bulk-restore-choose-path {
+  /* ... */
+}
+.git-repo-modal-form-bulk-restore-choose-path p {
+  margin-bottom: 0;
+}
+.git-repo-modal-form-bulk-restore-choose-path .mdmreport-controls-group {
+  margin: 0;
+}
+.git-repo-modal-form-bulk-restore-choose-path .buttons-confirm {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+  align-items: start;
+}
+.git-repo-modal-form-bulk-restore-choose-path .mdmreport-control {
+  display: block;
+  width: 100%;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 14px;
+  height: 28px;
+  border-radius: 5px;
+}
+.git-repo-modal-form-bulk-restore-choose-path .gitgui-button-close {
+  display: inline-block;
+  padding: 6px 14px 6px;
+  line-height: 14px;
+  height: 28px;
+  border-radius: 5px;
+  width: auto;
+  min-width: auto;
+  max-width: auto;
+  margin: 0;
+  transition: all 600me ease;
+}
+.git-repo-modal-form-bulk-restore-choose-path .gitgui-button-close.button-confirm {
+  color: #ffffff;
+  background: #226633;
+  font-weight: 600;
+  border: 1px solid transparent;
+}

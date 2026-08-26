@@ -34,6 +34,13 @@
   padding-right: 0;
 }
 
+.mdm-git-gui-historyfileslistview .files-record {
+  position: relative;
+}
+.mdm-git-gui-historyfileslistview .files-record > .error {
+  grid-column: 1/-1;
+  padding: 0 0 0 3px;;
+}
 .mdm-git-gui-historyfileslistview .files-record .link-view-file, .mdm-git-gui-historyfileslistview .files-record .link-download-file {
   position: relative;
 }

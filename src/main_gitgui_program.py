@@ -11,7 +11,13 @@ from .webserver_engine.webserver import Webserver # a wrapper around python http
 from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
 from .webserver_engine.find_free_port import find_free_port
 from .webserver_engine.launch_browser import launch_browser
-from .cli_proxy_caller import initiate_worker_loop, initiate_cli_command, get_cli_command_status, get_binary_data
+from .cli_proxy_caller import (
+    initiate_worker_loop as cli_initiate_worker_loop,
+    initiate_command as cli_command_initiate,
+    get_job as cli_command_get_job,
+    get_job_stdout_reader as cli_command_get_job_stdout_reader,
+    terminate_job as cli_command_terminate_job,
+)
 from .textconv import textconv
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
@@ -93,9 +99,10 @@ def main(*argcs,**kwargs):
         },
 
         'iface': {
-            'cli_initiate_cli_command': initiate_cli_command,
-            'cli_get_cli_command_status': get_cli_command_status,
-            'cli_get_binary_data': get_binary_data,
+            'cli_command_initiate': cli_command_initiate,
+            'cli_command_get_job': cli_command_get_job,
+            'cli_command_get_job_stdout_reader': cli_command_get_job_stdout_reader,
+            'cli_command_terminate_job': cli_command_terminate_job,
             'WebResponse': WebResponse,
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,
@@ -123,7 +130,7 @@ def main(*argcs,**kwargs):
 
     print('\npreparing git cli command loop...\n')
     for _ in range (0,CONFIG_CLI_COMMAND_EXEC_WORKERS):
-        initiate_worker_loop(config)
+        cli_initiate_worker_loop(config)
 
     print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'

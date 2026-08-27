@@ -35,6 +35,8 @@ class WebResponse:
     headers: list[tuple[str,str]]
     # cookies # can be passed in headers
     is_binary: bool = False
+    is_done: bool = False
+    is_stream: bool = False
 
 
 
@@ -87,6 +89,15 @@ class Webserver:
                     assert callable(renderer), 'Whoops, renderer returned from get_matching_endpoint() must be callable'
 
                     response = renderer(self, config=server._config)
+
+                    if response.is_done:
+                        # if all necessary headers and body were already sent - the renderer receives the handler instance and can send what is needed directly
+                        return
+
+                    if response.is_stream:
+                        assert response.is_binary, 'webserve: response.is_stream is only supported with response.is_binary'
+                        raise Exception('webserve: is_stream: not implemented');
+
                     if not response.content_type:
                         response.content_type = 'text/html'
 

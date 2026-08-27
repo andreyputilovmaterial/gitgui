@@ -16,19 +16,24 @@ from .common_functions import JSONEncoder
 
 
 
-def handle_git_command(server_instance,config={},added_data=None):
+def handle_git_command(nethandler_instance,config={},added_data=None):
+
     def prep_paylaod(f):
         return f
+
     # def make_bytes_example(bytes):
     #     if bytes is None:
     #         return None
     #     return [ n for n in bytes[:65] ]
-    def make_download_url(path_parts,job_id,binary_bucket_id,filename):
-        return f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{binary_bucket_id}/{filename}'
+
+    def make_download_url(path_parts,job_id,filename):
+        return f'{path_parts[0]}/{path_parts[1]}/{job_id}/stdout/{filename}'
+
     WebResponse = config.get('iface').get('WebResponse')
-    call_initiate_cli_command = config.get('iface').get('cli_initiate_cli_command')
-    call_get_cli_command_status = config.get('iface').get('cli_get_cli_command_status')
-    call_get_binary_data = config.get('iface').get('cli_get_binary_data')
+    call_cli_command_initiate = config.get('iface').get('cli_command_initiate')
+    call_cli_command_get_job = config.get('iface').get('cli_command_get_job')
+    call_cli_command_get_job_stdout_reader = config.get('iface').get('cli_command_get_job_stdout_reader')
+
     def sanitize_command(command,is_binary=False):
         args = [*command]
         assert args[0]=='git', f'Not a git command'
@@ -54,7 +59,9 @@ def handle_git_command(server_instance,config={},added_data=None):
             + \
             [ *args[1:] ]
         return args
-    def render_initiate_new_command(server_instance):
+
+    def handle_initiate_new_command(nethandler_instance):
+
         def detect_binary_str_value(flag):
             if re.match(r'^\s*\d+\s*$',flag):
                 return not not int(flag)
@@ -64,29 +71,34 @@ def handle_git_command(server_instance,config={},added_data=None):
                 return False
             else:
                 return not not flag
-        parsed = urlparse(server_instance.path)
+
+        parsed = urlparse(nethandler_instance.path)
         params = parse_qs(parsed.query)
         flag_is_binary = params.get('is_binary', ["0"])[0]
         flag_is_binary = flag_is_binary.strip()
         flag_is_binary = detect_binary_str_value(flag_is_binary)
+        flag_is_interactive = params.get('is_interactive', ["0"])[0]
+        flag_is_interactive = flag_is_interactive.strip()
+        flag_is_interactive = detect_binary_str_value(flag_is_interactive)
         # Read Content-Length header
-        length = int(server_instance.headers["Content-Length"])
+        length = int(nethandler_instance.headers["Content-Length"])
         # Read exactly that many bytes
-        body = server_instance.rfile.read(length)
+        body = nethandler_instance.rfile.read(length)
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
         command = prep_paylaod(payload)
-        command = sanitize_command(command, is_binary = not not flag_is_binary)
-        result = call_initiate_cli_command(command,config,is_binary=flag_is_binary)
+        command = sanitize_command(command, is_binary = flag_is_binary)
+
+        result = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive)
+
         headers = []
         if 'payload' in result:
-            if result['payload']['is_binary'] and not not result['payload']['stdout']:
+            if job.get('is_binary',False):
                 filename = Path('%FILENAME%').name
-                binary_bucket_id = result['payload']['stdout']
-                url_get_rawbytes = make_download_url(path,job_id,binary_bucket_id,filename)# f'{path[0]}/{path[1]}/{job_id}/rawbytes/{filename}'
+                url_get_rawbytes = make_download_url(path,job_id,filename)# f'{path[0]}/{path[1]}/{job_id}/rawbytes/{filename}'
                 result['payload']['stdout'] = url_get_rawbytes
+                result['payload']['download_url'] = url_get_rawbytes
                 headers.append(('Location',f'{url_get_rawbytes}',))
-                result['payload']['stdout_rawbytes'] = '<binary>' # make_bytes_example(result['payload']['stdout_rawbytes'])
         payload = {
             'ok': True,
             'status': 'called',
@@ -98,14 +110,18 @@ def handle_git_command(server_instance,config={},added_data=None):
             body = json.dumps(payload, cls=JSONEncoder),
             headers = headers,
         )
-    def call_check_status(server_instance):
+
+    def handle_job_status(nethandler_instance):
+
         def parse_path(path_parts):
             # path_parts[0] == ''
             # path_parts[1] == 'command'
             # path_parts[2] == job_id
             job_id = path_parts[2]
             return job_id
-        path_with_query = server_instance.path
+
+        method = nethandler_instance.command
+        path_with_query = nethandler_instance.path
         path_parsed = f'{urlparse(path_with_query).path}'
         path_parts = path_parsed.split('/')
         job_id = None
@@ -117,58 +133,83 @@ def handle_git_command(server_instance,config={},added_data=None):
             return WebResponse(
                 status_code = 404,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'call_check_status: job_id not found: "{job_id}'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'handle_job_status: job_id not found: "{job_id}'}, cls=JSONEncoder),
                 headers = [],
             )
-        result = call_get_cli_command_status(job_id,config)
-        result = {
-            'ok': True,
-            'status': result.get("status"),
-            'payload': result,
-        }
-        headers = []
-        if result['payload']['is_binary'] and not not result['payload']['stdout']:
-            filename = Path('%FILENAME%').name
-            binary_bucket_id = result['payload']['stdout']
-            url_get_rawbytes = make_download_url(path_parts,job_id,binary_bucket_id,filename)# f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
-            result['payload']['stdout'] = url_get_rawbytes
-            headers.append(('Location',f'{url_get_rawbytes}',))
-            result['payload']['stdout_rawbytes'] = '<binary>' # make_bytes_example(result['payload']['stdout_rawbytes'])
-        payload = result
-        return WebResponse(
-            status_code = 200,
-            content_type = 'application/json',
-            body = json.dumps(payload, cls=JSONEncoder),
-            headers = headers,
-        )
-    def call_get_data(server_instance):
+        if method=='GET':
+            job = call_cli_command_get_job(job_id,config)
+            result = {
+                'ok': True,
+                'status': job.get("status"),
+                'payload': job,
+            }
+            headers = []
+            if job.get('is_binary',False):
+                filename = Path('%FILENAME%').name
+                url_get_rawbytes = make_download_url(path_parts,job_id,filename)# f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
+                result['payload']['stdout'] = url_get_rawbytes
+                result['payload']['download_url'] = url_get_rawbytes
+                headers.append(('Location',f'{url_get_rawbytes}',))
+            payload = result
+            return WebResponse(
+                status_code = 200,
+                content_type = 'application/json',
+                body = json.dumps(payload, cls=JSONEncoder),
+                headers = headers,
+            )
+        elif method=='DELETE':
+            result = cli_command_terminate_job(job_id,config)
+            return WebResponse(
+                status_code = 204,
+                content_type = 'application/json',
+                body = json.dumps(None, cls=JSONEncoder),
+                headers = [],
+            )
+        elif job.is_interactive:
+            raise Exception('/command cli, is_interactive job:  not implemented')
+        else:
+            return WebResponse(
+                status_code = 405,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'renderer for {method} {path_parsed} is not recognized'}, cls=JSONEncoder),
+                headers = [],
+            )
+
+    def handle_send_binary_data(nethandler_instance):
+
         def parse_path(path_parts):
             # path_parts[0] == ''
             # path_parts[1] == 'command'
             # path_parts[2] == job_id
             # path_parts[3] == 'rawbytes'
-            # path_parts[4] == binary_bucket_id
-            # path_parts[5] == filename # <- useless, only helps browser derive file name if this is saved directly
+            # path_parts[4] == filename # <- useless, only helps browser derive file name if this is saved directly
             job_id = path_parts[2]
-            binary_bucket_id = path_parts[4]
-            return job_id, binary_bucket_id
-        path_with_query = server_instance.path
+            return job_id
+
+        path_with_query = nethandler_instance.path
         path_parsed = f'{urlparse(path_with_query).path}'
         path_parts = path_parsed.split('/')
         job_id = None
-        binary_bucket_id = None
         try:
-            job_id, binary_bucket_id = parse_path(path_parts)
+            job_id = parse_path(path_parts)
         except:
-            job_id, binary_bucket_id = None, None
-        if not job_id or not binary_bucket_id:
+            job_id = None, None
+        if not job_id:
             return WebResponse(
                 status_code = 404,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'call_get_data: not found'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'handle_send_binary_data: job not found: {job_id}'}, cls=JSONEncoder),
                 headers = [],
             )
-        result = call_get_binary_data(job_id,binary_bucket_id,config)
+        binary_data_reader = call_cli_command_get_job_stdout_reader(job_id,config)
+        if not binary_data_reader:
+            return WebResponse(
+                status_code = 415,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'job does not provide reader, maybe it was launched in non-binary (text) mode? {job.job_id}'}, cls=JSONEncoder),
+                headers = [],
+            )
+        result = binary_data_reader()
         payload = result
         return WebResponse(
             status_code = 200,
@@ -177,22 +218,29 @@ def handle_git_command(server_instance,config={},added_data=None):
             headers = [],
             is_binary = True,
         )
-    path_with_query = server_instance.path
+
+    path_with_query = nethandler_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    method = server_instance.command
+    method = nethandler_instance.command
     renderer = None
     payload = {}
     try:
         if method=='POST' and path_parsed=='/command':
-            renderer = render_initiate_new_command
+            renderer = handle_initiate_new_command
         elif method=='GET' and path_parsed.startswith('/command/'):
-            if method=='GET' and re.match(r'^/command/[^/]*/rawbytes\b.*',path_parsed):
-                renderer = call_get_data
+            if method=='GET' and re.match(r'^/command/[^/]*/stdout\b.*',path_parsed):
+                renderer = handle_send_binary_data
             else:
-                renderer = call_check_status
+                renderer = handle_job_status
         if not renderer:
-            raise Exception(f'request not recognized: {method} {path_with_query}')
-        return renderer(server_instance)
+            return WebResponse(
+                status_code = 405,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'renderer for {method} {path_parsed} is not recognized'}, cls=JSONEncoder),
+                headers = [],
+            )
+        return renderer(nethandler_instance)
+
     except Exception as e:
         # payload = {
         #     'ok': False,

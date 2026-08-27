@@ -6,7 +6,6 @@ from threading import Thread
 from .common_defs import (
     JobTask,
     JobMessage,
-    BinaryDataBucket,
     Job,
 )
 from .common_context import (
@@ -14,8 +13,7 @@ from .common_context import (
 )
 
 
-from .gc_jobs import gc as gc_jobs
-from .gc_binary_responses_storage import gc as gc_binary_responses_storage
+from .gc.jobs import gc as gc_jobs
 from .err_logger import print_error
 
 from .job_task_processors import job_task_processors
@@ -27,7 +25,6 @@ from .job_task_processors import job_task_processors
 
 def processor_handle_gc(context,task=None,job_id=None):
     gc_jobs(context.jobs) # mutating
-    gc_binary_responses_storage(context.binary_responses_storage,context.jobs) # mutating
 
 
 def processor_handle_job(context,task,job_id):
@@ -45,7 +42,7 @@ def processor_handle_job(context,task,job_id):
     try:
         job.command = task.command
         job.is_binary = task.is_binary
-        processor(job,context)
+        processor(context,task,job)
     except Exception as e:
         associated_info = None
         try:
@@ -104,4 +101,6 @@ def worker():
 
 
 def initiate_worker_loop(config):
-    return Thread(target=worker, daemon=True).start()
+    thread = Thread(target=worker, daemon=True)
+    thread.start()
+    return thread

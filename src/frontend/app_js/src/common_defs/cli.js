@@ -98,6 +98,7 @@ export function cliCommandRaw(command,is_binary=false) {
                   }
         const data = await response.json()
         data.id = genId(`response:/command/${context.job_id}`);
+        data.job_id = context.job_id;
         context.status = data.status
         if( data.status=='done' )
           return context.promiseResolve(data)

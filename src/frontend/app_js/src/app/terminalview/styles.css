@@ -14,12 +14,25 @@
   overflow-y: auto;
 }
 
+.mdm-ui-terminal-record > .grouping-indicator {
+  display: grid;
+  position: relative;
+  padding-right: 0;
+  margin-right: -4px;
+}
+
+.mdm-ui-terminal-record > .grouping-indicator > * {
+  display: grid;
+  position: relative;
+  grid-column: 1/-1;
+}
 
 
 
 @media (min-width: 500px) {
   .mdm-git-gui-terminal .terminal-records.mdm-ui-records {
     grid-template-columns:
+      max-content
       max-content
       max-content
       max-content

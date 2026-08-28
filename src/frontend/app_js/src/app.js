@@ -203,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const command = {
               timestamp: new Date(),
               id,
+              job_id: response?.payload?.job_id,
               message_stdout: response?.payload?.stdout || '',
               message_stderr: response?.payload?.stderr || '',
               returncode: getReturnCode(response),
@@ -210,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
               source: source_command,
               'type': 'response',
             }
-            commands.value = [...commands.value,command]
+            commands.value.push(command)
           },
           async err => {
             let response = {}
@@ -228,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
               source: source_command,
               'type': 'error',
             }
-            commands.value = [...commands.value,command]
+            commands.value.push(command)
           }
         )
         return promise.then(response=>{

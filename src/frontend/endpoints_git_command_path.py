@@ -96,7 +96,15 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
         command = prep_payload(payload)
-        command = sanitize_command(command, is_binary = flag_is_binary)
+        try:
+            command = sanitize_command(command, is_binary = flag_is_binary)
+        except Exception as e:
+            return WebResponse(
+                status_code=403,
+                content_type='application/json',
+                body=json.dumps({'error':f'{e}'}, cls=JSONEncoder),
+                headers=[],
+            )
 
         job_dict = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive)
         job_id = job_dict.get('job_id')

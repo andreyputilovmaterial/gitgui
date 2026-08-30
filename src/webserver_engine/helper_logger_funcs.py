@@ -105,10 +105,15 @@ class Logger:
         traceback.print_exception(e,limit=20,file=buf)
         print('\n\n',file=buf)
         txt = buf.getvalue()
+        # ANSI_COLORS = {
+        #     STDOUT_COLOR_RED: '@STDOUT_COLOR_RED@',
+        #     STDOUT_COLOR_RESET: '@STDOUT_COLOR_RESET@',
+        #     STDOUT_COLOR_GREEN: '@STDOUT_COLOR_GREEN@',
+        # }
         ANSI_COLORS = {
-            STDOUT_COLOR_RED: '@STDOUT_COLOR_RED@',
-            STDOUT_COLOR_RESET: '@STDOUT_COLOR_RESET@',
-            STDOUT_COLOR_GREEN: '@STDOUT_COLOR_GREEN@',
+            STDOUT_COLOR_RED: '',
+            STDOUT_COLOR_RESET: '',
+            STDOUT_COLOR_GREEN: '',
         }
         ansi_re = re.compile("|".join(map(re.escape, ANSI_COLORS)))
         return ansi_re.sub(lambda m: ANSI_COLORS[m.group()], txt)

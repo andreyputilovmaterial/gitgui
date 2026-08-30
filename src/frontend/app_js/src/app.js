@@ -163,25 +163,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       async function makeFetchResponseErrorMessage(response) {
-        const prefix = `HTTP ${response.status}`;
-        try {
-          const contentType = response.headers.get('content-type') || '';
-          if (contentType.includes('application/json')) {
-            const body = await response.json();
-            // Prefer a non-empty `error` field.
-            if (body && !!body.error) {
-              return `${prefix}: ${body.error}`;
+        if( response instanceof Response ) {
+          const prefix = `HTTP ${ response.status }`;
+          try {
+            const contentType = response.headers.get( 'content-type' ) || '';
+            if( contentType.includes( 'application/json' ) ) {
+              const body = await response.json();
+              // Prefer a non-empty `error` field.
+              if( body && !!body.error ) {
+                return `${ prefix }: ${ body.error }`;
+              }
+              // Fall back to the whole JSON response.
+              const details = JSON.stringify( body );
+              return details ? `${ prefix }: ${ details }` : prefix;
             }
-            // Fall back to the whole JSON response.
-            const details = JSON.stringify(body);
-            return details ? `${prefix}: ${details}` : prefix;
+            // For text/plain and other non-JSON responses, use the response text.
+            const text = await response.text();
+            return text.trim() ? `${ prefix }: ${ text }` : prefix;
+          } catch( e ) {
+            // If the response body cannot be read/parsed, at least return the status.
+            return prefix;
           }
-          // For text/plain and other non-JSON responses, use the response text.
-          const text = await response.text();
-          return text.trim() ? `${prefix}: ${text}` : prefix;
-        } catch (e) {
-          // If the response body cannot be read/parsed, at least return the status.
-          return prefix;
+        } else if( response instanceof Error ) {
+          return `${response}`;
+        } else {
+          return `${response}`;
         }
       }
 
@@ -268,8 +274,8 @@ document.addEventListener("DOMContentLoaded", () => {
             outputCommand.exit_code = jobData.exit_code;
             commands.value.push(outputCommand);
           },
-          err => {
-            const error = makeFetchResponseErrorMessage(err);
+          async err => {
+            const error = await makeFetchResponseErrorMessage(err);
             const command = reactive({
               timestamp: new Date(),
               id: genId(['error',command_str,new Date()]),
@@ -361,8 +367,8 @@ document.addEventListener("DOMContentLoaded", () => {
             outputCommand.stderr = jobData.stderr;
             outputCommand.exit_code = jobData.exit_code;
           },
-          err => {
-            const error = makeFetchResponseErrorMessage(err);
+          async err => {
+            const error = await makeFetchResponseErrorMessage(err);
             const command = {
               timestamp: new Date(),
               id: genId(['error',command_str,new Date()]),

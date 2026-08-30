@@ -145,22 +145,23 @@ class Webserver:
                             # err_html = html.escape(err)
                             err_txt = err
                             try:
-                                # several more levels to capture stacktrace, format it, convert "red" colors to spans with color red... If anything fails, there is a fallback to simpler way to just show the message
-                                err_full = Logger.make_err_fulltrace_message(e)
-                                err_txt = f'{err_full}'
-                                # err_html = '<br />'.join(html.escape(err_full).splitlines())
-                                # COLOR_MARKERS = {
-                                #     '@STDOUT_COLOR_RED@': '<span class="err-color-red" style="color: #990000;">',
-                                #     '@STDOUT_COLOR_GREEN@': '<span class="err-color-green" style="color: #009900;">',
-                                #     '@STDOUT_COLOR_RESET@': '</span>',
-                                # }
-                                # color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
-                                # err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
-                                # try:
-                                #     err_html = sanitize_dom('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
-                                # except Exception as ee:
-                                #     server.logger.print_console_err_fulltrace(ee)
-                                #     pass
+                                # # several more levels to capture stacktrace, format it, convert "red" colors to spans with color red... If anything fails, there is a fallback to simpler way to just show the message
+                                # err_full = Logger.make_err_fulltrace_message(e)
+                                # err_txt = f'{err_full}'
+                                err_txt = f'{e}'
+                                # # err_html = '<br />'.join(html.escape(err_full).splitlines())
+                                # # COLOR_MARKERS = {
+                                # #     '@STDOUT_COLOR_RED@': '<span class="err-color-red" style="color: #990000;">',
+                                # #     '@STDOUT_COLOR_GREEN@': '<span class="err-color-green" style="color: #009900;">',
+                                # #     '@STDOUT_COLOR_RESET@': '</span>',
+                                # # }
+                                # # color_markers_re = re.compile("|".join(map(re.escape, COLOR_MARKERS)))
+                                # # err_html = color_markers_re.sub(lambda m: COLOR_MARKERS[m.group()], err_html)
+                                # # try:
+                                # #     err_html = sanitize_dom('err err-stacktrace-container',err_html) # wrap results one more time to make sure all tags are closed
+                                # # except Exception as ee:
+                                # #     server.logger.print_console_err_fulltrace(ee)
+                                # #     pass
                             except Exception as ee:
                                 server.logger.print_console_err_fulltrace(ee)
                                 pass

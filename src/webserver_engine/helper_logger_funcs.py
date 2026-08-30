@@ -106,7 +106,7 @@ class Logger:
         print('\n\n',file=buf)
         txt = buf.getvalue()
         # ANSI_COLORS = {
-        #     STDOUT_COLOR_RED: '@STDOUT_COLOR_RED@',
+        #     STDOUT_COLOR_RED: '@STDOUT_COLOR_RED@', # to be converted to <span style="color: #f00;">
         #     STDOUT_COLOR_RESET: '@STDOUT_COLOR_RESET@',
         #     STDOUT_COLOR_GREEN: '@STDOUT_COLOR_GREEN@',
         # }

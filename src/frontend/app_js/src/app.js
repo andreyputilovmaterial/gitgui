@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       const gitCommandConcurrencyManager = new ConcurrencyManager(5);
-      function _executeGitCommand(args,is_binary=false) {
+      function _executeGitCommand(args,{is_binary=false,dontDownload=false} = {}) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
             commands.value.push(command);
           }
         );
-        if( is_binary ) {
+        if( is_binary && !dontDownload ) {
           return promise.then( async jobData => {
             const filename = 'output';
             const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
             if (!fileDataResponse.ok) {
               throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
-            };
+            }
             const fileDataBuffer = await fileDataResponse.arrayBuffer();
             const fileDataByteArray = new Uint8Array(fileDataBuffer);
             // const fileDataSize = fileDataByteArray.byteLength;
@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // if text
           return promise;
       }
-      async function _executeGitAsyncCommand(args,is_binary=false) {
+      async function _executeGitAsyncCommand(args,{is_binary=false} = {}) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -383,8 +383,8 @@ document.addEventListener("DOMContentLoaded", () => {
         )
         return jobData;
       }
-      async function _executeGitBinaryCommand(args) {
-        return _executeGitCommand(args,true);
+      async function _executeGitBinaryCommand(args,options={}) {
+        return _executeGitCommand(args,{...options,is_binary:true});
       }
       const executeGitCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitCommand(...args));
       const executeGitAsyncCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitAsyncCommand(...args));

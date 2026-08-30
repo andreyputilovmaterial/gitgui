@@ -87,16 +87,14 @@ const Record = {
       try {
         fileDownloadLinkBusy.value = true;
         error.value = '';
-        const response = await props.repoActions.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],true);
-        if( !(response.exit_code===0) || notEmpty(response.stderr) ) {
-          const errmsg = `Response from git show: exit_code == ${response.exit_code}, stderr == "${response.stderr}"`;
+        const jobData = await props.repoActions.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],{is_binary:true,dontDownload:true});
+        if( !(jobData.exit_code===0) || notEmpty(jobData.stderr) ) {
+          const errmsg = `Response from git show: exit_code == ${jobData.exit_code}, stderr == "${jobData.stderr}"`;
           error.value = errmsg;
           throw new Error(errmsg);
         }
-        console.log('[DEBUG-history-download-file]: request finished, received: ',response.stdout);
         const filename = `${props.filepath}`.split('/').pop()
-        const downloadUrl = `${new URL(response.stdout, window.location.origin)}`.replace('%FILENAME%',filename)
-        console.log('[DEBUG-history-download-file]: fetching from download url: ',downloadUrl);
+        const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename)
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = filename;

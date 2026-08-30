@@ -45,10 +45,9 @@ const TerminalSubmitForm = {
          isBusy.value = true
          const commandAccepted = formFields.command;
          const command = parseCommand(commandAccepted);
-         const result = await props.repoActions.executeGitCommand(command);
+         await props.repoActions.executeGitCommand(command);
          const commandNewState = formFields.command;
-         const commandAdditions = grabAdditionsFromCommandString(commandAccepted,commandNewState,props.repoActions.diff(commandAccepted,commandNewState)); // whatever user typed while validation was processing
-         formFields.command = commandAdditions;
+         formFields.command = grabAdditionsFromCommandString(commandAccepted,commandNewState,props.repoActions.diff(commandAccepted,commandNewState)); // whatever user typed while validation was processing
          formFields.validationError = '';
 
        } catch (error) {

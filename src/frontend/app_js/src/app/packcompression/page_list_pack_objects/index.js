@@ -223,8 +223,8 @@ const View = {
       try {
         validationMessage.value = '';
         isBusy.value = true;
-        // const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','gc']);
-        const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','help']);
+        const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','gc']);
+        // const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','help']);
         setTimeout( ()=>readGitGCOutputs(gitGCCommand), 20 );
         gitPackCompressionIsReady.value = true;
         validationMessage.value = '';

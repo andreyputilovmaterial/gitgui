@@ -5,9 +5,6 @@ import HelpWindow from './gitignore_help_window.js';
 
 import './section_gitignore.css';
 
-import { createModal } from '../../common_components/modals/modals';
-
-import logError from '../../error_logger/logError';
 
 
 
@@ -16,7 +13,7 @@ const RepoInitViewGitignoreSection = {
   props: [
     'repoInitRequiresAttention',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'mode', // edit, view, init
   ],
   template: `
@@ -54,10 +51,10 @@ setup(props) {
 
    const showHelp = async () => {
      try {
-       await createModal(HelpWindow);
+       await props.repoActions.createModal(HelpWindow);
      } catch(e) {
        if(e instanceof Error) {
-         logError(e);
+         props.repoActions.logError(e);
        }
      }
    };

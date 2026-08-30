@@ -1,155 +1,203 @@
 
+import { reactive } from 'vue';
+
+import { genId } from './helper_functions.js';
 
 
-export function genId(command) {
-  const idbase = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-  return `${command}:${idbase}:${new Date()}`;
+
+function preparePayload(command) {
+  return command
 }
 
 
-export const prettyprintBytes = bytes => bytes.length>64 ? `[ ${bytes.slice(0,64).map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]`;
 
-
-export function cliCommandRaw(command,is_binary=false) {
-    function preparePayload(command) {
-      console.log('[DEBUG]: preparing payload')
-      return command
+async function makeFetchResponseErrorMessage(response) {
+  const prefix = `HTTP ${response.status}`;
+  try {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const body = await response.json();
+      // Prefer a non-empty `error` field.
+      if (body && !!body.error) {
+        return `${prefix}: ${body.error}`;
+      }
+      // Fall back to the whole JSON response.
+      const details = JSON.stringify(body);
+      return details ? `${prefix}: ${details}` : prefix;
     }
-    async function sendCommand() {
-      console.log('[DEBUG]: initiating a new request',command)
-      const payload = preparePayload(command)
+    // For text/plain and other non-JSON responses, use the response text.
+    const text = await response.text();
+    return text.trim() ? `${prefix}: ${text}` : prefix;
+  } catch (e) {
+    // If the response body cannot be read/parsed, at least return the status.
+    return prefix;
+  }
+}
+
+
+
+
+function cliCommand(command,is_binary=false,is_interactive=false) {
+  const timeRequestIssued = new Date();
+  const requestId = genId([command,new Date()]);
+  const context = {
+    promiseResolve: ()=>{throw new Error('promise not inited')},
+    promiseReject: ()=>{throw new Error('promise not inited')},
+    _id: requestId,
+    job_id: null,
+    jobData: reactive({}),
+    status: 'prepare',
+    pollTimerId: null,
+    commandRequestCreatedAt: timeRequestIssued,
+    commandSentAt: null,
+    commandConfirmationReceivedAt: null,
+    pollIntervalSetAt: null,
+    numberOfPolls: 0,
+    currentPollInterval: null,
+  }
+  async function sendCommand() {
+    const payload = preparePayload(command);
+    const endpoint = new URL(`/command`, window.location.origin);
+    if(is_binary)
+      endpoint.searchParams.set("is_binary", is_binary);
+    if(is_interactive)
+      endpoint.searchParams.set("is_interactive", is_interactive);
+    const response = await fetch(
+      endpoint,
+      {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+    if (!response.ok) {
+      const error = await makeFetchResponseErrorMessage(response);
+      throw new Error(error);
+    }
+    const jobData = await response.json();
+    jobData._id = context._id;
+    context.status = jobData.status;
+    Object.assign(context.jobData, jobData);
+    return context.jobData;
+  }
+  async function checkIfNeedResetInterval() {
+    // hmm, it looks nothing here is really async
+    const cutoffs = {
+      0: 207, // start with frequent polls, faster than default http.server py queue that is every 500 ms (if single-threaded, we run multi-)
+      3: 807, // did not return quickly, slow done to something closer to .8 seconds
+      15: 2970, // after 15 attempts set to roughly 3 second interval (slightly speeding)
+      30: 4970, // after 30 attempts set to roughly 5 second interval (slightly speeding)
+    };
+    const goodInterval = cutoffs[Math.max(...Object.keys(cutoffs).map(a=>Number(a)).filter(a=>a<context.numberOfPolls))];
+    if( context.currentPollInterval < goodInterval ) {
+      clearInterval(context.pollTimerId);
+      context.currentPollInterval = goodInterval;
+      context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
+    }
+  }
+  async function pendStatus() {
+    try{
+      context.numberOfPolls++;
+      await checkIfNeedResetInterval();
       const response = await fetch(
-        `/command${is_binary?'?is_binary=1':''}`,
-          {method: 'POST',
+        `/command/${context.job_id}`,
+        {
+          method: 'GET',
           headers: {
               "Content-Type": "application/json"
           },
-          body: JSON.stringify(payload),
         },
-      );
-      if (!response.ok) {
-        let error = `HTTP ${response.status}`
-        try {
-          error = await response.json();
-          error = error.payload.error
-        } catch(e) {
-          error = `HTTP ${response.status}: ${error}`
-        }
-        throw new Error(error)
-      }
-      const data = await response.json()
-      const result = data.result
-      return result
-    }
-    const context = {
-      promiseResolve: ()=>{throw new Error('promise not inited')},
-      promiseReject: ()=>{throw new Error('promise not inited')},
-      job_id: null,
-      status: 'prepare',
-      pollTimerId: null,
-      jobCreatedAt: new Date(),
-      commandSentAt: null,
-      commandConfirmationReceivedAt: null,
-      pollIntervalSetAt: null,
-      numberOfPolls: 0,
-      currentPollInterval: null,
-    }
-    async function checkIfNeedResetInterval() {
-      const cutoffs = {
-        0: 207,
-        3: 807,
-        15: 2970,
-        30: 4970,
-      };
-      const goodInterval = cutoffs[Math.max(...Object.keys(cutoffs).map(a=>Number(a)).filter(a=>a<context.numberOfPolls))];
-      if( context.currentPollInterval<goodInterval ) {
-        clearInterval(context.pollTimerId);
-        context.currentPollInterval = goodInterval;
-        context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
-      }
-    }
-    async function pendStatus() {
-      console.log('[DEBUG]: pending request status, job_id now is ',context.job_id)
-      try{
-        context.numberOfPolls++;
-        await checkIfNeedResetInterval();
-        const response = await fetch(
-          `/command/${context.job_id}`,
-          {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json"
-            },
-          },
-        )
-        if (!response.ok) {
-          let error = `HTTP ${response.status}`
-          try {
-            error = await response.json();
-            error = error.payload.error
-          } catch(e) {
-            error = `HTTP ${response.status}: ${error}`
-          }
-          throw new Error(error)
-                  }
-        const data = await response.json()
-        data.id = genId(`response:/command/${context.job_id}`);
-        data.job_id = context.job_id;
-        context.status = data.status
-        if( data.status=='done' )
-          return context.promiseResolve(data)
-        else if( data.status=='error' ) {
-          let error = data
-          try {
-            error = data?.payload?.error
-          } catch(e) { }
-          throw new Error(error)
-        }
-      } catch(e) {
-        console.log('[DEBUG]: fail while pending!: ',e)
-        return context.promiseReject(e)
-      }
-    }
-    console.log('[DEBUG]',context)
-    const promise = new Promise((resolve,reject)=> {
-      context.promiseResolve = resolve
-      context.promiseReject = reject
-      const sendCommandPromise = sendCommand(command);
-      context.commandSentAt = new Date();
-      sendCommandPromise.then(
-        result => {
-          context.status = 'in-progress'
-          context.job_id = result.job_id
-          console.log('[DEBUG]',context)
-          console.log('[DEBUG]: setting job_id to',context.job_id)
-        },
-        err => {reject(err)}
-      );
-      sendCommandPromise.then(()=>{
-        context.commandConfirmationReceivedAt = new Date();
-      });
-      sendCommandPromise.then(
-        (job_id) => {
-          context.currentPollInterval = 207;
-          context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
-          context.pollIntervalSetAt = new Date();
-          context.numberOfPolls = 0;
-        }
       )
-      context.status = 'initiated'
-      console.log('[DEBUG]',context)
-    })
-    promise.then(
-      result => { clearInterval(context.pollTimerId); },
-      err => {    clearInterval(context.pollTimerId); }
-    )
-    promise.then(
-      result => {console.log('[DEBUG]: initiating a new command: success')},
-      err => {console.log('[DEBUG]: initiating a new command: fail'+err)}
-    )
-    return promise
+      if (!response.ok) {
+        const error = await makeFetchResponseErrorMessage(response);
+        throw new Error(error);
+      }
+      const jobData = await response.json();
+      jobData._id = context._id;
+      context.status = jobData.status;
+      Object.assign(context.jobData, jobData);
+      if( jobData.status==='done' )
+        return context.promiseResolve(context.jobData);
+      else if( jobData.status==='error' ) {
+        const error = jobData?.error ? jobData?.error : JSON.stringify(jobData);
+        throw new Error(error);
+      }
+    } catch(e) {
+      return context.promiseReject(e)
+    }
   }
+  const promise = new Promise((resolve,reject)=> {
+    context.promiseResolve = resolve;
+    context.promiseReject = reject;
+    const sendCommandPromise = sendCommand(command);
+    context.jobData.sendCommandPromise = sendCommandPromise;
+    context.commandSentAt = new Date();
+    sendCommandPromise.then(
+      jobData => {
+        context.status = 'in-progress';
+        context.job_id = jobData.job_id;
+        context.commandConfirmationReceivedAt = new Date();
+        Object.assign(context.jobData,jobData);
+        // set timer and polling
+        context.currentPollInterval = 207;
+        context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
+        context.pollIntervalSetAt = new Date();
+        context.numberOfPolls = 0;
+        context.jobData.pollStatusUpdate = pendStatus;
+        context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+        context.jobData.downloadStdout = async (filename='file') => {
+          const downloadUrl = context.jobData.getDownloadUrl(filename);
+          const fileDataResponse = await fetch(
+            downloadUrl,
+            {
+              method: 'GET',
+              headers: {
+                "Content-Type": "application/octet-stream"
+              },
+            },
+          );
+          if (!fileDataResponse.ok) {
+            throw Error(`Download failed: HTTP ${fileDataResponse.status} (${makeFetchResponseErrorMessage(fileDataResponse)})`);
+          }
+          const fileDataBuffer = await fileDataResponse.arrayBuffer();
+          return new Uint8Array(fileDataBuffer);
+        };
+        context.terminateJob = async () => {
+          const termRequestResponse = await fetch(
+            `/command/${context.job_id}`,
+            {
+              method: 'DELETE',
+              headers: {
+                "Content-Type": "application/json"
+              },
+            },
+          );
+          if (!termRequestResponse.ok) {
+            const error = await makeFetchResponseErrorMessage(termRequestResponse);
+            throw new Error(error);
+          }
+          return true;
+        };
+      },
+      err => reject(err)
+    );
+    context.status = 'initiated';
+  });
+  promise.then(
+    () => { clearInterval(context.pollTimerId); },
+    () => { clearInterval(context.pollTimerId); },
+  );
+  context.jobData.promise = promise;
+  // promise.then(
+  //   result => { /* console.log can be placed here */ },
+  //   err => { /* console.log can be placed here */ },
+  // );
+  return !is_interactive ? promise : context.jobData;
+}
+
+
+export default cliCommand;
+
+

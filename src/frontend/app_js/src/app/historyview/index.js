@@ -2,8 +2,6 @@
 
 import { ref, reactive, watch, onMounted, toRaw, h } from 'vue';
 
-import logError from '../../error_logger/logError';
-
 import PagesSite from '../../common_components/pages/index';
 
 import PageHistoryOverview from './page_revisions_list/index';
@@ -13,7 +11,7 @@ import './style.css';
 const View = {
   props: [
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <div class="mdm-git-gui-historyview">
@@ -32,7 +30,7 @@ const View = {
   setup(props) {
 
     const pagesSite = ref(null);
-    const createPage = ref(()=>{ try { throw new Error('calling createPage: pages site is not inited'); } catch(e) { logError(e); throw e; } });
+    const createPage = ref(()=>{ try { throw new Error('calling createPage: pages site is not inited'); } catch(e) { props.repoActions.logError(e); throw e; } });
 
     const promiseContextHistoryReady = {
       resolve: () => {throw new Error('promise not inited')},
@@ -47,14 +45,14 @@ const View = {
     const navigateHomePage = async () => {
       await Promise.all([promiseContextHistoryReady.promise,]);
       createPage.value = pagesSite.value.createPage;
-      createPage.value(h(PageHistoryOverview,{repoStatus:props.repoStatus,repoCallbacks:{...props.repoCallbacks,createPage:createPage.value}}));
+      createPage.value(h(PageHistoryOverview,{repoStatus:props.repoStatus,repoActions:{...props.repoActions,createPage:createPage.value}}));
     };
 
     onMounted(async () => {
       await Promise.all([
-        props.repoCallbacks.updateHistory(),
-        props.repoCallbacks.getHEAD(),
-        props.repoCallbacks.checkIfSomethingIsInStagingArea(),
+        props.repoActions.updateHistory(),
+        props.repoActions.getHEAD(),
+        props.repoActions.checkIfSomethingIsInStagingArea(),
         navigateHomePage(),
       ])
     });

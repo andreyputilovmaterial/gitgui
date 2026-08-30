@@ -1,8 +1,6 @@
 
 import { h, computed } from 'vue';
 
-import logError from '../../../error_logger/logError';
-
 import './style.css';
 
 import PageFilesList from '../../historyview/page_files_list/index';
@@ -65,7 +63,7 @@ const PackRecord = {
     'deltaBase',
     'statistics',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'componentRecordsFiltData',
   ],
   template: `
@@ -152,11 +150,11 @@ const PackRecord = {
 
     const navigateRevisionPage = async () => {
       try {
-        await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.revisionHash}));
+        await props.repoActions.createPage(h(PageFilesList,{...props,hash:props.revisionHash}));
       } catch(e) {
         if( e instanceof Error ) {
-          logError(e);
-          logError(`Failed to navigate to page: history-files-list/${props?.revisionHash}`);
+          props.repoActions.logError(e);
+          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.revisionHash}`);
           throw e;
         }
       }

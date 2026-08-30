@@ -79,11 +79,13 @@ def handler(context,task,job):
                     #         if not job.stderr:
                     #             job.stderr = ''
                     #         job.stderr = (job.stderr + stderr)[:10000000] # let's limit to 10 mb
+                    stderr = '' if not is_binary else b''
                     while True:
                         chunk = process.stderr.read(8192)
                         if not chunk:
                             break
-                        stderr += chunk
+                        if chunk:
+                            stderr += chunk
                     if is_binary:
                         stderr = stderr.decode("utf-8", errors="replace") # stderr always expected to be text; so, if in binary mode, we convert it to text
                     with job.lock:
@@ -103,7 +105,8 @@ def handler(context,task,job):
 
             def worker_consume_stderr():
                 def check_if_alive():
-                    return not ( not process or (returncode is not None) or (not not execution_finished_at) )
+                    with job.lock:
+                        return not ( not process or (job.returncode is not None) or (not not job.execution_finished_at) )
                 while True:
                     if not check_if_alive():
                         consume_stderr()  # final drain
@@ -118,6 +121,7 @@ def handler(context,task,job):
                 # but should anyway not be a blocker, because one of those 2 should be true:
                 #  1. either the process finishes at some time, and the pipe is closed, and stdout read is released
                 #  2. or the reader process knows how many bytes to read
+                print('[DEBUG-cli]: interactive task: output reader called')
                 result = '' if not is_binary else b''
                 while True:
                     chunk = process.stdout.read(8192)

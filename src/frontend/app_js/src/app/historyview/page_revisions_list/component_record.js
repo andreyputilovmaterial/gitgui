@@ -1,7 +1,5 @@
 
-import { ref, h, computed } from 'vue';
-
-import logError from '../../../error_logger/logError';
+import { ref, h } from 'vue';
 
 import FormCompareVersionsControls from './component_ver_compare_radioboxes';
 
@@ -78,7 +76,7 @@ const Record = {
     'formVerCompareFields',
     'componentRecordsFiltData',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <div
@@ -131,11 +129,11 @@ const Record = {
 
     const navigateFilesListPage = async () => {
       try {
-        await props.repoCallbacks.createPage(h(PageFilesList,{...props,hash:props.hash}));
+        await props.repoActions.createPage(h(PageFilesList,{...props,hash:props.hash}));
       } catch(e) {
         if( e instanceof Error ) {
-          logError(e);
-          logError(`Failed to navigate to page: history-files-list/${props?.hash}`);
+          props.repoActions.logError(e);
+          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.hash}`);
           throw e;
         }
       }

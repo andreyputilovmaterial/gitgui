@@ -1,7 +1,7 @@
 
 
 import './styles_popup.css';
-import logError from '../../error_logger/logError';
+import logErr from '../_log_error_proxy';
 import mountWidgetToComponent from './component_widget_window';
 
 function buildPopup({value,resolve,reject,validationCb}) {
@@ -72,8 +72,8 @@ function showPopup({ value, inputEl, event, validationCb }) {
     () => {},
     e => {
       if( e instanceof Error ) {
-        logError('Numeric range picker popup widget: error in promise');
-        logError(e);
+        logErr('Numeric range picker popup widget: error in promise');
+        logErr(e);
       };
       throw e;
     },

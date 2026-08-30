@@ -2,7 +2,8 @@
 
 const View = {
   props: [
-    'repoStatus', 'repoCallbacks',
+    'repoStatus',
+    'repoActions',
   ],
   template: `
   Hello, files view...

@@ -1,11 +1,5 @@
 
 
-
-// import { } from 'vue';
-
-
-// import logError from '../../error_logger/logError';
-
 import './styles.css';
 
 
@@ -17,7 +11,7 @@ const RepoInitView = {
   props: [
     'repoInitRequiresAttention',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'config',
   ],
   template: `
@@ -25,10 +19,10 @@ const RepoInitView = {
       <div class="git-repo-intro-setup-section">
         <div class="repo-existence-section">
           {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
-          <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repo-init-form>
+          <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoActions="repoActions" :config="config"></repo-init-form>
         </div>
         <div class="gitignore-section">
-          <gitignore-section :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks"></gitignore-section>
+          <gitignore-section :repoInitRequiresAttention="repoInitRequiresAttention" :repoStatus="repoStatus" :repoActions="repoActions"></gitignore-section>
         </div>
       </div>
     </component-section-rollup>

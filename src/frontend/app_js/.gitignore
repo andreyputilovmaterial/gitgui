@@ -8,7 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-.DS_Store
 dist
 dist-ssr
 coverage
@@ -62,10 +61,6 @@ tests-real-sensitive-data/
 __pycache__/
 *.pyc
 .venv/
-
-# --- Editor files ---
-.vscode/*
-!.vscode/extensions.json
 
 # --- OS junk files ---
 

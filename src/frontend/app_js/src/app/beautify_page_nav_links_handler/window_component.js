@@ -42,8 +42,8 @@ const Window = {
          return props.resolve('Yes!')
        } catch (err) {
          // console.log('[DEBUG-navlink-in-popup]: window-component: handle-submit: no, something happened');
-         logError(err);
-         logError('Failed submitting ajax page view form');
+         props.repoActions.logError(err);
+         props.repoActions.logError('Failed submitting ajax page view form');
          console.error('Failed submitting ajax page view form',err);
          isBusy.value = false;
          return props.reject(err);

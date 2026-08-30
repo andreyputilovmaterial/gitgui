@@ -6,16 +6,14 @@ import StatisticsPane from './component_statistics_pane';
 
 import './style.css';
 
-import logError from '../../../error_logger/logError';
-import { fetchWrapper } from '../../../common_defs/networking';
-
 
 
 
 
 const View = {
   props: [
-    'repoStatus', 'repoCallbacks',
+    'repoStatus',
+    'repoActions',
   ],
   template: `
   <div class="mdm-git-gui-verifypack">
@@ -31,6 +29,7 @@ const View = {
           <fieldset class="mdmreport-controls">
             <component-loader-spinner v-if="isBusy" />
             Compress and cleanup history: <button  :class="{'click-me-next':!gitPackCompressionIsReady}"type="submit">Start activity</button>
+            <div class="git-gc-outputs">{{ gitGCOutputs }}</div>
           </fieldset>
         </div>
       </template>
@@ -48,7 +47,7 @@ const View = {
           <div>Waiting when appended history info is ready... {{ packObjectsIsReady ? 'ok!' : 'working on it...' }}</div>
         </div>
         <template v-else>
-        <statistics :packObjects="packObjects" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+        <statistics :packObjects="packObjects" :repoStatus="repoStatus" :repoActions="repoActions" />
           <component-filter-records-form
             :columns="{
               hash: 'Pack object hash',
@@ -89,7 +88,7 @@ const View = {
                 :statistics="statistics"
                 :componentRecordsFiltData="h.componentRecordsFiltData"
                 :repoStatus="repoStatus"
-                :repoCallbacks="repoCallbacks"
+                :repoActions="repoActions"
               />
             </div>
           </component-filter-records-form>
@@ -107,6 +106,7 @@ const View = {
     const error = ref('');
     const validationMessage = ref('');
     const isBusy = ref(false);
+    const gitGCOutputs = ref('');
     const gitPackCompressionIsReady = ref(false);
     const packFiles = ref(undefined);
     const packPhysicalObjects = ref(undefined); // purely parsed from git verify-output
@@ -124,8 +124,8 @@ const View = {
         if( !packObjects.value ) return NaN;
         return packObjects.value.reduce((acc,e)=>acc+Number(e.sizeSource),0);
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -136,8 +136,8 @@ const View = {
         if( !packObjects.value ) return NaN;
         return packObjects.value.reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -209,31 +209,44 @@ const View = {
     });
 
     const handleGitGC = async () => {
+      function readGitGCOutputs(gitGCCommand) {
+        try {
+          console.log(`[DEBUG-git-gc-outputs]: `,gitGCCommand);
+          gitGCOutputs.value = '...Something';
+      } catch(e) {
+        error.value = e;
+        props.repoActions.logError(e);
+        props.repoActions.logError('Failed when retrieving git gc outputs');
+        throw e;
+      }
+      }
       try {
         validationMessage.value = '';
         isBusy.value = true;
-        await props.repoCallbacks.executeGitCommand(['git','gc']);
+        // const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','gc']);
+        const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','help']);
+        setTimeout( ()=>readGitGCOutputs(gitGCCommand), 20 );
         gitPackCompressionIsReady.value = true;
         validationMessage.value = '';
         isBusy.value = false;
       } catch(e) {
         error.value = e;
-        logError(e);
-        logError('Failed when running git gc');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Failed when running git gc');
         throw e;
       }
     };
 
     const initGetPackFiles = async () => {
       try {
-        const retrievedPackFiles = await fetchWrapper( 'GET','/functionality/git-ls-pack-files',undefined );
+        const retrievedPackFiles = await props.repoActions.fetchWrapper( 'GET', '/functionality/git-ls-pack-files', undefined );
         packFiles.value = retrievedPackFiles;
         // const packFileFullPath = ref(`${props.repoStatus?.config?.dir_git_repo.replace(/[\\/]+$/, '')}/${`${props.packFile}`.replace(/^[\\/]+/, '')}`);
         // const outputs = ref(undefined);
         return retrievedPackFiles;
       } catch(e) {
-        logError(e);
-        logError('Git Pack View: initGetPackFiles: Failed retrieving data');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Git Pack View: initGetPackFiles: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -282,9 +295,9 @@ const View = {
         let i = 1;
         for( const path of packFiles ) {
           const packFileFullPath = ref(`${`${basePath}`.replace(/[\\/]+$/, '')}/${`${path}`.replace(/^[\\/]+/, '')}`);
-          const result = await props.repoCallbacks.executeGitCommand(['git', 'verify-pack', '-v',packFileFullPath.value]);
-          if( (result.returncode!==0) || !!result?.stderr )
-            throw new Error(`returncode ${result.returncode}: ${result?.stderr}`);
+          const result = await props.repoActions.executeGitCommand(['git', 'verify-pack', '-v',packFileFullPath.value]);
+          if( (result.exit_code!==0) || !!result?.stderr )
+            throw new Error(`exit_code ${result.exit_code}: ${result?.stderr}`);
           for( const outputsLine of result.stdout.split('\n') ) {
             if( !detectIfValidPackPhysicalObjectLine(outputsLine) )
               continue;
@@ -296,8 +309,8 @@ const View = {
         packPhysicalObjects.value = retrievedPackPhysicalObjects;
         return retrievedPackPhysicalObjects;
       } catch(e) {
-        logError(e);
-        logError('Git Pack View: initGetPackPhysicalObjects: Failed retrieving data');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Git Pack View: initGetPackPhysicalObjects: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -332,9 +345,9 @@ const View = {
           const revisionAuthor = author;
           const revisionTimestamp = timestamp;
           const revisionMessage = message;
-          const result = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r','-z',hash,]);
-          if( (result.returncode!==0) || !!result?.stderr )
-            throw new Error(`returncode ${result.returncode}: ${result?.stderr}`);
+          const result = await props.repoActions.executeGitCommand(['git','ls-tree','-r','-z',hash,]);
+          if( (result.exit_code!==0) || !!result?.stderr )
+            throw new Error(`exit_code ${result.exit_code}: ${result?.stderr}`);
           // 100644 blob ce013625030ba8dba906f756967f9e9ca394464a	README.txt
           // 100644 blob 33e0cb25e00b89f3bd9feeb51eb7b62033c54d67	let.me
           for( const outputsLine of result.stdout.split('\0') ) {
@@ -356,8 +369,8 @@ const View = {
         }
         return retrievedPackObjects;
       } catch(e) {
-        logError(e);
-        logError('Git Pack View: initParseHistory: Failed retrieving data');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Git Pack View: initParseHistory: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -389,8 +402,8 @@ const View = {
         }
         packObjects.value = Object.entries(objs).map(([hash,o])=>({...o,hash})).sort((a,b)=>a.order-b.order);
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -398,8 +411,8 @@ const View = {
 
     onMounted(async () => {
       await Promise.all([
-        props.repoCallbacks.updateHistory(),
-        props.repoCallbacks.configAskFor(),
+        props.repoActions.updateHistory(),
+        props.repoActions.configCheckUpdates(),
         init(),
       ])
     });
@@ -434,6 +447,7 @@ const View = {
       isBusy,
       validationMessage,
 
+      gitGCOutputs,
       handleGitGC,
 
       gitPackCompressionIsReady,

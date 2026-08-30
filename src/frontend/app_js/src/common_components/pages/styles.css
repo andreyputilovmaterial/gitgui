@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  width: 100;
+  /*width: 100px;*/
   overflow: hidden;
 }
 .mdm-ui-pages-site .mdm-ui-pages > * {
@@ -90,8 +90,6 @@
   border-radius: 4px;
   box-shadow: none;
   outline: 0;
-  line-height: 14px;
-  display: inline-block;
   background: #fff;
   padding: 5px 21px 5px;
   transition: all 600ms ease;
@@ -116,7 +114,7 @@
   background: #fff;
   padding: 6px;
   border-radius: 7px;
-  border-color: ##678;
+  border-color: #678;
   margin: 14px auto 0 0;
   font-size: 15px;
   font-weight: 300;
@@ -125,6 +123,6 @@
 }
 .gitgui-page-form .gitgui-button-page-close:hover{
   /* background: #e0e0e0; */
-  b/* order-color: #000; */
+  /* border-color: #000; */
   color: #000;
 }

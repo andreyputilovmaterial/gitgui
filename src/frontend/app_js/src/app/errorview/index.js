@@ -1,5 +1,5 @@
 
-
+import './style.css';
 
 const ErrorRecord = {
   props: ['error','time',],
@@ -16,7 +16,9 @@ const ErrorRecord = {
   <span class="errorbody error mdm-ui-record-col-3" style="color: #990000;">{{ error }}</span>
 </div>
 `,
-  setup() {},
+  setup() {
+    return {};
+  },
 }
 
 const ErrorView = {
@@ -34,7 +36,7 @@ const ErrorView = {
   v-for="err in errors"
   :error="err.error"
   :time="err.time"
-  :key="err.ed"
+  :key="err.id"
 >
 </errorrecord>
 </div>
@@ -42,7 +44,9 @@ const ErrorView = {
   components: {
     'errorrecord': ErrorRecord,
   },
-  setup() {return {}},
+    setup() {
+      return {};
+    },
 }
 
 export default ErrorView;

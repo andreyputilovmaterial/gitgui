@@ -1,6 +1,6 @@
 
 import { createApp, ref, reactive, nextTick, onMounted } from 'vue';
-import logError from '../../error_logger/logError';
+import logErr from '../_log_error_proxy';
 
 
 
@@ -92,8 +92,8 @@ const mountToComponent = (targetEl,outerResolve,outerReject,oldValue,validationC
         } catch (error) {
           if(error instanceof Error) {
             error.value = error;
-            logError('Error in numeric range picker component');
-            logError(error);
+            logErr('Error in numeric range picker component');
+            logErr(error);
           } else {
             /* rejected - means "cancel" - ok */
           }

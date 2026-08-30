@@ -4,8 +4,6 @@ import { ref, onMounted } from 'vue';
 import './style.css';
 
 
-import logError from '../../error_logger/logError';
-
 
 
 
@@ -17,7 +15,7 @@ const View = {
     'resourcepath',
     'contentAsText',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `

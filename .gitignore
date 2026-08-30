@@ -29,6 +29,7 @@ __pycache__/
 # --- Editor files ---
 .vscode/*
 !.vscode/extensions.json
+.idea
 
 # --- OS junk files ---
 

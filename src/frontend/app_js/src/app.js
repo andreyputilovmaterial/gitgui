@@ -1,21 +1,22 @@
 
 // import { Vue } from "./vue.js";
-import { createApp, ref, onMounted, onUnmounted, toRaw, watch, isReactive, version } from 'vue'
+import { createApp, ref, onMounted, toRaw, watch, reactive, isReactive, h, version } from 'vue'
 
 import './app.css';
 import './app_form_control_adjustments.css';
 
 // global tools
-import { FetchError, fetchWrapper } from './common_defs/networking';
-import { cliCommandRaw, prettyprintBytes, genId } from './common_defs/cli';
+import { genId, prettyprintBytes } from './common_defs/helper_functions';
+import cliCommandRaw from './common_defs/cli';
 import ConcurrencyManager from './common_defs/concurrency_manager';
 
 // tools/libs used in app
 import { diff } from './lib/myers-diff/src/index';
-import textconv_js from './textconv_js/index';
-import textconv_backend from './textconv_backend/index';
+import textconvJsFactory from './textconv_js/index';
+import textconvBackendFactory from './textconv_backend/index';
 
 // all from "common_components"
+import { _logErrorProxyContext } from './common_components/_log_error_proxy';
 import ComponentSectionRollup from './common_components/rollable_sections/index';
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
@@ -35,7 +36,6 @@ import TerminalSessionView from './app/terminalview/index';
 import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
 import AppOnlineIndicator from './app/onlineindicator';
 import ErrorView from './app/errorview/index';
-import { __access_errorSite } from './error_logger/setup';
 
 // direct children shown in starting view in app
 import PageWelcome from './app/mainview_welcome/index';
@@ -46,9 +46,12 @@ import PagePackcompression from './app/packcompression/index';
 
 
 
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  // const { createApp, ref, onMounted, onUnmounted, toRaw } = Vue
+  // const { createApp, ref, onMounted, onUnmounted, toRaw } = Vue;
 
 
 
@@ -62,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <div v-if="repoStatus.repoExists===undefined">Requesting repo status and fetching data, please wait...</div>
     <div v-else-if="repoStatus.repoExists===false" class="repo-existence-section">
       {{ !!repoStatus.repoExists ? '' : 'Repo is not initialized yet' }}
-      <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :config="config"></repo-init-form>
+      <repo-init-form v-if="!repoStatus.repoExists" :repoStatus="repoStatus" :repoActions="repoActions" :config="config"></repo-init-form>
     </div>
     <div v-else-if="repoStatus.repoExists" class="mdm-git-gui-mainview">
       <template v-if="!repoStatus?.repoExists">
@@ -71,19 +74,19 @@ document.addEventListener("DOMContentLoaded", () => {
       <template v-else>
         <component-tabbed-panes active="home">
           <component-tabbed-pane id="home" title="Overview">
-            <page-welcome :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+            <page-welcome :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
           <component-tabbed-pane id="files" title="Files">
-            <page-files :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+            <page-files :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
           <component-tabbed-pane id="history" title="History">
-            <page-history :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+            <page-history :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
           <component-tabbed-pane id="gitignore" title="gitignore (tracked files)">
-            <page-gitignore :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+            <page-gitignore :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
           <component-tabbed-pane id="packstatus" title="Disk usage">
-            <page-packcompression :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+            <page-packcompression :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
         </component-tabbed-panes>
       </template>
@@ -92,12 +95,12 @@ document.addEventListener("DOMContentLoaded", () => {
   <div class="mdm-git-gui-app-section-terminal section">
     <terminalsession-view
       :commands="commands"
-      :repoCallbacks="repoCallbacks"
+      :repoActions="repoActions"
     />
   </div>
   <modals></modals>
   <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
-  <online-indicator :isonline="isOnline" :repoCallbacks="repoCallbacks" :config="config" :configPathsFirstCaptured="configPathsFirstCaptured" :configPathsMismatch="configPathsMismatch"></online-indicator>
+  <online-indicator :isonline="isOnline" :repoActions="repoActions" :config="config" :configPathsFirstCaptured="configPathsFirstCaptured" :configPathsMismatch="configPathsMismatch"></online-indicator>
 </div>
 `,
     components: {
@@ -117,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setup() {
 
       const repoStatus = ref({});
-      const repoCallbacks = ref({});
+      const repoActions = ref({});
       const config = ref({});
       const configPathsFirstCaptured = ref({dir_work_tree:null,dir_git_repo:null,git_paths_hash:null});
       const configPathsMismatch = ref(false);
@@ -133,29 +136,83 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
+
+
       function logError(e) {
         try {
-          function genId() {
-            const idbase = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-              const r = Math.random() * 16 | 0;
-              const v = c === 'x' ? r : (r & 0x3 | 0x8);
-              return v.toString(16);
-            });
-            const idadd = `${errors.length}`;
-            return `${idbase}-${idadd}`;
-          }
-          const errObjAppend = {error:e,id:genId(),time:new Date(),};
+          const timestamp = new Date();
+          const errObjAppend = {
+            error: e,
+            id: genId([errors.value.length,timestamp]),
+            time: timestamp,
+          };
           errors.value.push(errObjAppend);
           console.error(e);
         } catch(fatale) {
-          const err_msg = new Error(`FATAL: Something has happened when processing error: ${fatale} from ${e}`);
+          // I really don't understand why linter is still not happy
+          // this seems to be literally impossible to make it happy
+          // just recently it forced me to add that { cause: ...} everywhere when error is re-throw from catch clause
+          // and now it says Error constructor accepts 0..1 arguments...
+          const err_msg = new Error(`FATAL: Something has happened when processing error: ${fatale} from ${e}`,{cause:e});
           console.error(err_msg);
           throw err_msg;
         }
       }
-      repoCallbacks.value.logError = logError;
-      __access_errorSite().promiseResolve(logError);
-      __access_errorSite().promise = Promise.resolve(logError);
+      _logErrorProxyContext.promiseResolve(logError);
+      repoActions.value.logError = logError;
+
+
+      async function makeFetchResponseErrorMessage(response) {
+        const prefix = `HTTP ${response.status}`;
+        try {
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const body = await response.json();
+            // Prefer a non-empty `error` field.
+            if (body && !!body.error) {
+              return `${prefix}: ${body.error}`;
+            }
+            // Fall back to the whole JSON response.
+            const details = JSON.stringify(body);
+            return details ? `${prefix}: ${details}` : prefix;
+          }
+          // For text/plain and other non-JSON responses, use the response text.
+          const text = await response.text();
+          return text.trim() ? `${prefix}: ${text}` : prefix;
+        } catch (e) {
+          // If the response body cannot be read/parsed, at least return the status.
+          return prefix;
+        }
+      }
+
+
+
+      const fetchWrapper = async (method, endpoint, payload) => {
+        const options = {
+          method: method, // .toUpperCase(),
+        };
+        const normalizedMethod = method.trim().toUpperCase();
+        // GET and HEAD requests cannot have a body.
+        if (normalizedMethod !== "GET" && normalizedMethod !== "HEAD" && payload !== undefined) {
+          options.body = JSON.stringify(payload);
+        }
+        options.headers = {
+          "Content-Type": "application/json",
+        };
+        const response = await fetch(endpoint, options);
+        if (!response.ok) {
+          throw new Error(await makeFetchResponseErrorMessage(response));
+        }
+        const text = await response.text();
+        if (!text.trim()) {
+          return null;
+        }
+        return JSON.parse(text);
+        // return await response.json();
+      };
+      repoActions.value.fetchWrapper = fetchWrapper;
+
+
 
       const gitCommandConcurrencyManager = new ConcurrencyManager(5);
       function _executeGitCommand(args,is_binary=false) {
@@ -176,131 +233,181 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           return args.map(formatArg).join(' ')
         };
-        args = args || []
-        args = [...args]
-        const promise = cliCommandRaw(args,is_binary)
-        const command_str = formatArgsString(args)
-        const id = genId(`input:${command_str}`);
-        const command = {
-          timestamp: new Date(),
-          id,
-          message_stdout: command_str,
-          message_stderr: '',
-          returncode: '',
+        args = args || [];
+        args = [...args];
+        const timestamp = new Date();
+        const promise = cliCommandRaw(args,is_binary);
+        const command_str = formatArgsString(args);
+        const command = reactive({
+          timestamp: timestamp,
+          id: genId(['input',command_str,timestamp]),
+          stdout: command_str,
+          stderr: '',
+          exit_code: '',
           payload: {'message':command_str,'is_binary':is_binary},
           source: undefined,
-          'type': 'request',
-        }
-        const source_command = command
-        commands.value = [...commands.value,command]
-        const getReturnCode = response => {
-          const returnCode = ((response||{}).payload||{}).returncode
-          if((returnCode==0)||!!returnCode) return `${returnCode}`; else return '';
-        }
+          type: 'input',
+        });
+        const source_command = command;
+        commands.value.push(command);
+        const outputCommand = reactive({
+          timestamp: new Date(),
+          id: genId(['output',command_str,new Date()]),
+          job_id: null,
+          stdout: null,
+          stderr: null,
+          exit_code: null,
+          source: source_command,
+          'type': 'output',
+        });
         promise.then(
-          response => {
-            const id = response?.id || genId(`output:${command_str}`);
-            const command = {
-              timestamp: new Date(),
-              id,
-              job_id: response?.payload?.job_id,
-              message_stdout: response?.payload?.stdout || '',
-              message_stderr: response?.payload?.stderr || '',
-              returncode: getReturnCode(response),
-              payload: response,
-              source: source_command,
-              'type': 'response',
-            }
-            commands.value.push(command)
+          jobData => {
+            outputCommand.job_id = jobData.job_id;
+            outputCommand.stdout = jobData.stdout;
+            outputCommand.stderr = jobData.stderr;
+            outputCommand.exit_code = jobData.exit_code;
+            commands.value.push(outputCommand);
           },
-          async err => {
-            let response = {}
-            try {
-              response = await response.json();
-            } catch(e) { }
-            const id = genId(`error:${command_str}`);
+          err => {
+            const error = makeFetchResponseErrorMessage(err);
+            const command = reactive({
+              timestamp: new Date(),
+              id: genId(['error',command_str,new Date()]),
+              stdout: '',
+              stderr: error,
+              exit_code: null,
+              source: source_command,
+              'type': 'error',
+            });
+            commands.value.push(command);
+          }
+        );
+        if( is_binary ) {
+          return promise.then( async jobData => {
+            const filename = 'output';
+            const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+            const fileDataResponse = await fetch(
+              downloadUrl,
+                {method: 'GET',
+                headers: {
+                    "Content-Type": "application/octet-stream"
+                },
+              },
+            );
+            if (!fileDataResponse.ok) {
+              throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
+            };
+            const fileDataBuffer = await fileDataResponse.arrayBuffer();
+            const fileDataByteArray = new Uint8Array(fileDataBuffer);
+            // const fileDataSize = fileDataByteArray.byteLength;
+            outputCommand.stdout = prettyprintBytes(fileDataByteArray);
+            return fileDataByteArray;
+          });
+        } else
+          // if text
+          return promise;
+      }
+      async function _executeGitAsyncCommand(args,is_binary=false) {
+        const formatArgsString = args => {
+          const formatArg = str => {
+            const hasSpaces = str => /\s/.test(str);
+            const isEmpty = str => {
+              if( /^\s*$/.test(str) )
+                return true;
+              if( typeof str==='number' )
+                return false;
+              return !str;
+            };
+            if( !!hasSpaces(str) || isEmpty(str) )
+              return '"' + ( isEmpty(str) ? '' : `${str}`.replaceAll('"','\\"') ) + '"';
+            else
+              return str;
+          }
+          return args.map(formatArg).join(' ')
+        };
+        args = args || []
+        args = [...args]
+        const timestamp = new Date();
+        const jobData = await cliCommandRaw(args,is_binary,true);
+        await jobData.sendCommandPromise;
+        const promise = jobData.promise;
+        const command_str = formatArgsString(args);
+        const command = reactive({
+          timestamp: timestamp,
+          id: genId(['input',command_str,timestamp]),
+          stdout: command_str,
+          stderr: '',
+          exit_code: '',
+          payload: {'message':command_str,'is_binary':is_binary},
+          source: undefined,
+          type: 'input',
+        });
+        const source_command = command;
+        commands.value.push(command);
+        const outputCommand = reactive({
+          timestamp: new Date(),
+          id: genId(['output',command_str,new Date()]),
+          job_id: jobData.job_id,
+          stdout: jobData.stdout || '...',
+          stderr: jobData.stderr || '',
+          exit_code: jobData.exit_code,
+          source: source_command,
+          'type': 'output',
+        });
+        commands.value.push(outputCommand);
+        promise.then(
+          jobData => {
+            outputCommand.stdout = jobData.stdout;
+            outputCommand.stderr = jobData.stderr;
+            outputCommand.exit_code = jobData.exit_code;
+          },
+          err => {
+            const error = makeFetchResponseErrorMessage(err);
             const command = {
               timestamp: new Date(),
-              id,
-              payload: err,
-              message_stdout: '',
-              message_stderr: err,
-              returncode: getReturnCode(response),
+              id: genId(['error',command_str,new Date()]),
+              stdout: '',
+              stderr: error,
+              exit_code: null,
               source: source_command,
               'type': 'error',
             }
-            commands.value.push(command)
+            commands.value.push(command);
           }
         )
-        return promise.then(response=>{
-          if( !response.ok )
-            throw Error(`HTTP ${response.status}`);
-          return {...response.payload,id:response.id};
-        });
-      };
+        return jobData;
+      }
       async function _executeGitBinaryCommand(args) {
-        const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
-        const filename = 'file'; // we don't care what the name is, and that's not important
-        const response = await _executeGitCommand(args,true);
-        if( !(response.returncode===0) || notEmpty(response.stderr) ) {
-          const errmsg = `Response from ${args.join(' ')}: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
-          logError(errmsg);
-          logError('Failed when running "executeGitBinaryCommand"');
-          throw new Error(errmsg);
-        }
-        const downloadUrl = `${new URL(response.stdout, window.location.origin)}`.replace('%FILENAME%',filename);
-        const fileDataResponse = await fetch(
-          downloadUrl,
-            {method: 'GET',
-            headers: {
-                "Content-Type": "application/octet-stream"
-            },
-          },
-        );
-        if (!fileDataResponse.ok) {
-          throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
-        };
-        const fileDataBuffer = await fileDataResponse.arrayBuffer();
-        const fileDataByteArray = new Uint8Array(fileDataBuffer);
-        // const fileDataSize = fileDataByteArray.byteLength;
-        try {
-          const id = response?.id || genId(`output:${genId(`response:/command/${response.job_id}`)}`);
-          const commandElementsMatchingCandidates = commands.value.filter(record=>record.id===id);
-          if(commandElementsMatchingCandidates.length>0) {
-            const commandElement = commandElementsMatchingCandidates[commandElementsMatchingCandidates.length-1];
-            commandElement.message_stdout = prettyprintBytes(fileDataByteArray);
-          }
-        } catch(e) {}
-        return fileDataByteArray;
+        return _executeGitCommand(args,true);
       }
       const executeGitCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitCommand(...args));
+      const executeGitAsyncCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitAsyncCommand(...args));
       const executeGitBinaryCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitBinaryCommand(...args));
-      repoCallbacks.value.executeGitCommand = executeGitCommand;
-      repoCallbacks.value.executeGitBinaryCommand = executeGitBinaryCommand;
+      repoActions.value.executeGitCommand = executeGitCommand;
+      repoActions.value.executeGitAsyncCommand = executeGitAsyncCommand;
+      repoActions.value.executeGitBinaryCommand = executeGitBinaryCommand;
 
       async function gitignoreRead() {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'gitignore':response}
-          repoStatus.value.gitignore = response
-          console.log('[DEBUG-vue-vars]',toRaw(repoStatus.value))
+          repoStatus.value.gitignore = response;
         }
         try {
           const response = await fetchWrapper('GET', '/functionality/gitignore',{})
           handleResponse(response)
           return response
         } catch (e) {
-          if( e instanceof FetchError) {
-            handleResponse(null)
+          if( ( e instanceof Error) && ( /^\s*?HTTP\b\s*4\d{2}\b.*/.test(e.message) ) ) {
+            handleResponse(null);
             return false
           } else {
-            logError(e);
-            return;
+             repoActions.value.logError(e);
           }
         }
       }
-      repoCallbacks.value.gitignoreRead = gitignoreRead;
+      repoActions.value.gitignoreRead = gitignoreRead;
 
-      async function configAskFor() {
+      async function configCheckUpdates() {
         function handleResponse(response) {
           config.value = response
           repoStatus.value.config = response;
@@ -324,10 +431,10 @@ document.addEventListener("DOMContentLoaded", () => {
           handleResponse(response)
           return response
         } catch (e) {
-          logError(e);
+           repoActions.value.logError(e);
         }
       }
-      repoCallbacks.value.configAskFor = configAskFor;
+      repoActions.value.configCheckUpdates = configCheckUpdates;
 
       async function updateGitRepoExistence() {
         function handleResponse(response) {
@@ -343,16 +450,16 @@ document.addEventListener("DOMContentLoaded", () => {
           handleResponse(true);
           return true;
         } catch (e) {
-          if( e instanceof FetchError) {
+          if( ( e instanceof Error) && ( /^\s*?HTTP\b\s*4\d{2}\b.*/.test(e.message) ) ) {
             handleResponse(false);
             return false;
           } else {
-            logError(e);
+             repoActions.value.logError(e);
             return;
           }
         }
       }
-      repoCallbacks.value.updateGitRepoExistence = updateGitRepoExistence;
+      repoActions.value.updateGitRepoExistence = updateGitRepoExistence;
 
       async function updateHistory() {
         function handleResponse(response) {
@@ -369,12 +476,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         try {
           const response = await executeGitCommand(['git','log','--pretty=format:%H%x1f%an%x1f%s%x1f%ad%x1e','--date=iso-strict']);
-          if( (response.returncode==128) && (/.*does not have any commits.*/.test(response?.stderr)) ) {
+          if( (response.exit_code===128) && (/.*does not have any commits.*/.test(response?.stderr)) ) {
             const stdout = '';
             try {
               return handleResponse(stdout);
             } catch(e) {
-              throw new Error(`updateHistory: failed to parse response: "${stdout}"`);
+              throw new Error(`updateHistory: failed to parse response: "${stdout}"`,{cause:e});
             }
           }
           if( response?.stderr )
@@ -383,23 +490,23 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             return handleResponse(stdout);
           } catch(e) {
-            throw new Error(`updateHistory: failed to parse response: "${stdout}"`);
+            throw new Error(`updateHistory: failed to parse response: "${stdout}"`,{cause:e});
           }
         } catch (e) {
-          logError(e);
+           repoActions.value.logError(e);
           return;
         }
       }
-      repoCallbacks.value.updateHistory = updateHistory;
+      repoActions.value.updateHistory = updateHistory;
 
       async function checkIfSomethingIsInStagingArea() {
         function handleResponse(response) {
-          if( response.returncode === 0 )
+          if( response.exit_code === 0 )
             return false;
-          else if( response.returncode === 1 )
+          else if( response.exit_code === 1 )
             return true;
           else
-            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: "${response.stdout}" ( returncode == ${response.returncode}, stderr == "${response.stderr}" )`);
+            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: "${response.stdout}" ( exit_code == ${response.exit_code}, stderr == "${response.stderr}" )`);
         }
         try {
           if( !repoStatus.value.repoExists )
@@ -411,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // 1 → something is staged
           // From Python:
           // result = subprocess.run(["git", "diff", "--cached", "--quiet"])
-          // has_staged = result.returncode != 0
+          // has_staged = result.exit_code != 0
           // If you also want to see what is staged, use:
           // git diff --cached --stat
           // or:
@@ -422,54 +529,51 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             repoStatus.value.isSomethingInStagingArea = handleResponse(response);
           } catch(e) {
-            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: (${response.returncode}) "${response.stdout}": ${e}`);
+            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: (${response.exit_code}) "${response.stdout}": ${e}`,{cause:e});
           }
         } catch (e) {
-          logError(e);
-          return;
+           repoActions.value.logError(e);
         }
       }
-      repoCallbacks.value.checkIfSomethingIsInStagingArea = checkIfSomethingIsInStagingArea;
+      repoActions.value.checkIfSomethingIsInStagingArea = checkIfSomethingIsInStagingArea;
 
       async function getHEAD() {
         function handleResponse(response) {
-          if( (response.returncode === 0) && !(response.stderr) )
+          if( (response.exit_code === 0) && !(response.stderr) )
             return `${response.stdout}`.trim();
           else
-            throw new Error(`getHEAD: failed to parse response: "${response.stdout}" ( returncode == ${response.returncode}, stderr == "${response.stderr}" )`);
+            throw new Error(`getHEAD: failed to parse response: "${response.stdout}" ( exit_code == ${response.exit_code}, stderr == "${response.stderr}" )`);
         }
         try {
           if( !repoStatus.value.repoExists )
             return;
           const response = await executeGitCommand(['git', 'rev-parse', 'HEAD']);
 
-          if( response.returncode==128 ) {
+          if( response.exit_code===128 ) {
             repoStatus.value.HEAD = null;
             return;
           }
           if( response?.stderr )
-            throw response?.stderr;
+            throw new Error(`response?.stderr`);
           try {
             repoStatus.value.HEAD = handleResponse(response);
-            return;
           } catch(e) {
-            throw new Error(`getHEAD: failed to parse response: (${response.returncode}) "${response.stdout}": ${e}`);
+            throw new Error(`getHEAD: failed to parse response: (${response.exit_code}) "${response.stdout}": ${e}`,{cause:e});
           }
         } catch (e) {
-          logError(e);
-          return;
+           repoActions.value.logError(e);
         }
       }
-      repoCallbacks.value.getHEAD = getHEAD;
+      repoActions.value.getHEAD = getHEAD;
 
       async function setIsOnlineTimer() {
         const fn = async function () {
           try {
-            const response = await fetchWrapper('HEAD', '/functionality/isup.txt',{})
+            await fetchWrapper('HEAD', '/functionality/isup.txt',{})
             isOnline.value = true
             return true
           } catch (e) {
-            if( e instanceof FetchError) {
+            if( ( e instanceof Error) && ( /^\s*?HTTP\b\s*4\d{2}\b.*/.test(e.message) ) ) {
               isOnline.value = false
               return false
             } else {
@@ -481,29 +585,31 @@ document.addEventListener("DOMContentLoaded", () => {
         isOnlinePollingTimer.value = setInterval(fn,7850);
       }
 
-      repoCallbacks.value.createModal = createModal;
+      repoActions.value.createModal = (Component) => createModal(h(Component,{repoStatus,repoActions,}));
 
-      repoCallbacks.value.textconv_js = textconv_js;
-      repoCallbacks.value.textconv_backend = textconv_backend;
-      repoCallbacks.value.textconv = textconv_backend;
+      repoActions.value.textconv_js = textconvJsFactory( ({ logError: (...args) => repoActions.value.logError(...args), }) );
+      repoActions.value.textconv_backend = textconvBackendFactory( ({ logError: (...args) => repoActions.value.logError(...args),}) );
+      repoActions.value.textconv = repoActions.value.textconv_backend;
 
-      repoCallbacks.value.diff = diff;
+      repoActions.value.diff = diff;
 
       onMounted(async () => {
         await Promise.all([
           executeGitCommand(['git', 'status']),
           updateGitRepoExistence(),
-          configAskFor(),
+          configCheckUpdates(),
           gitignoreRead(),
           setIsOnlineTimer(),
           (()=>{
             gitRepoReady.then(checkIfSomethingIsInStagingArea);
             gitRepoReady.then(getHEAD);
+            return null; // to make linter happy, that return value becomes part of promise, and it is not "void"
           })(),
           (()=>{
             // console.log(`[DEBUG]: vue version is ${version}`);
             window.isReactive = isReactive;
             window.vueVersion = version;
+            return null; // to make linter happy, that return value becomes part of promise, and it is not "void"
           })(),
         ])
       });
@@ -512,17 +618,16 @@ document.addEventListener("DOMContentLoaded", () => {
       watch(isOnline, (newValue, oldValue) => {
         if (!oldValue && !!newValue) {
           // triggered specifically on false → true
-          configAskFor()
+          configCheckUpdates()
         }
       });
 
-      console.log('[DEBUG]'); // TODO:
       window.getRepoStatus = () => repoStatus;
 
       return {
         errors,
         repoStatus,
-        repoCallbacks,
+        repoActions,
         config,
         configPathsFirstCaptured,
         configPathsMismatch,

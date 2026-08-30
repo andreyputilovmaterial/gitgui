@@ -3,7 +3,6 @@
 
 from urllib.parse import urlparse, parse_qs # to detect path within endpoints
 import json # for responding, obviously
-import sys # for printing error in cli commands
 from pathlib import Path # for resolving paths to resources
 import re # to check url params agains "1", "yes", "affirmative", etc...
 
@@ -16,9 +15,9 @@ from .common_functions import JSONEncoder
 
 
 
-def handle_git_command(nethandler_instance,config={},added_data=None):
+def handle_git_command(nethandler_instance, config: dict, added_data=None):
 
-    def prep_paylaod(f):
+    def prep_payload(f):
         return f
 
     # def make_bytes_example(bytes):
@@ -32,6 +31,7 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     call_cli_command_initiate = config.get('iface').get('cli_command_initiate')
     call_cli_command_get_job = config.get('iface').get('cli_command_get_job')
+    call_cli_command_terminate_job = config.get('iface').get('cli_command_terminate_job')
     call_cli_command_get_job_stdout_reader = config.get('iface').get('cli_command_get_job_stdout_reader')
 
     def sanitize_command(command,is_binary=False):
@@ -39,8 +39,14 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
         assert args[0]=='git', f'Not a git command'
         # if len(args)>=2 and args[0]=='git' and args[1]=='error':
         #     raise ValueError('an error for testing')
-        git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
-        work_tree = Path(config.get("dir_work_tree")).resolve()
+        config_git_dir: str | Path | None = config.get("dir_git_repo")
+        config_work_tree: str | Path | None = config.get("dir_work_tree")
+        if config_git_dir is None: # to make linter happy
+            raise ValueError(f'execute git command: config.dir_git_repo is required')
+        if config_work_tree is None: # to make linter happy
+            raise ValueError(f'execute git command: config.dir_work_tree is required')
+        git_dir = Path(config_git_dir).resolve() / '.git'
+        work_tree = Path(config_work_tree).resolve()
         args = [] \
             + [ args[0] ] \
             + [
@@ -72,8 +78,11 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
             else:
                 return not not flag
 
-        parsed = urlparse(nethandler_instance.path)
-        params = parse_qs(parsed.query)
+        method = nethandler_instance.command
+        path_with_query = nethandler_instance.path
+        path_parsed = f'{urlparse(path_with_query).path}'
+        path_parts = path_parsed.split('/')
+        params = parse_qs(urlparse(path_with_query).query)
         flag_is_binary = params.get('is_binary', ["0"])[0]
         flag_is_binary = flag_is_binary.strip()
         flag_is_binary = detect_binary_str_value(flag_is_binary)
@@ -86,28 +95,24 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
         body = nethandler_instance.rfile.read(length)
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
-        command = prep_paylaod(payload)
+        command = prep_payload(payload)
         command = sanitize_command(command, is_binary = flag_is_binary)
 
-        result = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive)
+        job_dict = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive)
+        job_id = job_dict.get('job_id')
 
         headers = []
-        if 'payload' in result:
-            if job.get('is_binary',False):
-                filename = Path('%FILENAME%').name
-                url_get_rawbytes = make_download_url(path,job_id,filename)# f'{path[0]}/{path[1]}/{job_id}/rawbytes/{filename}'
-                result['payload']['stdout'] = url_get_rawbytes
-                result['payload']['download_url'] = url_get_rawbytes
-                headers.append(('Location',f'{url_get_rawbytes}',))
-        payload = {
-            'ok': True,
-            'status': 'called',
-            'result': result,
-        }
+        need_add_downloadurl = True
+        if need_add_downloadurl:
+            filename = Path('%FILENAME%').name
+            url_get_rawbytes = make_download_url(path_parts, job_id,
+                                                 filename)  # f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
+            job_dict['download_url'] = url_get_rawbytes
+            headers.append(('Location', f'{url_get_rawbytes}',))
         return WebResponse(
             status_code = 202,
             content_type = 'application/json',
-            body = json.dumps(payload, cls=JSONEncoder),
+            body = json.dumps(job_dict, cls=JSONEncoder),
             headers = headers,
         )
 
@@ -137,36 +142,28 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
                 headers = [],
             )
         if method=='GET':
-            job = call_cli_command_get_job(job_id,config)
-            result = {
-                'ok': True,
-                'status': job.get("status"),
-                'payload': job,
-            }
+            job_dict = call_cli_command_get_job(job_id,config)
             headers = []
-            if job.get('is_binary',False):
+            need_add_downloadurl = True
+            if need_add_downloadurl:
                 filename = Path('%FILENAME%').name
-                url_get_rawbytes = make_download_url(path_parts,job_id,filename)# f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
-                result['payload']['stdout'] = url_get_rawbytes
-                result['payload']['download_url'] = url_get_rawbytes
+                url_get_rawbytes = make_download_url(path_parts,job_id,filename) # f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
+                job_dict['download_url'] = url_get_rawbytes
                 headers.append(('Location',f'{url_get_rawbytes}',))
-            payload = result
             return WebResponse(
                 status_code = 200,
                 content_type = 'application/json',
-                body = json.dumps(payload, cls=JSONEncoder),
+                body = json.dumps(job_dict, cls=JSONEncoder),
                 headers = headers,
             )
         elif method=='DELETE':
-            result = cli_command_terminate_job(job_id,config)
+            call_cli_command_terminate_job(job_id,config)
             return WebResponse(
                 status_code = 204,
                 content_type = 'application/json',
                 body = json.dumps(None, cls=JSONEncoder),
                 headers = [],
             )
-        elif job.is_interactive:
-            raise Exception('/command cli, is_interactive job:  not implemented')
         else:
             return WebResponse(
                 status_code = 405,
@@ -206,15 +203,14 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
             return WebResponse(
                 status_code = 415,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'job does not provide reader, maybe it was launched in non-binary (text) mode? {job.job_id}'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'job does not provide reader, maybe it was launched in non-binary (text) mode? {job_id}'}, cls=JSONEncoder),
                 headers = [],
             )
-        result = binary_data_reader()
-        payload = result
+        data = binary_data_reader()
         return WebResponse(
             status_code = 200,
             content_type = 'application/octet-stream',
-            body = payload,
+            body = data,
             headers = [],
             is_binary = True,
         )
@@ -223,7 +219,6 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
     path_parsed = f'{urlparse(path_with_query).path}'
     method = nethandler_instance.command
     renderer = None
-    payload = {}
     try:
         if method=='POST' and path_parsed=='/command':
             renderer = handle_initiate_new_command
@@ -242,9 +237,4 @@ def handle_git_command(nethandler_instance,config={},added_data=None):
         return renderer(nethandler_instance)
 
     except Exception as e:
-        # payload = {
-        #     'ok': False,
-        #     'status': 'error',
-        #     'error': f'{e}',
-        # }
         raise e

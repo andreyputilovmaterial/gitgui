@@ -6,8 +6,6 @@ import './style.css';
 
 import PageVersionCompare from '../page_version_compare/index';
 
-import logError from '../../../error_logger/logError';
-
 import HistoryRecords from './component_records';
 
 
@@ -16,7 +14,7 @@ import HistoryRecords from './component_records';
 const View = {
   props: [
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
@@ -30,7 +28,7 @@ const View = {
     </template>
     <template v-else-if="!!repoStatus?.history">
       <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
-      <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+      <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoActions="repoActions" />
     </template>
   </form>
 </div>
@@ -49,7 +47,7 @@ const View = {
     const error = ref('');
 
     const navigateVersionComparePage = async () => {
-      await props.repoCallbacks.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
+      await props.repoActions.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
     };
 
     const handleCompare = async () => {
@@ -70,8 +68,8 @@ const View = {
         await navigateVersionComparePage();
       } catch (err) {
         error.value = err;
-        logError(err);
-        logError('Failed to call for version compare window');
+        props.repoActions.logError(err);
+        props.repoActions.logError('Failed to call for version compare window');
         console.error('Failed to call for versioncompare window',err)
         // Promise.resolve().then(()=>{throw err;});
         return props.reject(err)

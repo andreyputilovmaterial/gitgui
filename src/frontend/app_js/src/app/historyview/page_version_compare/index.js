@@ -7,10 +7,6 @@ import DiffRecord from './component_record';
 import './style.css';
 
 
-import logError from '../../../error_logger/logError';
-
-// import FilesRecords from './component_records';
-
 
 
 
@@ -19,7 +15,7 @@ const View = {
     'hashLeft',
     'hashRight',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
@@ -49,7 +45,7 @@ const View = {
           :key="\`\${h.old_mode}-\${h.new_mode}-\${h.old_oid}-\${h.new_oid}-\${h.status}-\${h.path}\`"
           :componentRecordsFiltData="h.componentRecordsFiltData"
           :repoStatus="repoStatus"
-          :repoCallbacks="repoCallbacks"
+          :repoActions="repoActions"
           :old_mode="h.old_mode"
           :new_mode="h.new_mode"
           :old_oid="h.old_oid"
@@ -185,13 +181,13 @@ const View = {
           else
             throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: not implemented`);
         })();
-        const result = ( props.hashLeft==props.hashRight ? new Uint8Array([]) : await props.repoCallbacks.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]) );
+        const result = ( props.hashLeft==props.hashRight ? new Uint8Array([]) : await props.repoActions.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]) );
         changedFiles.value = handleResult(result);
         error.value = '';
       } catch(e) {
         error.value = e;
-        logError(e);
-        logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}"`);
+        props.repoActions.logError(e);
+        props.repoActions.logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}"`);
         throw e;
       }
     };

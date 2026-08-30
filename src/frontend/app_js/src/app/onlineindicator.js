@@ -7,7 +7,7 @@ const Monitor = {
   props: [
     'isonline',
     'config',
-    'repoCallbacks',
+    'repoActions',
     'configPathsFirstCaptured',
     'configPathsMismatch',
   ],

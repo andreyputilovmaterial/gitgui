@@ -2,11 +2,13 @@
 
 import './gitignore_help_window.css';
 
-import logError from '../../error_logger/logError';
 
 
 const HelpWindow = {
-  props: ['resolve','reject'],
+  props: [
+    'resolve', 'reject',
+    'repoStatus', 'repoCallbacks',
+  ],
   template: `
 <form  @submit.prevent="handleSubmit" class="gitgui-modal-form">
   Hey here we help ya
@@ -18,8 +20,9 @@ const HelpWindow = {
     const handleSubmit = async () => {
       try {
         return props.resolve('close')
-      } catch (err) {
-        logError(err);
+      } catch (e) {
+        if( e instanceof Error )
+        props.repoActions.logError(e);
       }
     }
 

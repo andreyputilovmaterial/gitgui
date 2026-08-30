@@ -2,13 +2,16 @@
 
 import { reactive, ref, nextTick, onMounted } from 'vue';
 
-import logError from '../../../error_logger/logError';
-
 import './style_bulk_restore_form.css';
 
 
 const ModalConfirmContinueIfPathsNotVerified = {
-  props: ['resolve','reject'],
+  props: [
+    'resolve',
+    'reject',
+    'repoStatus',
+    'repoActions',
+  ],
   template: `
 <form  @submit.prevent="handleSubmit" class="gitgui-modal-form git-repo-modal-form-bulk-restore-choose-path mdmreport-controls">
   <p>Please paste the path where you want your files saved.</p>
@@ -53,7 +56,7 @@ const ModalConfirmContinueIfPathsNotVerified = {
         }
         return props.resolve(formFields.dest)
       } catch (err) {
-        logError(err);
+        props.repoActions.logError(err);
       }
     }
 

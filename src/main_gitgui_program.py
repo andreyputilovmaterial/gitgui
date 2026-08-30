@@ -134,8 +134,12 @@ def main(*argcs,**kwargs):
 
     print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'
-    config['http_port'] = find_free_port(config['http_host'],start=5180)
-    config['http_address'] = f'http://{config.get("http_host")}:{config.get("http_port")}'
+    config['http_port'] = find_free_port(config['http_host'], start=5180)
+    config['http_protocol'] = 'http'
+    config['http_address'] = (
+        f'{config["http_protocol"]}://'
+        f'{config["http_host"]}:{config["http_port"]}'
+    )
 
     print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     cfg_to_print_verify = {

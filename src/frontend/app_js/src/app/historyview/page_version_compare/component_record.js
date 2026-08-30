@@ -1,5 +1,5 @@
 
-import { h, computed } from 'vue';
+import { h } from 'vue';
 
 import DiffView from './diffview';
 
@@ -106,7 +106,7 @@ const Record = {
   props: [
     'componentRecordsFiltData',
   	'repoStatus',
-  	'repoCallbacks',
+  	'repoActions',
   	'old_mode',
   	'new_mode',
   	'old_oid',
@@ -116,12 +116,12 @@ const Record = {
     'old_path',
     'new_path',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <div :class="[...['diff-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]">
   <component-section-rollup :header="h(RecordHeader,{status,filepath:path,old_path,new_path})" :condensed="false">
-    <diff :filepath="path" :blobIdOld="old_oid" :blobIdNew="new_oid" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" />
+    <diff :filepath="path" :blobIdOld="old_oid" :blobIdNew="new_oid" :repoStatus="repoStatus" :repoActions="repoActions" />
   </component-section-rollup>
 </div>
 `,

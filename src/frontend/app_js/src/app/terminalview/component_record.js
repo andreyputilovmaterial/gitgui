@@ -9,9 +9,9 @@ const TerminalRecord = {
   props: [
     'timestamp',
     'payload',
-    'message_stdout',
-    'message_stderr',
-    'returncode',
+    'stdout',
+    'stderr',
+    'exit_code',
     'source',
     'type',
     'level',
@@ -21,8 +21,8 @@ const TerminalRecord = {
       <span class="grouping-indicator mdm-ui-record-col-1"><grouping-indicator :level="level" /></span>
       <span class="timestamp mdm-ui-record-col-2"><component-format-datetime :dt="timestamp" /></span>
       <span class="status mdm-ui-record-col-3">{{ type }}</span>
-      <span :class="\`returncode mdm-ui-record-col-4 returncode-status-\${(!!returncode || (returncode===0)?(String(returncode)===String('0')?'success':'nonzero'):'')}\`" title="returncode - %errorlevel%"><span class="label" v-if="!!returncode || (returncode===0)">returncode: </span>{{ returncode }}</span>
-      <code class="message mdm-ui-record-col-5">{{ message_stdout }}<div class="err error">{{ message_stderr }}</div></code>
+      <span :class="\`exit_code mdm-ui-record-col-4 exit_code-status-\${(!!exit_code || (exit_code===0)?(String(exit_code)===String('0')?'success':'nonzero'):'')}\`" title="exit_code - %errorlevel%"><span class="label" v-if="!!exit_code || (exit_code===0)">exit_code: </span>{{ exit_code }}</span>
+      <code class="message mdm-ui-record-col-5">{{ stdout }}<div class="err error">{{ stderr }}</div></code>
     </div>
   `,
   components: {

@@ -80,7 +80,7 @@ def make_default_assets_list(config):
     ]
 
 
-def render_page_home(server_instance,config={},added_data=None):
+def render_page_home(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     year = config.get("credentials:year")
 
@@ -115,7 +115,7 @@ def render_page_home(server_instance,config={},added_data=None):
 
 
 
-def render_page_version(server_instance,config={},added_data=None):
+def render_page_version(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -149,7 +149,7 @@ def render_page_version(server_instance,config={},added_data=None):
 
 
 
-def render_page_about(server_instance,config={},added_data=None):
+def render_page_about(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -198,7 +198,7 @@ def render_page_about(server_instance,config={},added_data=None):
 
 
 
-def render_page_help(server_instance,config={},added_data=None):
+def render_page_help(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -306,7 +306,7 @@ try {
         headers = [],
     )
 
-def render_page_test(server_instance,config={},added_data=None):
+def render_page_test(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     page_body = '''
 <!doctype html>

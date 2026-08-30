@@ -2,7 +2,7 @@
 
 const View = {
   props: [
-    'repoStatus', 'repoCallbacks',
+    'repoStatus', 'repoActions',
   ],
   template: `
   Hello, main status view...

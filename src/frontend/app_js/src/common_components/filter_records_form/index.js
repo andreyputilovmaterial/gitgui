@@ -1,7 +1,6 @@
 
 import { ref, computed, onMounted, watch, toRaw } from 'vue';
 
-import logError from '../../error_logger/logError';
 
 import matchText from './match/text';
 import matchNumericRange from './match/numeric_range';
@@ -135,8 +134,8 @@ const FormWrapper = {
             return { type: 'text', label: column };
           else {
             const e = new Error(`filter-records component: columns property does not follow format (${column})`);
-            logError('Failed to initialize filter-records component');
-            logError(e);
+            logErr('Failed to initialize filter-records component');
+            logErr(e);
             throw e;
           }
         })(value);
@@ -155,7 +154,7 @@ const FormWrapper = {
       const type = columnsSanitized.value[[formFields.value.sortingColumn]].type;
       if( !formFields.value.sortingColumn || !Object.keys(columnsSanitized.value).includes(formFields.value.sortingColumn) ) {
         const e = new Error(`mdm-ui-recordsfilter component: sort: impossible column ("${formFields.value.sortingColumn}")`);
-        logError(e);
+        logErr(e);
         throw e;
       }
       if( type==='text' ) {
@@ -308,8 +307,8 @@ const FormWrapper = {
       try{
         formFields.value.columns[col] = $event.target.value;
       } catch(e) {
-        logError(e);
-        logError('mdm-ui-recordsfilter component: failed when handling filter onChange');
+        logErr(e);
+        logErr('mdm-ui-recordsfilter component: failed when handling filter onChange');
         throw e;
       }
     };
@@ -322,8 +321,8 @@ const FormWrapper = {
         else
           formFields.value.sortingColumn = value;
       } catch(e) {
-        logError(e);
-        logError('mdm-ui-recordsfilter component: failed when handling sort col onChange');
+        logErr(e);
+        logErr('mdm-ui-recordsfilter component: failed when handling sort col onChange');
         throw e;
       }
     };
@@ -338,8 +337,8 @@ const FormWrapper = {
         else
           throw new Exception(`mdm-ui-recordsfilter component: unrecognized sort order: "${value}"`);
       } catch(e) {
-        logError(e);
-        logError('mdm-ui-recordsfilter component: failed when handling sort order onChange');
+        logErr(e);
+        logErr('mdm-ui-recordsfilter component: failed when handling sort order onChange');
         throw e;
       }
     };

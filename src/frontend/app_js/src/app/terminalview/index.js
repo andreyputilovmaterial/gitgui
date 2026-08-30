@@ -19,13 +19,13 @@ import './styles.css';
 const TerminalSessionView = {
   props: [
     'commands',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <component-section-rollup header="Commands View" :condensed="false">
   <div class="mdm-git-gui-terminal">
     <terminal-submit-form
-      :repoCallbacks="repoCallbacks"
+      :repoActions="repoActions"
     />
     <div class="terminal-records mdm-ui-records" ref="commandsEl" @scroll="onScroll">
       <terminal-record
@@ -34,9 +34,9 @@ const TerminalSessionView = {
         :id="cmd.id"
         :timestamp="cmd.timestamp"
         :payload="cmd.payload"
-        :message_stdout="cmd.message_stdout"
-        :message_stderr="cmd.message_stderr"
-        :returncode="cmd.returncode"
+        :stdout="cmd.stdout"
+        :stderr="cmd.stderr"
+        :exit_code="cmd.exit_code"
         :source="cmd.source"
         :type="cmd.type"
         :level="cmd.level"

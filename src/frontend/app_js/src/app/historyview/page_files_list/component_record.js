@@ -1,9 +1,7 @@
 
-import { ref, h, computed } from 'vue';
+import { ref, h } from 'vue';
 
 import PageFileView from '../../../app/fileviewerview/index';
-
-import logError from '../../../error_logger/logError';
 
 import './style.css';
 
@@ -19,7 +17,7 @@ const Record = {
     'showBulkRestoreCheckbox',
     'bulkRestoreVModel',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   // <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
   template: `
@@ -46,7 +44,7 @@ const Record = {
         const filename = `${resourcepath}`.split('/').pop();
 
         error.value = '';
-        const fileDataByteArray = await props.repoCallbacks.executeGitBinaryCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`]);
+        const fileDataByteArray = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`]);
         const fileDataSize = fileDataByteArray.byteLength;
 
         // // Common Ecosystem Conversions
@@ -62,17 +60,17 @@ const Record = {
         // // 3. Decode the ArrayBuffer into text
         // const text = decoder.decode(buffer);
 
-        const contentAsText = await props.repoCallbacks.textconv(fileDataByteArray,filename);
+        const contentAsText = await props.repoActions.textconv(fileDataByteArray,filename);
 
-        await props.repoCallbacks.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
+        await props.repoActions.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
 
         fileViewLinkBusy.value = false;
         error.value = '';
 
       } catch(e) {
         if( e instanceof Error ) {
-          logError(e);
-          logError(`Failed to navigate to page: history-file-view/${props?.hash}`);
+          props.repoActions.logError(e);
+          props.repoActions.logError(`Failed to navigate to page: history-file-view/${props?.hash}`);
           fileViewLinkBusy.value = false;
           throw e;
         }
@@ -89,9 +87,9 @@ const Record = {
       try {
         fileDownloadLinkBusy.value = true;
         error.value = '';
-        const response = await props.repoCallbacks.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],true);
-        if( !(response.returncode===0) || notEmpty(response.stderr) ) {
-          const errmsg = `Response from git show: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
+        const response = await props.repoActions.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],true);
+        if( !(response.exit_code===0) || notEmpty(response.stderr) ) {
+          const errmsg = `Response from git show: exit_code == ${response.exit_code}, stderr == "${response.stderr}"`;
           error.value = errmsg;
           throw new Error(errmsg);
         }
@@ -125,8 +123,8 @@ const Record = {
         fileDownloadLinkBusy.value = false;
 
       } catch(e) {
-        logError(e);
-        logError(`Failed fetching file for hash "${props.hash}", path "${props.filepath}"`);
+        props.repoActions.logError(e);
+        props.repoActions.logError(`Failed fetching file for hash "${props.hash}", path "${props.filepath}"`);
         fileDownloadLinkBusy.value = false;
         throw e;
       } finally {

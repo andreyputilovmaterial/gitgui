@@ -1,6 +1,6 @@
 
 
-import { ref, computed, reactive } from 'vue';
+import { ref, computed } from 'vue';
 
 import Record from './component_record';
 
@@ -11,7 +11,7 @@ const Records = {
     'history',
     'formVerCompareFields',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <component-filter-records-form
@@ -37,7 +37,7 @@ const Records = {
       :formVerCompareFields="formVerCompareFields"
       :componentRecordsFiltData="h.componentRecordsFiltData"
       :repoStatus="repoStatus"
-      :repoCallbacks="repoCallbacks"
+      :repoActions="repoActions"
     />
   </div>
 </component-filter-records-form>

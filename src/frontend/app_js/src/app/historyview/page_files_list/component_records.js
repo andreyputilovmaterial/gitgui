@@ -2,8 +2,6 @@
 
 import { ref, computed, reactive } from 'vue';
 
-import logError from '../../../error_logger/logError';
-
 import ModalChooseDestPath from './component_bulk_restore_choose_path_modal';
 
 import Record from './component_record';
@@ -16,7 +14,7 @@ const Records = {
     'files',
     'hash',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <form @submit.prevent="handleBulkRestore" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}  \${inBulkRestoreMode ? 'mdm-git-gui-bulk-form' : ''} \`">
@@ -64,7 +62,7 @@ const Records = {
         :filepath="h.filepath"
         :componentRecordsFiltData="h.componentRecordsFiltData"
         :repoStatus="repoStatus"
-        :repoCallbacks="repoCallbacks"
+        :repoActions="repoActions"
         :hash="hash"
         :bulkRestoreVModel="formFields.rows[h.filepath]"
         :showBulkRestoreCheckbox="inBulkRestoreMode"
@@ -93,18 +91,18 @@ const Records = {
       try {
         isBusy.value = true;
         bulkRestoreValidationMessage.value = '';
-        const selectedFiles = Object.entries(formFields.rows).filter(([key,value])=>value.checked).map(([key,value])=>key);
+        const selectedFiles = Object.entries(formFields.rows).filter(([_key,value])=>value.checked).map(([key,_value])=>key);
         if( !(selectedFiles.length>0) ) {
           bulkRestoreValidationMessage.value = 'Please select some files. Nothing selected.'
           return false;
         }
-        const dest = await props.repoCallbacks.createModal(ModalChooseDestPath);
+        const dest = await props.repoActions.createModal(ModalChooseDestPath);
         const commandArgs = [ 'git', 'archive', props.hash, '--', ...selectedFiles, '|', 'tar', '-x', '-C', dest ]
-        const result = await props.repoCallbacks.executeGitCommand(commandArgs);
-        if( (result.returncode!==0) || (!!result.stderr) ) {
-          error.value = `git archive: failed with returncode ${result.returncode}: ${result.stderr}`;
-          logError('"Restore files" failed');
-          logError(error.value);
+        const result = await props.repoActions.executeGitCommand(commandArgs);
+        if( (result.exit_code!==0) || (!!result.stderr) ) {
+          error.value = `git archive: failed with exit_code ${result.exit_code}: ${result.stderr}`;
+          props.repoActions.logError('"Restore files" failed');
+          props.repoActions.logError(error.value);
           isBusy.value = false;
           return;
         }
@@ -128,7 +126,7 @@ const Records = {
         //         archive.extractall(destination)
         //
         //     if proc.wait() != 0:
-        //         raise subprocess.CalledProcessError(proc.returncode, proc.args)
+        //         raise subprocess.CalledProcessError(proc.exit_code, proc.args)
         // finally:
         //     if proc.stdout:
         //         proc.stdout.close()
@@ -138,9 +136,8 @@ const Records = {
         bulkRestoreValidationMessage.value = '';
       } catch(e) {
         if(e instanceof Error)
-          logError(e);
+          props.repoActions.logError(e);
         isBusy.value = false;
-        return;
       } finally {
         isBusy.value = false;
       }

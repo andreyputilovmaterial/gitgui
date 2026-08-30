@@ -46,18 +46,35 @@ class Job:
     pipe_process_lock: Lock = field(default_factory = Lock, repr=False)
     def as_dict(self):
         with self.lock:
-            return {
+            if not self.job_id:
+                raise Exception(f'/command cli: job.as_dict(): Can\'t return a job without job_id')
+            result = {
                 'job_id': self.job_id,
                 'status': self.status,
                 'created_at': self.created_at,
+
                 'error': self.error,
-                'command': self.command,
-                'is_interactive': self.is_interactive,
-                'is_binary': self.is_binary,
-                'execution_started_at': self.execution_started_at,
-                'execution_finished_at': self.execution_finished_at,
-                'last_activity_at': self.last_activity_at,
-                'returncode': self.returncode,
+
+                'exit_code': self.returncode,
                 'stdout': self.stdout,
                 'stderr': f'{self.stderr}',
             }
+            # I'll not print fields that were not set yet
+            # this is for better understanding what I receive, if something
+            # is null, I have clearer view that processing here simplly did not
+            # reach that point where the field is set
+            # This is probably very unnecessary "sugar", those fields can come
+            # normally as None/null
+            if self.command is not None:
+                result['command'] = self.command
+            if self.is_interactive is not None:
+                result['is_interactive'] = self.is_interactive
+            if self.is_binary is not None:
+                result['is_binary'] = self.is_binary
+            if self.execution_started_at is not None:
+                result['execution_started_at'] = self.execution_started_at
+            if self.execution_finished_at is not None:
+                result['execution_finished_at'] = self.execution_finished_at
+            if self.last_activity_at is not None:
+                result['last_activity_at'] = self.last_activity_at
+            return result

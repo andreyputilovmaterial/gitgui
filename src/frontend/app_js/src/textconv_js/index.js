@@ -1,5 +1,4 @@
 
-import logError from '../error_logger/logError';
 
 import detectFileMimeType from './detect_type';
 
@@ -39,7 +38,7 @@ const MAX_FILE_SIZE_LIMIT_BYTES = 64*1000*1000;
 // const text = decoder.decode(buffer);
 
 
-const textconv = (fileData,filename) => {
+const textconvFactory = repoActions => (fileData,filename) => {
   try {
     if( !(fileData instanceof Uint8Array) )
       throw new Error(`textconv: input of type Uint8Array was expected, got "${typeof fileData}" ("${filename}")`);
@@ -56,10 +55,10 @@ const textconv = (fileData,filename) => {
       return `FILEVIEWER: File type is not available to view: "${fileType}" ("${filename}")`;
     return textconvProcessor(fileData);
   } catch(e) {
-    logError(`Failed at textconv for file "${filename}"`);
-    logError(e);
+    repoActions.logError(`Failed at textconv for file "${filename}"`);
+    repoActions.logError(e);
     throw e;
   }
 };
 
-export default textconv;
+export default textconvFactory;

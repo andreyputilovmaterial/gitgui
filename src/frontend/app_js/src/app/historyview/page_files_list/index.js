@@ -5,7 +5,6 @@ import { ref, onMounted } from 'vue';
 import './style.css';
 
 
-import logError from '../../../error_logger/logError';
 
 import FilesRecords from './component_records';
 
@@ -18,7 +17,7 @@ const View = {
   props: [
     'hash',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
@@ -27,7 +26,7 @@ const View = {
   <div class="error">{{ error }}</div>
   <template v-if="!filesList && !error">Querying data, please wait...</template>
   <template v-else-if="!!filesList">
-    <files-records :files="filesList" :repoStatus="repoStatus" :repoCallbacks="repoCallbacks" :hash="hash" />
+    <files-records :files="filesList" :repoStatus="repoStatus" :repoActions="repoActions" :hash="hash" />
   </template>
 </div>
 `,
@@ -43,16 +42,16 @@ const View = {
       const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
       try {
         error.value = '';
-        const response = await props.repoCallbacks.executeGitCommand(['git','ls-tree','-r','--name-only',props.hash]);
-        if( !(response.returncode===0) || notEmpty(response.stderr) ) {
-          const errmsg = `Response from git ls-tree: returncode == ${response.returncode}, stderr == "${response.stderr}"`;
+        const response = await props.repoActions.executeGitCommand(['git','ls-tree','-r','--name-only',props.hash]);
+        if( !(response.exit_code===0) || notEmpty(response.stderr) ) {
+          const errmsg = `Response from git ls-tree: exit_code == ${response.exit_code}, stderr == "${response.stderr}"`;
           error.value = errmsg;
           throw new Error(errmsg);
         }
         filesList.value = response.stdout.split('\n').filter(a=>a!=='').map(filepath=>({filepath}));
       } catch(e) {
-        logError(e);
-        logError(`Failed fetching file list for hash "${props.hash}"`);
+        props.repoActions.logError(e);
+        props.repoActions.logError(`Failed fetching file list for hash "${props.hash}"`);
         throw e;
       }
     };

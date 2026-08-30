@@ -14,7 +14,7 @@ def not_implemented(*args,**argv):
 
 
 
-def handle_request_files_endpoint(server_instance,config={},added_data=None):
+def handle_request_files_endpoint(server_instance, config: dict,added_data=None):
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')

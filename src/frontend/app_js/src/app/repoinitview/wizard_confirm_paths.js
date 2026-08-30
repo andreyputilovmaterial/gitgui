@@ -5,21 +5,18 @@ import { ref, reactive, onMounted } from 'vue';
 
 
 import PathStatus, { FSPathStatus } from './components/path_indicator';
-import { createModal } from '../../common_components/modals/modals';
 
 import './wizard_styles.css';
-
-import logError from '../../error_logger/logError';
-
-
-// import ComponentSectionRollUp from '../../common_components/rollable_sections';
 
 
 
 
 
 const ModalConfirmContinueIfPathsNotVerified = {
-  props: ['resolve','reject'],
+  props: [
+    'resolve','reject',
+    'repoActions', 'repoStatus',
+  ],
   template: `
 <form  @submit.prevent="handleSubmit" class="gitgui-modal-form git-repo-modal-form-confirm-continue-when-paths-not-good">
   <p>Are you sure?</p>
@@ -36,7 +33,7 @@ const ModalConfirmContinueIfPathsNotVerified = {
       try {
         return props.resolve('close')
       } catch (err) {
-        logError(err);
+        props.repoActions.logError(err);
       }
     }
 
@@ -50,7 +47,7 @@ const WizardConfirmPaths = {
     'resolve',
     'reject',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'config',
   ],
   template: `
@@ -121,9 +118,9 @@ const WizardConfirmPaths = {
       const parseResponseStatus = response => {
         if(response.ok)
           return FSPathStatus.OK;
-        else if(response.status==404)
+        else if(response.status===404)
           return FSPathStatus.NOTFOUND;
-        else if(response.status==403)
+        else if(response.status===403)
           return FSPathStatus.ACCESSISSUES;
         else
           return FSPathStatus.REQUESTERROR;
@@ -146,13 +143,13 @@ const WizardConfirmPaths = {
         result => {
           formContext.value.dir_work_treeExists = parseResponseStatus(result);
         },
-        logError,
+        props.repoActions.logError,
       );
       fetchResultGitRepoDir.then(
         result => {
           formContext.value.dir_git_repoExists = parseResponseStatus(result);
         },
-        logError,
+        props.repoActions.logError,
       );
       return Promise.all([fetchResultWorkTree,fetchResultGitRepoDir]);
     };
@@ -175,18 +172,18 @@ const WizardConfirmPaths = {
            else if( formContext.value.dir_git_repoExists!=FSPathStatus.OK )
              validationMessage.value = 'Git repo folder does not exist or is not accessible: please check and/or create the folder';
            try {
-             await createModal(ModalConfirmContinueIfPathsNotVerified);
+             await props.repoActions.createModal(ModalConfirmContinueIfPathsNotVerified);
            } catch(e) {
              if(e instanceof Error)
-               logError(e);
+               props.repoActions.logError(e);
              isBusy.value = false;
              return;
            }
          }
          props.resolve('git init'); // message does not matter
        } catch (err) {
-         logError(err);
-         logError('Failed submitting git init form');
+         props.repoActions.logError(err);
+         props.repoActions.logError('Failed submitting git init form');
          console.error('Failed submitting git init form',err)
          // Promise.resolve().then(()=>{throw err;});
          return props.reject(err)

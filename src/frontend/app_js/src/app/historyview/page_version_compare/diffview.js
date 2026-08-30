@@ -1,8 +1,6 @@
 
 import { ref, onMounted, watch, nextTick } from 'vue';
 
-import logError from '../../../error_logger/logError';
-
 import './style.css';
 import './styles_diffview.css';
 
@@ -143,7 +141,8 @@ const View = {
     'filepath',
     'blobIdOld',
     'blobIdNew',
-    'repoStatus', 'repoCallbacks',
+    'repoStatus',
+    'repoActions',
   ],
   template: `
 <div class="mdm-git-gui-diffview">
@@ -216,7 +215,7 @@ const View = {
     async function getContentsFromBlob(blobid) {
       if( /^0+$/.test(blobid) )
         return new Uint8Array([]);
-      return await props.repoCallbacks.executeGitBinaryCommand(['git','cat-file','blob',blobid]);
+      return await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',blobid]);
     }
 
     const fetchDataLeft = async () => {
@@ -224,13 +223,13 @@ const View = {
         statisticsLeft.value.binaryFileSize = '???';
         const binaryDataLeft = await getContentsFromBlob(props.blobIdOld);
         statisticsLeft.value.binaryFileSize = binaryDataLeft.length;
-        const txtLeft = await props.repoCallbacks.textconv(binaryDataLeft,props.filepath);
+        const txtLeft = await props.repoActions.textconv(binaryDataLeft,props.filepath);
         statisticsLeft.value.textFileSize = txtLeft.length;
         return txtLeft;
       } catch(e) {
         error.value = e;
-        logError(e);
-        logError('Failed when fetching contents for left file');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Failed when fetching contents for left file');
         throw e;
       }
     };
@@ -239,13 +238,13 @@ const View = {
         statisticsRight.value.binaryFileSize = '???';
         const binaryDataRight = await getContentsFromBlob(props.blobIdNew);
         statisticsRight.value.binaryFileSize = binaryDataRight.length;
-        const txtRight = await props.repoCallbacks.textconv(binaryDataRight,props.filepath);
+        const txtRight = await props.repoActions.textconv(binaryDataRight,props.filepath);
         statisticsRight.value.textFileSize = txtRight.length;
         return txtRight;
       } catch(e) {
         error.value = e;
-        logError(e);
-        logError('Failed when fetching contents for right file');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Failed when fetching contents for right file');
         throw e;
       }
     };
@@ -271,7 +270,7 @@ const View = {
         await memorySaveOff;
         await nextTick();
         await new Promise(resolve=>setTimeout(resolve,30));
-        const diffLinesPatches = props.repoCallbacks.diff(leftLines,rightLines);
+        const diffLinesPatches = props.repoActions.diff(leftLines,rightLines);
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];
         for( const block of diffLinesAllBlocks ) {
@@ -281,7 +280,7 @@ const View = {
             const rline = lineNumberWithinBlock<=block.rhs.items.length-1 ? block.rhs.items[lineNumberWithinBlock] : '';
             const llineSplitByTokens = splitByTokens(lline);
             const rlineSplitByTokens = splitByTokens(rline);
-            const diffWithinLine = props.repoCallbacks.diff(llineSplitByTokens,rlineSplitByTokens);
+            const diffWithinLine = props.repoActions.diff(llineSplitByTokens,rlineSplitByTokens);
             const diffWithinLineParts = Array.from(diffAllParts(llineSplitByTokens,rlineSplitByTokens,diffWithinLine));
             const ltext = [];
             const rtext = [];
@@ -317,8 +316,8 @@ const View = {
         linesRight.value = lines.map(l=>l.rhs);
       } catch(e) {
         error.value = e;
-        logError(e);
-        logError('Failed when preparing diff results');
+        props.repoActions.logError(e);
+        props.repoActions.logError('Failed when preparing diff results');
         throw e;
       }
     };

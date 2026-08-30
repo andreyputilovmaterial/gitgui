@@ -8,11 +8,6 @@ import RepoInitViewGitignoreSection from './section_gitignore';
 
 import './wizard_styles.css';
 
-import logError from '../../error_logger/logError';
-
-
-// import ComponentSectionRollUp from '../../common_components/rollable_sections';
-
 
 
 
@@ -22,7 +17,7 @@ const WizardWalkOverGitignore = {
     'resolve',
     'reject',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'config',
   ],
   template: `
@@ -67,8 +62,8 @@ const WizardWalkOverGitignore = {
          validationMessage.value = '';
          props.resolve('git init'); // message does not matter
        } catch (err) {
-         logError(err);
-         logError('Failed submitting git init form');
+         props.repoActions.logError(err);
+         props.repoActions.logError('Failed submitting git init form');
          console.error('Failed submitting git init form',err)
          // Promise.resolve().then(()=>{throw err;});
          return props.reject(err)

@@ -3,8 +3,6 @@
 import { ref, computed, onMounted } from 'vue';
 
 import './component_statistics_pane_styles.css';
-import { fetchWrapper } from '../../../common_defs/networking';
-import logError from '../../../error_logger/logError';
 
 
 
@@ -12,7 +10,7 @@ const StatisticsPane = {
   props: [
     'packObjects',
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
   ],
   template: `
 <div class="mdm-git-gui-verifypack-statistics mdmreport-banner">
@@ -40,8 +38,8 @@ const StatisticsPane = {
         if( !props.packObjects ) return NaN;
         return props.packObjects.reduce((acc,e)=>acc+Number(e.sizeSource),0);
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -53,8 +51,8 @@ const StatisticsPane = {
         if( !props.packObjects ) return NaN;
         return props.packObjects.reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
@@ -62,33 +60,31 @@ const StatisticsPane = {
 
     const fetchGitPacksFolderSize = async () => {
       try {
-        const size = await fetchWrapper( 'GET','/functionality/dir-sizeof/git_pack_objects',undefined );
-        gitPacksFolderSize.value = size;
+        gitPacksFolderSize.value = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/git_pack_objects', undefined );
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
     };
     const fetchGitRepoFolderSize = async () => {
       try {
-        const size = await fetchWrapper( 'GET','/functionality/dir-sizeof/git_repo',undefined );
-        gitGitrepoFolderSize.value = size;
+        gitGitrepoFolderSize.value = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/git_repo', undefined );
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }
     };
     const fetchWorktreeFolderSize = async () => {
       try {
-        const size = await fetchWrapper( 'GET','/functionality/dir-sizeof/worktree',undefined );
+        const size = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/worktree', undefined );
         gitWorktreeFolderSize.value = size;
       } catch(e) {
-        logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
         error.value = e;
         throw e;
       }

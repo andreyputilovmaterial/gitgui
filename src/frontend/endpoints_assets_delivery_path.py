@@ -27,7 +27,7 @@ from .GENERATED.ASSETS import (
 
 
 
-def render_payload(server_instance,config={},added_data=None,is_binary=False):
+def render_payload(server_instance, config: dict,added_data=None,is_binary=False):
     WebResponse = config.get('iface').get('WebResponse')
     content_type = 'text/plain'
     path_with_query = server_instance.path
@@ -47,36 +47,36 @@ def render_payload(server_instance,config={},added_data=None,is_binary=False):
 
 
 
-def render_assets_common_css(server_instance,config={},added_data=None):
+def render_assets_common_css(server_instance, config: dict,added_data=None):
     payload = common_css
     return render_payload(server_instance,config,added_data=payload)
 
-def render_assets_normalize_css(server_instance,config={},added_data=None):
+def render_assets_normalize_css(server_instance, config: dict,added_data=None):
     payload = normalize_css
     return render_payload(server_instance,config,added_data=payload)
 
-def render_assets_common_js(server_instance,config={},added_data=None):
+def render_assets_common_js(server_instance, config: dict,added_data=None):
     payload = common_js
     return render_payload(server_instance,config,added_data=payload)
 
-def render_assets_app_js(server_instance,config={},added_data=None):
+def render_assets_app_js(server_instance, config: dict,added_data=None):
     payload = app_js
     return render_payload(server_instance,config,added_data=payload)
 
-def render_assets_project_specific_styles_css(server_instance,config={},added_data=None):
+def render_assets_project_specific_styles_css(server_instance, config: dict,added_data=None):
     payload = project_specific_styles_css
     return render_payload(server_instance,config,added_data=payload)
 
-def render_assets_vendorlibs_vue_js(server_instance,config={},added_data=None):
+def render_assets_vendorlibs_vue_js(server_instance, config: dict,added_data=None):
     payload = vendorlibs_vue_js
     return render_payload(server_instance,config,added_data=payload)
-def render_assets_vendorlibs_marked_js(server_instance,config={},added_data=None):
+def render_assets_vendorlibs_marked_js(server_instance, config: dict,added_data=None):
     payload = vendorlibs_marked_js
     return render_payload(server_instance,config,added_data=payload)
-def render_assets_vendorlibs_dompurify_js(server_instance,config={},added_data=None):
+def render_assets_vendorlibs_dompurify_js(server_instance, config: dict,added_data=None):
     payload = vendorlibs_dompurify_js
     return render_payload(server_instance,config,added_data=payload)
-def render_assets_vendorlibs_font_ibmplexsans(server_instance,config={},added_data=None):
+def render_assets_vendorlibs_font_ibmplexsans(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
@@ -97,7 +97,7 @@ def render_assets_vendorlibs_font_ibmplexsans(server_instance,config={},added_da
         added_data = payload,
         is_binary = True,
     )
-def render_assets_vendorlibs_font_ibmplexmono(server_instance,config={},added_data=None):
+def render_assets_vendorlibs_font_ibmplexmono(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
@@ -135,7 +135,7 @@ endpoints = {
 }
 
 
-def renderer_assets(server_instance,config={},added_data=None):
+def renderer_assets(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     def not_found(*args,**argv):
         payload = f'Resource not found: {repr(server_instance.path)}'

@@ -1,13 +1,10 @@
 
 
-import './styles.css';
-
-
 import { ref, reactive, watch, h } from 'vue';
 
 
-import { createModal } from '../../common_components/modals/modals';
-import logError from '../../error_logger/logError';
+import './styles.css';
+
 
 import WizardConfirmPaths from './wizard_confirm_paths';
 import WizardWalkOverGitignore from './wizard_walk_over_gitignore';
@@ -16,7 +13,7 @@ import WizardWalkOverGitignore from './wizard_walk_over_gitignore';
 const RepoInitViewInitTheRepo = {
   props: [
     'repoStatus',
-    'repoCallbacks',
+    'repoActions',
     'config',
   ],
   template: `
@@ -40,19 +37,16 @@ setup(props) {
      try {
        isBusy.value = true;
        validationaFailureMsg.value = '';
-       console.log('[DEBUG-initrepo-form-submit]: confirm first...')
 
        // step 1: let user confirm the paths
-       const confirmationResponse = await createModal(h(WizardConfirmPaths,{...props}));
-       console.log('[DEBUG-initrepo-form-submit]: Received a response on  confirmation: ',confirmationResponse)
+       const confirmationResponse = await props.repoActions.createModal(h(WizardConfirmPaths,{...props}));
 
        // step 2: call "git init"
-       console.log('[DEBUG-initrepo-form-submit]: initiating "git init" command...');
-       const gitInitCommandResult = await props.repoCallbacks.executeGitCommand(['git','init']);
+       const gitInitCommandResult = await props.repoActions.executeGitCommand(['git','init']);
 
        // step 3: verify it worked
-       await props.repoCallbacks.updateGitRepoExistence()
-       await props.repoCallbacks.gitignoreRead()
+       await props.repoActions.updateGitRepoExistence()
+       await props.repoActions.gitignoreRead()
        if(!props.repoStatus.repoExists) {
          const stderr = gitInitCommandResult.payload.stderr;
          const stdout = gitInitCommandResult.payload.stdout;
@@ -64,18 +58,16 @@ setup(props) {
        }
 
        // step 4: guide user through gitignore setup
-       await createModal(h(WizardWalkOverGitignore,{...props}));
+       await props.repoActions.createModal(h(WizardWalkOverGitignore,{...props}));
 
        // done
-       console.log('[DEBUG-initrepo-form-submit]: after await')
      } catch (error) {
        if(error instanceof Error) {
          validationaFailureMsg.value = error;
-         logError('Init-the-repo Form submission failed');
-         logError(error);
+         props.repoActions.logError('Init-the-repo Form submission failed');
+         props.repoActions.logError(error);
          console.error("Init-the-repo Form submission failed:", error);
        } else {
-         console.log('[DEBUG-initrepo-form-submit]: cancel')
          /* rejected - means "cancel" - ok */
        }
      } finally {

@@ -3,7 +3,7 @@
 import { ref, watch } from 'vue';
 
 import openNumericRangePicker from './widget'
-import logError from '../../error_logger/logError';
+import logErr from '../_log_error_proxy';
 
 const Component = {
 
@@ -270,8 +270,8 @@ const Component = {
         })
       } catch(e) {
         if( e instanceof Error ) {
-          logError(e);
-          logError('Failed opening ui widget for numeric range picker');
+          logErr(e);
+          logErr('Failed opening ui widget for numeric range picker');
           throw e;
         }
       }

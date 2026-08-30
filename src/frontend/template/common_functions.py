@@ -18,7 +18,7 @@ def is_in_pinliner():
 def sanitize(input):
     return f'{input}'.replace(r'"""',r'\"""')
 
-def sanitize_classname(s):
+def sanitize_classname(s) -> str:
     def err(i):
         raise Exception(f'Not valid class name: {i}')
     s = f'{s}'.split()
@@ -27,10 +27,10 @@ def sanitize_classname(s):
 def wrap_div(classname, txt) -> str:
     soup = BeautifulSoup("<div></div>", "html.parser")
     div = soup.div
+    assert div is not None
 
     fragment = BeautifulSoup(txt, "html.parser")
 
-    # IMPORTANT: iterate over a copy
     for child in list(fragment.contents):
         div.append(child)
 

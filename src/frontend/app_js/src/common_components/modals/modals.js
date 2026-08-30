@@ -38,17 +38,8 @@ export function createModal(Component) {
     context.promiseResolve = resolve;
     context.promiseReject = reject;
     appContext.modalsSitePromise.then(createModal => createModal(Component,context) );
-    console.log('[DEBUG]: modal: requested a new modal; added pend to modal site promise');
   });
   context.promise = promise;
-  promise.then(
-    () => {
-      console.log('[DEBUG]: modal: resolved');
-    },
-    () => {
-      console.log('[DEBUG]: modal: rejected');
-    },
-  );
   return promise;
 }
 

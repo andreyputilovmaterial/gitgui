@@ -1,8 +1,7 @@
 
 
-from urllib.parse import urlparse, parse_qs # to detect path within endpoints
+from urllib.parse import urlparse #, parse_qs # to detect path within endpoints
 import json # for responding, obviously
-import sys # for printing error in cli commands
 from pathlib import Path # for resolving paths to resources
 import os # accessing physical files - gitignore, gitattributes, work-tree path, git repo path...
 import subprocess # execute git rev-parse
@@ -22,7 +21,7 @@ from .common_functions import JSONEncoder, get_matching_endpoint
 
 
 
-def not_found(server_instance,config={},added_data=None):
+def not_found(server_instance,config:dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload = {'status':'error','error':'not found'}
     return WebResponse(
@@ -34,7 +33,7 @@ def not_found(server_instance,config={},added_data=None):
 
 
 
-def handle_gitignore(server_instance,config={},added_data=None):
+def handle_gitignore(server_instance, config: dict,added_data=None):
     def read(fname):
         if not Path(fname).is_file():
             raise FileNotFoundError(f'{fname}": file not found"')
@@ -76,7 +75,7 @@ def handle_gitignore(server_instance,config={},added_data=None):
         if not Path(fname).is_file():
             raise FileNotFoundError(f'{fname}": file not found"')
         fsize = os.path.getsize(fname)
-        paylaod = ''
+        payload = ''
         return WebResponse(
             status_code = 200,
             content_type = 'application/json',
@@ -91,7 +90,7 @@ def handle_gitignore(server_instance,config={},added_data=None):
             headers = [],
         )
 
-def handle_gitattributes(server_instance,config={},added_data=None):
+def handle_gitattributes(server_instance, config: dict,added_data=None):
     def read(fname):
         if not Path(fname).is_file():
             raise FileNotFoundError(f'{fname}": file not found"')
@@ -148,7 +147,7 @@ def handle_gitattributes(server_instance,config={},added_data=None):
             headers = [],
         )
 
-def handle_config(server_instance,config={},added_data=None):
+def handle_config(server_instance, config: dict,added_data=None):
     def clean_config(obj, path="root"):
         if isinstance(obj, Path):
             return str(obj)
@@ -191,7 +190,7 @@ def handle_config(server_instance,config={},added_data=None):
         headers = [],
     )
 
-def handle_isup(server_instance,config={},added_data=None):
+def handle_isup(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     method = server_instance.command
     payload = ''
@@ -210,7 +209,7 @@ def handle_isup(server_instance,config={},added_data=None):
             headers = [],
         )
 
-def handle_is_git_repo(server_instance,config={},added_data=None):
+def handle_is_git_repo(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     def pend_git_repo_status():
         def sanitize_command(command):
@@ -227,7 +226,6 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
             text=True,
             check=False,
         )
-        # print(f'\n\ngit rev-parse result:\n\nreturncode:\n{result.returncode}\n\nstderr:\n{result.stderr}\n\nstdout:\n{result.stdout}\n\n')
         if result.returncode==128:
             return False
         elif not not result.stderr and len(result.stderr.strip())>0:
@@ -235,7 +233,7 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
         elif result.returncode==0 and not not result.stdout and len(result.stdout.strip())>0:
             return True
         else:
-            return (result.returncode==0)
+            return result.returncode==0
     method = server_instance.command
     if method=='HEAD' or method=='GET':
         payload = ''
@@ -261,7 +259,7 @@ def handle_is_git_repo(server_instance,config={},added_data=None):
             headers = [],
         )
 
-def handle_fspath(server_instance,config={},added_data=None):
+def handle_fspath(server_instance, config: dict,added_data=None):
     path_fs = Path(added_data).resolve()
     WebResponse = config.get('iface').get('WebResponse')
     method = server_instance.command
@@ -310,15 +308,15 @@ def handle_fspath(server_instance,config={},added_data=None):
 
 
 
-def handle_fspath_worktree(server_instance,config={},added_data=None):
+def handle_fspath_worktree(server_instance, config: dict,added_data=None):
     path_fs = config.get("dir_work_tree")
     return handle_fspath(server_instance,config,added_data=path_fs)
 
-def handle_fspath_gitrepodir(server_instance,config={},added_data=None):
+def handle_fspath_gitrepodir(server_instance, config: dict,added_data=None):
     path_fs = config.get("dir_git_repo")
     return handle_fspath(server_instance,config,added_data=path_fs)
 
-def handle_git_list_pack_files(server_instance,config={},added_data=None):
+def handle_git_list_pack_files(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     method = server_instance.command
     path_git_repo = Path(config.get("dir_git_repo")).resolve()
@@ -335,7 +333,7 @@ def handle_git_list_pack_files(server_instance,config={},added_data=None):
                 content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
         )
 
-def handle_dir_sizeof_files(server_instance,config={},added_data=None):
+def handle_dir_sizeof_files(server_instance, config: dict,added_data=None):
     def parse_path(path_parts):
         return path_parts[3]
     WebResponse = config.get('iface').get('WebResponse')
@@ -393,7 +391,7 @@ endpoints = {
     '/isup.txt': handle_isup,
 }
 
-def handle_request_functionality_endpoint(server_instance,config={},added_data=None):
+def handle_request_functionality_endpoint(server_instance, config: dict,added_data=None):
     path_with_query = server_instance.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')

@@ -70,25 +70,25 @@
 .mdm-git-gui-terminal .terminal-record .timestamp {
   display: none;
 }
-.mdm-git-gui-terminal .terminal-record .returncode {
+.mdm-git-gui-terminal .terminal-record .exit_code {
   /* flex: 0 0 2.2em; */
   padding: 5px 5px 5px 1px;
   background: #eee;
   min-width: 3em;
 }
 @media (min-width: 500px) {
-  .mdm-git-gui-terminal .terminal-record .returncode {
+  .mdm-git-gui-terminal .terminal-record .exit_code {
     text-align: right;
   }
 }
-.mdm-git-gui-terminal .terminal-record .returncode.returncode-status-success {
+.mdm-git-gui-terminal .terminal-record .exit_code.exit_code-status-success {
   color: #009900;
 }
-.mdm-git-gui-terminal .terminal-record .returncode.returncode-status-nonzero {
+.mdm-git-gui-terminal .terminal-record .exit_code.exit_code-status-nonzero {
   color: #990000;
 }
 @media (min-width: 500px) {
-   .mdm-git-gui-terminal .terminal-record .returncode .label {
+   .mdm-git-gui-terminal .terminal-record .exit_code .label {
      display: none;
    }
 }

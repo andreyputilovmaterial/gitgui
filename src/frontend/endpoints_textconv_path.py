@@ -17,7 +17,7 @@ def clean_filename_from_hash(filename):
 
 
 
-def handle_textconv_request(server_instance,config={},added_data=None):
+def handle_textconv_request(server_instance, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     call_textconv = config.get('iface').get('textconv')
     try:

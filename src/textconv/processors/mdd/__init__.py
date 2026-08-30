@@ -9,17 +9,18 @@ win32com_import_success = None
 win32com_import_error = None
 
 try:
-	import win32com.client
-	win32com_import_success = True
+    import win32com.client
+    win32com_import_success = True
 except ImportError as e:
-	win32com_import_success = False
-	win32com_import_error = e
+    win32com_import_success = False
+    win32com_import_error = e
 
 
 class MDMDocument:
 
-    def __init__(self,mdd_path,method='open',config={}):
+    def __init__(self, mdd_path,method='open', config: dict | None = None):
 
+        config = config or {}
         self.document = None
         mdd_path = f'{Path(mdd_path).resolve()}'
 

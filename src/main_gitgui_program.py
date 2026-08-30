@@ -7,10 +7,10 @@ from dotenv import load_dotenv # for loading .env
 import os # for loading .env
 
 
-from .webserver_engine.webserver import Webserver # a wrapper around python http.server - no flask or django
-from .webserver_engine.webserver import HTTP403, HTTP404, WebResponse
-from .webserver_engine.find_free_port import find_free_port
-from .webserver_engine.launch_browser import launch_browser
+from .webserver_engine.webserve.src.webserver import Webserver # a wrapper around python http.server - no flask or django
+from .webserver_engine.webserve.src.webserver import HTTP403, HTTP404, WebResponse
+from .webserver_engine.webserve.src.find_free_port import find_free_port
+from .webserver_engine.webserve.src.launch_browser import launch_browser
 from .cli_proxy_caller import (
     initiate_worker_loop as cli_initiate_worker_loop,
     initiate_command as cli_command_initiate,

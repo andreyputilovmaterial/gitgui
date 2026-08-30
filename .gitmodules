@@ -7,3 +7,6 @@
 [submodule "src/frontend/app_js/src/lib/myers-diff"]
 	path = src/frontend/app_js/src/lib/myers-diff
 	url = https://github.com/The-city-not-present/myers-diff.git
+[submodule "src/webserver_engine/webserve"]
+	path = src/webserver_engine/webserve
+	url = https://github.com/The-city-not-present/webserve.git

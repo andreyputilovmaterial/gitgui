@@ -17,6 +17,13 @@ export function genId(parts) {
 }
 
 
+const MAX_LIMIT_PRETTYPRINT_BYTES = 64;
+export const prettyprintBytes = (bytes) => {
+  const hex = Array.from(bytes.slice(0, MAX_LIMIT_PRETTYPRINT_BYTES+1), byte =>
+    byte.toString(16).padStart(2, '0').toUpperCase()
+  );
 
-export const prettyprintBytes = bytes => bytes.length>64 ? `[ ${bytes.slice(0,64).map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')}, ... ]` : `[ ${bytes.map(n=>Number(n).toString(16).padStart(2, '0').toUpperCase()).join(', ')} ]`;
-
+  return hex.length > MAX_LIMIT_PRETTYPRINT_BYTES
+    ? `[ ${hex.slice(0, MAX_LIMIT_PRETTYPRINT_BYTES).join(', ')}, ... ]`
+    : `[ ${hex.join(', ')} ]`;
+};

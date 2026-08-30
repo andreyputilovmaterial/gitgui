@@ -93,8 +93,8 @@ const Record = {
           error.value = errmsg;
           throw new Error(errmsg);
         }
-        const filename = `${props.filepath}`.split('/').pop()
-        const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename)
+        const filename = `${props.filepath}`.split('/').pop();
+        const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = filename;

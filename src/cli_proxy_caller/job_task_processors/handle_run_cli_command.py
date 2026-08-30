@@ -1,7 +1,14 @@
 
 from datetime import datetime, timedelta, timezone # for setting "created_at", "initiated_at", "last_polled_at"...
 import subprocess
+from pathlib import Path # to set working folder to user profile's folder at init, not sure I need it, but will do
+from dataclasses import dataclass
 
+
+
+@dataclass
+class JobInternalData:
+    pass
 
 
 
@@ -9,6 +16,7 @@ def handler(context,task,job):
 
     command = job.command
     is_binary = job.is_binary
+    options = None
     with job.lock:
         if job.status != "fresh":
             raise Exception(f'Can only call subprocess.run() on context.jobs with status "fresh" (job_id: "{job.job_id}")')
@@ -18,6 +26,10 @@ def handler(context,task,job):
         job.is_binary = is_binary
         job.execution_started_at = datetime.now(timezone.utc)
         job.last_activity_at = job.execution_started_at
+        job.job_data = JobInternalData()
+        options = job.options # example: { stdout_chunk_size: 8, stderr_chunk_size: 4, }
+    if not options:
+        options = {}
 
     if None in command:
         raise Exception(f'cli proxy caller: Invalid arguments passed to subprocess.run(): {repr(command)}')
@@ -28,6 +40,7 @@ def handler(context,task,job):
             capture_output=True,
             text = not is_binary,
             encoding = "utf-8" if not is_binary else None,
+            cwd=Path.home(),
         )
     finally:
         with job.lock:
@@ -49,7 +62,8 @@ def handler(context,task,job):
                 #         break
                 #     result += chunk
                 # return result
-                return result.stdout
+                chunks = [result.stdout]
+                yield from chunks
             # job.stdout = None
             job.stdout_reader = stdout_reader
         if not is_binary:

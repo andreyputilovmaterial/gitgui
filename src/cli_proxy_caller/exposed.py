@@ -12,7 +12,7 @@ from .common_context import (
 )
 
 
-def initiate_command(command,config,is_binary=False,is_interactive=False):
+def initiate_command(command,config,is_binary=False,is_interactive=False,options:dict|None=None):
     """
         Receives: command, and couple more conditional flags - is_binary, is_interactive
         Returns: new job id
@@ -21,6 +21,9 @@ def initiate_command(command,config,is_binary=False,is_interactive=False):
     def sanitize_command(command):
         return command
 
+    if not options:
+        options = {}
+
     context.job_message_queue.put( JobMessage( job_id = None, task = JobTask( action = "gc", ) ) )
 
     job_id = str(uuid.uuid4())
@@ -28,6 +31,7 @@ def initiate_command(command,config,is_binary=False,is_interactive=False):
     job = Job(
         job_id = job_id,
         status = 'fresh',
+        options = options, # example: { stdout_chunk_size: 8, stderr_chunk_size: 4, }
     )
     job.last_activity_at = job.created_at
 

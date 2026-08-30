@@ -32,6 +32,7 @@ class Job:
     lock: Lock = field(default_factory=Lock, repr=False)
     error: Any = None
     command: Any = None
+    options: dict | None = None
     is_interactive: bool | None = None
     is_binary: bool | None = None
     execution_started_at: datetime | None = None
@@ -40,10 +41,9 @@ class Job:
     flag_for_deletion: bool | None = None
     returncode: int | None = None
     stdout: str | None = None
-    stdout_reader: Callable | None = None
     stderr: str | None = None
-    pipe_process: subprocess.Popen | None = field(default=None, repr=False)
-    pipe_process_lock: Lock = field(default_factory = Lock, repr=False)
+    stdout_reader: Callable | None = None
+    job_data: Any | None = None
     def as_dict(self):
         with self.lock:
             if not self.job_id:
@@ -57,7 +57,7 @@ class Job:
 
                 'exit_code': self.returncode,
                 'stdout': self.stdout,
-                'stderr': f'{self.stderr}',
+                'stderr': f'{self.stderr}' if self.stderr is not None else '',
             }
             # I'll not print fields that were not set yet
             # this is for better understanding what I receive, if something

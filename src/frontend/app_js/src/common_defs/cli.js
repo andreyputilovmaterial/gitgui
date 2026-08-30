@@ -1,7 +1,7 @@
 
 import { reactive } from 'vue';
 
-import { genId } from './helper_functions.js';
+import { genId, makeFetchResponseErrorMessage, } from './helper_functions.js';
 
 
 
@@ -11,33 +11,8 @@ function preparePayload(command) {
 
 
 
-async function makeFetchResponseErrorMessage(response) {
-  const prefix = `HTTP ${response.status}`;
-  try {
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
-      const body = await response.json();
-      // Prefer a non-empty `error` field.
-      if (body && !!body.error) {
-        return `${prefix}: ${body.error}`;
-      }
-      // Fall back to the whole JSON response.
-      const details = JSON.stringify(body);
-      return details ? `${prefix}: ${details}` : prefix;
-    }
-    // For text/plain and other non-JSON responses, use the response text.
-    const text = await response.text();
-    return text.trim() ? `${prefix}: ${text}` : prefix;
-  } catch (e) {
-    // If the response body cannot be read/parsed, at least return the status.
-    return prefix;
-  }
-}
 
-
-
-
-function cliCommand(command,is_binary=false,is_interactive=false) {
+function cliCommand(command,{is_binary=false,is_interactive=false,...options} = {}) {
   const timeRequestIssued = new Date();
   const requestId = genId([command,new Date()]);
   const context = {
@@ -58,10 +33,13 @@ function cliCommand(command,is_binary=false,is_interactive=false) {
   async function sendCommand() {
     const payload = preparePayload(command);
     const endpoint = new URL(`/command`, window.location.origin);
+    for (const [key, value] of Object.entries(options)) {
+      endpoint.searchParams.set(key, value);
+    }
     if(is_binary)
-      endpoint.searchParams.set("is_binary", is_binary);
+      endpoint.searchParams.set("is_binary", !!is_binary?'1':'0');
     if(is_interactive)
-      endpoint.searchParams.set("is_interactive", is_interactive);
+      endpoint.searchParams.set("is_interactive", !!is_interactive?'1':'0');
     const response = await fetch(
       endpoint,
       {
@@ -164,7 +142,7 @@ function cliCommand(command,is_binary=false,is_interactive=false) {
           const fileDataBuffer = await fileDataResponse.arrayBuffer();
           return new Uint8Array(fileDataBuffer);
         };
-        context.terminateJob = async () => {
+        context.jobData.terminateJob = async () => {
           const termRequestResponse = await fetch(
             `/command/${context.job_id}`,
             {

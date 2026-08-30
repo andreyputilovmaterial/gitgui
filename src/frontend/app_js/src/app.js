@@ -6,7 +6,7 @@ import './app.css';
 import './app_form_control_adjustments.css';
 
 // global tools
-import { genId, prettyprintBytes } from './common_defs/helper_functions';
+import { genId, prettyprintBytes, makeFetchResponseErrorMessage, } from './common_defs/helper_functions';
 import cliCommandRaw from './common_defs/cli';
 import ConcurrencyManager from './common_defs/concurrency_manager';
 
@@ -27,6 +27,7 @@ import ComponentFormatHash from './common_components/format_hash/index';
 import ComponentInputNumericRange from './common_components/input_numeric_range/index';
 import ComponentInputDatetimeRange from './common_components/input_datetime_range/index';
 import ComponentLoaderSpinner from './common_components/loader_spinner/index';
+import ComponentLoaderInProgress from './common_components/loader_inprogress/index';
 import './common_components/css_grid/styles.css';
 
 // all "system" components - modals, pages, environment for showing errors...
@@ -162,36 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
       repoActions.value.logError = logError;
 
 
-      async function makeFetchResponseErrorMessage(response) {
-        if( response instanceof Response ) {
-          const prefix = `HTTP ${ response.status }`;
-          try {
-            const contentType = response.headers.get( 'content-type' ) || '';
-            if( contentType.includes( 'application/json' ) ) {
-              const body = await response.json();
-              // Prefer a non-empty `error` field.
-              if( body && !!body.error ) {
-                return `${ prefix }: ${ body.error }`;
-              }
-              // Fall back to the whole JSON response.
-              const details = JSON.stringify( body );
-              return details ? `${ prefix }: ${ details }` : prefix;
-            }
-            // For text/plain and other non-JSON responses, use the response text.
-            const text = await response.text();
-            return text.trim() ? `${ prefix }: ${ text }` : prefix;
-          } catch( e ) {
-            // If the response body cannot be read/parsed, at least return the status.
-            return prefix;
-          }
-        } else if( response instanceof Error ) {
-          return `${response}`;
-        } else {
-          return `${response}`;
-        }
-      }
-
-
 
       const fetchWrapper = async (method, endpoint, payload) => {
         const options = {
@@ -221,7 +192,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       const gitCommandConcurrencyManager = new ConcurrencyManager(5);
-      function _executeGitCommand(args,{is_binary=false,dontDownload=false} = {}) {
+      class OutputPlaceholderInProgress {
+        toString() {
+          return "⌛";
+        }
+        isInProgress() {
+          return true;
+        }
+      }
+      class OutputPlaceholderBinaryStream {
+        constructor({download_url,filename}) {
+          const isNotEmpty = value => {
+            if( typeof value==='number' )
+              return true;
+            else if( typeof value==='string' )
+              return !( /^\s*$/.test(value) );
+            else
+              return !!value;
+          };
+          this.desc = '[ binary data ]';
+          if( isNotEmpty(download_url) ) {
+            filename = isNotEmpty(filename) ? filename : 'output';
+            const downloadUrl = `${new URL(download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+            this.desc = `[ download: ${ downloadUrl } ]`;
+          }
+        }
+        toString() {
+          return this.desc;
+        }
+        isBinaryStream() {
+          return true;
+        }
+      }
+      function _executeGitCommand(args,{is_binary=false,dontDownload=false,...options} = {}) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -242,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         args = args || [];
         args = [...args];
         const timestamp = new Date();
-        const promise = cliCommandRaw(args,is_binary);
+        const promise = cliCommandRaw(args,{is_interactive:false,...options,is_binary,});
         const command_str = formatArgsString(args);
         const command = reactive({
           timestamp: timestamp,
@@ -288,8 +291,12 @@ document.addEventListener("DOMContentLoaded", () => {
             commands.value.push(command);
           }
         );
-        if( is_binary && !dontDownload ) {
+        if( is_binary ) {
           return promise.then( async jobData => {
+            if( dontDownload ) {
+              outputCommand.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url});
+              return jobData;
+            }
             const filename = 'output';
             const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
             const fileDataResponse = await fetch(
@@ -313,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // if text
           return promise;
       }
-      async function _executeGitAsyncCommand(args,{is_binary=false} = {}) {
+      async function _executeGitAsyncCommand(args,{is_binary=false,...options} = {}) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -334,7 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
         args = args || []
         args = [...args]
         const timestamp = new Date();
-        const jobData = await cliCommandRaw(args,is_binary,true);
+        const jobData = await cliCommandRaw(args,{...options,is_binary,is_interactive:true,});
         await jobData.sendCommandPromise;
         const promise = jobData.promise;
         const command_str = formatArgsString(args);
@@ -354,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
           timestamp: new Date(),
           id: genId(['output',command_str,new Date()]),
           job_id: jobData.job_id,
-          stdout: jobData.stdout || '...',
+          stdout: jobData.stdout || new OutputPlaceholderInProgress(),
           stderr: jobData.stderr || '',
           exit_code: jobData.exit_code,
           source: source_command,
@@ -363,7 +370,8 @@ document.addEventListener("DOMContentLoaded", () => {
         commands.value.push(outputCommand);
         promise.then(
           jobData => {
-            outputCommand.stdout = jobData.stdout;
+            if( !is_binary )
+              outputCommand.stdout = jobData.stdout;
             outputCommand.stderr = jobData.stderr;
             outputCommand.exit_code = jobData.exit_code;
           },
@@ -657,6 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-input-numericrange',ComponentInputNumericRange);
   app.component('component-input-datetimerange',ComponentInputDatetimeRange);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
+  app.component('component-loader-inprogress', ComponentLoaderInProgress);
   app.mount('#gitui_app');
 
 

@@ -17,6 +17,9 @@
 .link-unstyled:hover {
   text-decoration: underline;
 }
+.pre {
+    white-space: pre;
+}
 .mdmreport-table, mdmreport-table tbody, .mdmreport-table thead, .mdmreport-table tr, .mdmreport-table td {
     margin: 0;
     padding: 0;
@@ -228,7 +231,6 @@ td.mdmreport-contentcell label {
 
 .mdmreport-format-multiline {
     /* white-space: nowrap; */
-    white-space: pre;
     white-space: pre;
 }
 .mdmreport-format-multiline br {

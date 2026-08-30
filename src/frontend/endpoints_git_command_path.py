@@ -4,7 +4,7 @@
 from urllib.parse import urlparse, parse_qs # to detect path within endpoints
 import json # for responding, obviously
 from pathlib import Path # for resolving paths to resources
-import re # to check url params agains "1", "yes", "affirmative", etc...
+import re # to check url params against "1", "yes", "affirmative", etc...
 
 
 
@@ -15,7 +15,7 @@ from .common_functions import JSONEncoder
 
 
 
-def handle_git_command(nethandler_instance, config: dict, added_data=None):
+def handle_git_command(net_request_handler, config: dict, added_data=None):
 
     def prep_payload(f):
         return f
@@ -35,10 +35,14 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
     call_cli_command_get_job_stdout_reader = config.get('iface').get('cli_command_get_job_stdout_reader')
 
     def sanitize_command(command,is_binary=False):
-        args = [*command]
-        assert args[0]=='git', f'Not a git command'
-        # if len(args)>=2 and args[0]=='git' and args[1]=='error':
-        #     raise ValueError('an error for testing')
+        def startswith(seq, prefix):
+            return seq[:len(prefix)] == prefix
+        command = [*command]
+        is_allowed = startswith(command,['git']) or startswith(command,['python','~/test.py'])
+        if not is_allowed:
+            raise Exception(f'Not a git command')
+        if startswith(command,['python','~/test.py']):
+            return ['python',Path.home() / 'test.py'] + command[2:]
         config_git_dir: str | Path | None = config.get("dir_git_repo")
         config_work_tree: str | Path | None = config.get("dir_work_tree")
         if config_git_dir is None: # to make linter happy
@@ -47,8 +51,8 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
             raise ValueError(f'execute git command: config.dir_work_tree is required')
         git_dir = Path(config_git_dir).resolve() / '.git'
         work_tree = Path(config_work_tree).resolve()
-        args = [] \
-            + [ args[0] ] \
+        command = [] \
+            + [ command[0] ] \
             + [
                 '--git-dir'
                 ,git_dir,
@@ -63,10 +67,10 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
                 'i18n.logOutputEncoding=utf-8',
             ] if not is_binary else [] ) \
             + \
-            [ *args[1:] ]
-        return args
+            [ *command[1:] ]
+        return command
 
-    def handle_initiate_new_command(nethandler_instance):
+    def handle_initiate_new_command(net_request_handler):
 
         def detect_binary_str_value(flag):
             if re.match(r'^\s*\d+\s*$',flag):
@@ -78,21 +82,23 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
             else:
                 return not not flag
 
-        method = nethandler_instance.command
-        path_with_query = nethandler_instance.path
+        method = net_request_handler.command
+        path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
         path_parts = path_parsed.split('/')
         params = parse_qs(urlparse(path_with_query).query)
-        flag_is_binary = params.get('is_binary', ["0"])[0]
+        params_flattened = { key: values[-1] for key, values in params.items() }
+        flag_is_binary = params_flattened.get('is_binary', "0")
         flag_is_binary = flag_is_binary.strip()
         flag_is_binary = detect_binary_str_value(flag_is_binary)
-        flag_is_interactive = params.get('is_interactive', ["0"])[0]
+        flag_is_interactive = params_flattened.get('is_interactive', "0")
         flag_is_interactive = flag_is_interactive.strip()
         flag_is_interactive = detect_binary_str_value(flag_is_interactive)
+        # params_flattened: example: { stdout_chunk_size: 8, stderr_chunk_size: 4, }
         # Read Content-Length header
-        length = int(nethandler_instance.headers["Content-Length"])
+        length = int(net_request_handler.headers["Content-Length"])
         # Read exactly that many bytes
-        body = nethandler_instance.rfile.read(length)
+        body = net_request_handler.rfile.read(length)
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
         command = prep_payload(payload)
@@ -106,7 +112,7 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
                 headers=[],
             )
 
-        job_dict = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive)
+        job_dict = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive,options=params_flattened)
         job_id = job_dict.get('job_id')
 
         headers = []
@@ -124,7 +130,7 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
             headers = headers,
         )
 
-    def handle_job_status(nethandler_instance):
+    def handle_job_status(net_request_handler):
 
         def parse_path(path_parts):
             # path_parts[0] == ''
@@ -133,8 +139,8 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
             job_id = path_parts[2]
             return job_id
 
-        method = nethandler_instance.command
-        path_with_query = nethandler_instance.path
+        method = net_request_handler.command
+        path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
         path_parts = path_parsed.split('/')
         job_id = None
@@ -180,7 +186,7 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
                 headers = [],
             )
 
-    def handle_send_binary_data(nethandler_instance):
+    def handle_send_binary_data(net_request_handler):
 
         def parse_path(path_parts):
             # path_parts[0] == ''
@@ -191,7 +197,7 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
             job_id = path_parts[2]
             return job_id
 
-        path_with_query = nethandler_instance.path
+        path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
         path_parts = path_parsed.split('/')
         job_id = None
@@ -214,18 +220,26 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
                 body = json.dumps({'status':'error','error':f'job does not provide reader, maybe it was launched in non-binary (text) mode? {job_id}'}, cls=JSONEncoder),
                 headers = [],
             )
-        data = binary_data_reader()
-        return WebResponse(
+        job_dict = call_cli_command_get_job(job_id, config)
+        is_binary = job_dict.get('is_binary',None)
+        headers = []
+        headers.append(( 'Cache-control',       'no-cache',    ))
+        headers.append(( 'Connection',          'keep-alive',  ))
+        headers.append(( 'Transfer-Encoding',   'chunked',     ))
+        # data = binary_data_reader()
+        response = WebResponse(
+            is_stream = True,
             status_code = 200,
-            content_type = 'application/octet-stream',
-            body = data,
-            headers = [],
-            is_binary = True,
+            content_type = 'application/octet-stream' if is_binary else 'text/plain',
+            body = binary_data_reader(),
+            headers = headers,
+            is_binary = is_binary,
         )
+        return response
 
-    path_with_query = nethandler_instance.path
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    method = nethandler_instance.command
+    method = net_request_handler.command
     renderer = None
     try:
         if method=='POST' and path_parsed=='/command':
@@ -242,7 +256,7 @@ def handle_git_command(nethandler_instance, config: dict, added_data=None):
                 body = json.dumps({'status':'error','error':f'renderer for {method} {path_parsed} is not recognized'}, cls=JSONEncoder),
                 headers = [],
             )
-        return renderer(nethandler_instance)
+        return renderer(net_request_handler)
 
     except Exception as e:
         raise e

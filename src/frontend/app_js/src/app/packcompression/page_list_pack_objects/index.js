@@ -1,5 +1,9 @@
 
-import { ref, reactive, watch, computed, onMounted, toRaw } from 'vue';
+import { ref, watch, computed, onMounted, } from 'vue';
+
+
+import { makeFetchResponseErrorMessage, } from '../../../common_defs/helper_functions';
+
 
 import PackRecord from './component_record.js';
 import StatisticsPane from './component_statistics_pane';
@@ -29,7 +33,17 @@ const View = {
           <fieldset class="mdmreport-controls">
             <component-loader-spinner v-if="isBusy" />
             Compress and cleanup history: <button  :class="{'click-me-next':!gitPackCompressionIsReady}"type="submit">Start activity</button>
-            <div class="git-gc-outputs">{{ gitGCOutputs }}</div>
+            <div class="git-gc-outputs pre code">
+              <template :key="'stdout-temp-loader-icon'" v-if="!!gitGCOutputs && !!gitGCOutputs.stdout && (typeof gitGCOutputs.stdout==='object') && !!gitGCOutputs.stdout.isInProgress &&!!gitGCOutputs.stdout.isInProgress()">
+                 <component-loader-inprogress :key="'stdout'" />
+              </template>
+              <template v-else-if="!!gitGCOutputs" :key="'stdout'">
+                {{ gitGCOutputs.stdout }}
+                <template :key="'stdout-still-loading-icon'" v-if="(typeof gitGCOutputs.exit_code)!=='number'">
+                  <component-loader-inprogress :key="'stdout-waiting-apend'" />
+                </template>
+              </template>
+              <div class="error" style="color: #a00;">{{ !!gitGCOutputs ? gitGCOutputs.stderr : '' }}</div></div>
           </fieldset>
         </div>
       </template>
@@ -106,7 +120,7 @@ const View = {
     const error = ref('');
     const validationMessage = ref('');
     const isBusy = ref(false);
-    const gitGCOutputs = ref('');
+    const gitGCOutputs = ref(null);
     const gitPackCompressionIsReady = ref(false);
     const packFiles = ref(undefined);
     const packPhysicalObjects = ref(undefined); // purely parsed from git verify-output
@@ -198,7 +212,7 @@ const View = {
     const historyIsReady = ref(undefined);
     const historyIsReadyPromise = new Promise(resolve => {
       const checkHistoryIsReady = () => {
-        const value = ref(!!props.repoStatus?.history);
+        const value = !!props.repoStatus?.history;
         if(value) {
           historyIsReady.value = true;
           resolve();
@@ -209,23 +223,81 @@ const View = {
     });
 
     const handleGitGC = async () => {
-      function readGitGCOutputs(gitGCCommand) {
+      function readGitGCStaticOutputs(gitGCCommandJobObject) {
         try {
-          console.log(`[DEBUG-git-gc-outputs]: `,gitGCCommand);
-          gitGCOutputs.value = '...Something';
-      } catch(e) {
-        error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when retrieving git gc outputs');
-        throw e;
+          // gitGCOutputs.value.stdout = gitGCCommandJobObject.stdout;
+          gitGCOutputs.value.stderr = gitGCCommandJobObject.stderr;
+          gitGCOutputs.value.exit_code = gitGCCommandJobObject.exit_code;
+          gitGCOutputs.value.download_url = gitGCCommandJobObject.download_url;
+        } catch(e) {
+          error.value = e;
+          props.repoActions.logError(e);
+          props.repoActions.logError('Failed when retrieving git gc outputs');
+          throw e;
+        }
       }
+      async function readGitGCStreamedOutputs({download_url}) {
+        const isNonEmpty = value => {
+          if(typeof value==='number' )
+            return true;
+          else if(typeof value==='string')
+            return !(/^\s*$/.test(value));
+          else
+            return !!value;
+        }
+        try {
+          if( !gitGCOutputs.value.stdout )
+            gitGCOutputs.value.stdout = '';
+          if( !isNonEmpty(download_url) )
+            return;
+          // const filename = `${props.filepath}`.split('/').pop();
+          const filename = 'gitgcoutputs';
+          const downloadUrl = `${new URL(download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+          // console.log(`[DEBUG]: gitgui outputs: download from "${downloadUrl}"`); // TODO:
+          const response = await fetch(downloadUrl);
+          if( !response.ok )
+            throw new Error(await makeFetchResponseErrorMessage(response));
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let buffer = "";
+          while (true) {
+              const { value, done } = await reader.read();
+              if (done) {
+                  // Decode any remaining UTF-8 bytes.
+                  buffer += decoder.decode();
+                  if (buffer) {
+                      gitGCOutputs.value.stdout  += buffer;
+                  }
+                  break;
+              }
+              // stream: true is important — TextDecoder keeps incomplete
+              // UTF-8 sequences between chunks.
+              buffer += decoder.decode(value, { stream: true });
+              // Process complete lines.
+              const lines = buffer.split("\n");
+              buffer = lines.pop();
+              for (const line of lines) {
+                  gitGCOutputs.value.stdout  += line + '\n';
+              }
+          }
+        } catch(e) {
+          error.value = e;
+          props.repoActions.logError(e);
+          props.repoActions.logError('Failed when retrieving git gc outputs');
+          throw e;
+        }
       }
       try {
         validationMessage.value = '';
         isBusy.value = true;
-        const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','gc']);
-        // const gitGCCommand = await props.repoActions.executeGitAsyncCommand(['git','help']);
-        setTimeout( ()=>readGitGCOutputs(gitGCCommand), 20 );
+        gitGCOutputs.value = {};
+        const gitGCCommandJobObject = await props.repoActions.executeGitAsyncCommand(['git','gc']);
+        // const gitGCCommandJobObject = await props.repoActions.executeGitAsyncCommand(['git','help']);
+        // const gitGCCommandJobObject = await props.repoActions.executeGitAsyncCommand(['python','~/test.py'],{stdout_chunk_size:8,stderr_chunk_size:4,});
+        watch(()=>({stdout:gitGCCommandJobObject.stdout,stderr:gitGCCommandJobObject.stderr,exit_code:gitGCCommandJobObject.exit_code,download_url:gitGCCommandJobObject.download_url,}),()=>readGitGCStaticOutputs(gitGCCommandJobObject));
+        watch(()=>({download_url:gitGCOutputs.value.download_url,}),readGitGCStreamedOutputs);
+        setTimeout( ()=>readGitGCStaticOutputs(gitGCCommandJobObject), 200 );
+        await gitGCCommandJobObject.promise;
         gitPackCompressionIsReady.value = true;
         validationMessage.value = '';
         isBusy.value = false;

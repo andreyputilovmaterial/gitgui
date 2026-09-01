@@ -2,21 +2,20 @@
 // import { Vue } from "./vue.js";
 import { createApp, ref, onMounted, toRaw, watch, reactive, isReactive, h, version } from 'vue'
 
+
 import './app.css';
 import './app_form_control_adjustments.css';
 
 // global tools
 import { genId, prettyprintBytes, makeFetchResponseErrorMessage, } from './common_defs/helper_functions';
 import cliCommandRaw from './common_defs/cli';
-import ConcurrencyManager from './common_defs/concurrency_manager';
+import ConcurrencyManager from './common_defs/concurrency/semaphore.js';
 
-// tools/libs used in app
+// "lib"
 import { diff } from './lib/myers-diff/src/index';
-import textconvJsFactory from './textconv_js/index';
 import textconvBackendFactory from './textconv_backend/index';
 
 // all from "common_components"
-import { _logErrorProxyContext } from './common_components/_log_error_proxy';
 import ComponentSectionRollup from './common_components/rollable_sections/index';
 import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
 import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
@@ -31,14 +30,15 @@ import ComponentLoaderInProgress from './common_components/loader_inprogress/ind
 import './common_components/css_grid/styles.css';
 
 // all "system" components - modals, pages, environment for showing errors...
+import { _logErrorProxyContext } from './common_components/_log_error_proxy';
 import { ModalsSite, createModal } from './common_components/modals/modals';
-import RepoInitView from './app/repoinitview/init_repo';
 import TerminalSessionView from './app/terminalview/index';
 import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
 import AppOnlineIndicator from './app/onlineindicator';
 import ErrorView from './app/errorview/index';
 
 // direct children shown in starting view in app
+import RepoInitView from './app/repoinitview/init_repo';
 import PageWelcome from './app/mainview_welcome/index';
 import PageFiles from './app/filesview/index';
 import PageHistory from './app/historyview/index';
@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return true;
         }
       }
-      function _executeGitCommand(args,{is_binary=false,dontDownload=false,...options} = {}) {
+      function _executeGitCommand(args,{is_binary=false,...options} = {}) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -245,7 +245,9 @@ document.addEventListener("DOMContentLoaded", () => {
         args = args || [];
         args = [...args];
         const timestamp = new Date();
-        const promise = cliCommandRaw(args,{is_interactive:false,...options,is_binary,});
+        const cliRawCommandReturnObject = cliCommandRaw(args,{is_interactive:false,...options,is_binary,});
+        const promise = options.is_interactive ? cliRawCommandReturnObject.promise : cliRawCommandReturnObject;
+        const jobData = options.is_interactive ? cliRawCommandReturnObject : null;
         const command_str = formatArgsString(args);
         const command = reactive({
           timestamp: timestamp,
@@ -292,107 +294,48 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         );
         if( is_binary ) {
-          return promise.then( async jobData => {
-            if( dontDownload ) {
-              outputCommand.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url});
-              return jobData;
-            }
-            const filename = 'output';
-            const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
-            const fileDataResponse = await fetch(
-              downloadUrl,
-                {method: 'GET',
-                headers: {
-                    "Content-Type": "application/octet-stream"
-                },
-              },
-            );
-            if (!fileDataResponse.ok) {
-              throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
-            }
-            const fileDataBuffer = await fileDataResponse.arrayBuffer();
-            const fileDataByteArray = new Uint8Array(fileDataBuffer);
-            // const fileDataSize = fileDataByteArray.byteLength;
-            outputCommand.stdout = prettyprintBytes(fileDataByteArray);
-            return fileDataByteArray;
-          });
-        } else
-          // if text
+          outputCommand.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url || 'output'});
+        }
+        // if( is_binary ) {
+        //   return promise.then( async jobData => {
+        //     if( noDownload ) {
+        //       outputCommand.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url});
+        //       return jobData;
+        //     }
+        //     throw new Error(`Return final binary response from executeGitCommand is no longer supported: response is "binary", it means it can get big - please download streamed response separately`);
+        //     // const filename = 'output';
+        //     // const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+        //     // const fileDataResponse = await fetch(
+        //     //   downloadUrl,
+        //     //     {method: 'GET',
+        //     //     headers: {
+        //     //         "Content-Type": "application/octet-stream"
+        //     //     },
+        //     //   },
+        //     // );
+        //     // if (!fileDataResponse.ok) {
+        //     //   throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
+        //     // }
+        //     // const fileDataBuffer = await fileDataResponse.arrayBuffer();
+        //     // const fileDataByteArray = new Uint8Array(fileDataBuffer);
+        //     // // const fileDataSize = fileDataByteArray.byteLength;
+        //     // outputCommand.stdout = prettyprintBytes(fileDataByteArray);
+        //     // return fileDataByteArray;
+        //   });
+        // } else
+        //   // if text
+        //   return promise;
+        if( options.is_interactive ) {
+          return Promise.resolve(jobData);
+        } else {
           return promise;
+        }
       }
       async function _executeGitAsyncCommand(args,{is_binary=false,...options} = {}) {
-        const formatArgsString = args => {
-          const formatArg = str => {
-            const hasSpaces = str => /\s/.test(str);
-            const isEmpty = str => {
-              if( /^\s*$/.test(str) )
-                return true;
-              if( typeof str==='number' )
-                return false;
-              return !str;
-            };
-            if( !!hasSpaces(str) || isEmpty(str) )
-              return '"' + ( isEmpty(str) ? '' : `${str}`.replaceAll('"','\\"') ) + '"';
-            else
-              return str;
-          }
-          return args.map(formatArg).join(' ')
-        };
-        args = args || []
-        args = [...args]
-        const timestamp = new Date();
-        const jobData = await cliCommandRaw(args,{...options,is_binary,is_interactive:true,});
-        await jobData.sendCommandPromise;
-        const promise = jobData.promise;
-        const command_str = formatArgsString(args);
-        const command = reactive({
-          timestamp: timestamp,
-          id: genId(['input',command_str,timestamp]),
-          stdout: command_str,
-          stderr: '',
-          exit_code: '',
-          payload: {'message':command_str,'is_binary':is_binary},
-          source: undefined,
-          type: 'input',
-        });
-        const source_command = command;
-        commands.value.push(command);
-        const outputCommand = reactive({
-          timestamp: new Date(),
-          id: genId(['output',command_str,new Date()]),
-          job_id: jobData.job_id,
-          stdout: jobData.stdout || new OutputPlaceholderInProgress(),
-          stderr: jobData.stderr || '',
-          exit_code: jobData.exit_code,
-          source: source_command,
-          'type': 'output',
-        });
-        commands.value.push(outputCommand);
-        promise.then(
-          jobData => {
-            if( !is_binary )
-              outputCommand.stdout = jobData.stdout;
-            outputCommand.stderr = jobData.stderr;
-            outputCommand.exit_code = jobData.exit_code;
-          },
-          async err => {
-            const error = await makeFetchResponseErrorMessage(err);
-            const command = {
-              timestamp: new Date(),
-              id: genId(['error',command_str,new Date()]),
-              stdout: '',
-              stderr: error,
-              exit_code: null,
-              source: source_command,
-              'type': 'error',
-            }
-            commands.value.push(command);
-          }
-        )
-        return jobData;
+        return _executeGitCommand(args,{...options,is_interactive:true});
       }
       async function _executeGitBinaryCommand(args,options={}) {
-        return _executeGitCommand(args,{...options,is_binary:true});
+        return _executeGitCommand(args,{...options,is_interactive:true,is_binary:true});
       }
       const executeGitCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitCommand(...args));
       const executeGitAsyncCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitAsyncCommand(...args));
@@ -601,7 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       repoActions.value.createModal = (Component) => createModal(h(Component,{repoStatus,repoActions,}));
 
-      repoActions.value.textconv_js = textconvJsFactory( ({ logError: (...args) => repoActions.value.logError(...args), }) );
+      // repoActions.value.textconv_js = textconvJsFactory( ({ logError: (...args) => repoActions.value.logError(...args), }) );
       repoActions.value.textconv_backend = textconvBackendFactory( ({ logError: (...args) => repoActions.value.logError(...args),}) );
       repoActions.value.textconv = repoActions.value.textconv_backend;
 

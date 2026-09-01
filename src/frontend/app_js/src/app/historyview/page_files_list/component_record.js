@@ -1,6 +1,8 @@
 
 import { ref, h } from 'vue';
 
+import { makeFetchResponseErrorMessage } from '../../../common_defs/helper_functions.js';
+
 import PageFileView from '../../../app/fileviewerview/index';
 
 import './style.css';
@@ -44,23 +46,39 @@ const Record = {
         const filename = `${resourcepath}`.split('/').pop();
 
         error.value = '';
-        const fileDataByteArray = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`]);
-        const fileDataSize = fileDataByteArray.byteLength;
-
-        // // Common Ecosystem Conversions
-
-        // // To a DOM Image (Browser):
-        // const blob = new Blob([buffer], { type: "image/jpeg" });
-        // const imgUrl = URL.createObjectURL(blob);
-        // document.querySelector("img").src = imgUrl;
-
-        // // To utf-8 string:
-        // // 2. Instantiate a TextDecoder for UTF-8
-        // const decoder = new TextDecoder("utf-8");
-        // // 3. Decode the ArrayBuffer into text
-        // const text = decoder.decode(buffer);
-
-        const contentAsText = await props.repoActions.textconv(fileDataByteArray,filename);
+        const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],{is_interactive:true,});
+        await jobData.promiseDownloadLinkReady;
+        // const promiseContext = {
+        //   resolve: () => { throw new Error('promise not inited'); },
+        //   reject:  () => { throw new Error('promise not inited'); },
+        //   onData:  () => { throw new Error('onData not inited'); },
+        // };
+        // const promise = new Promise((resolve,reject) => {
+        //   promiseContext.resolve = resolve;
+        //   promiseContext.reject = reject;
+        // });
+        // const stream = new ReadableStream({
+        //   async start(controller) {
+        //     promiseContext.onData = chunk => controller.enqueue(chunk);
+        //     await promise;
+        //     controller.close();
+        //   },
+        // });
+        // const contentAsTextPromise = props.repoActions.textconv(stream,filename);
+        //
+        // for await ( const chunk of jobData.getData() ) {
+        //   promiseContext.onData( chunk );
+        // }
+        // const contentAsText = await contentAsTextPromise;
+        // TODO: streamed
+        // TODO: direct textconv
+        const response = await fetch( jobData.download_url );
+        if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
+        const bufferPromise = response.arrayBuffer();
+        await jobData.promise;
+        const buffer = await bufferPromise;
+        const binaryData = new Uint8Array(buffer);
+        const contentAsText = await props.repoActions.textconv(binaryData,filename);
 
         await props.repoActions.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
 
@@ -87,14 +105,10 @@ const Record = {
       try {
         fileDownloadLinkBusy.value = true;
         error.value = '';
-        const jobData = await props.repoActions.executeGitCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],{is_binary:true,dontDownload:true});
-        if( !(jobData.exit_code===0) || notEmpty(jobData.stderr) ) {
-          const errmsg = `Response from git show: exit_code == ${jobData.exit_code}, stderr == "${jobData.stderr}"`;
-          error.value = errmsg;
-          throw new Error(errmsg);
-        }
+        const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],{is_interactive:true,});
+        await jobData.promiseDownloadLinkReady;
         const filename = `${props.filepath}`.split('/').pop();
-        const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+        const downloadUrl = await jobData.getDownloadUrl(filename);
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = filename;

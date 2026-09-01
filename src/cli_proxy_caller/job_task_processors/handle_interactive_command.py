@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from threading import Lock
 # from typing import Any
 # from typing import Callable
+import codecs # for partial reading and partially converting to utf-8 (for example, on stderr)
 
 
 
@@ -102,6 +103,7 @@ def handler(context,task,job):
             )
 
             def consume_stderr():
+                print(f'[DEBUG-cli]: interactive task: stderr consumer task called, job_id = {job.job_id}')
                 with job.lock:
                     if not job.job_data:
                         job.job_data = JobInternalData()
@@ -116,19 +118,25 @@ def handler(context,task,job):
                         #         if not job.stderr:
                         #             job.stderr = ''
                         #         job.stderr = (job.stderr + stderr)[:10000000] # let's limit to 10 mb
-                        stderr = '' if not is_binary else b''
+                        # stderr = '' if not is_binary else b''
+                        stderr_read_chunk_size = int(options.get('stderr_chunk_size', STDERR_DEFAULT_READ_CHUNK_SIZE))
+                        decoder = codecs.getincrementaldecoder("utf-8")( errors="replace" ) if is_binary else None
                         while True:
-                            chunk = pipe_process.stderr.read(int(options.get('stderr_chunk_size',STDERR_DEFAULT_READ_CHUNK_SIZE)))
+                            print(f'[DEBUG-cli]: interactive task: stderr consumer task read({stderr_read_chunk_size}), job_id = {job.job_id}')
+                            chunk = pipe_process.stderr.read(stderr_read_chunk_size)
                             if not chunk:
+                                # Flush any incomplete UTF-8 sequence at EOF.
+                                if decoder is not None:
+                                    text = decoder.decode(b"", final=True)
+                                    if text:
+                                        with job.lock:
+                                            job.stderr = (job.stderr or '') + text
                                 break
-                            if chunk:
-                                stderr += chunk
-                        if is_binary:
-                            stderr = stderr.decode("utf-8", errors="replace") # stderr always expected to be text; so, if in binary mode, we convert it to text
-                        with job.lock:
-                            if not job.stderr:
-                                job.stderr = ''
-                            job.stderr = (job.stderr + stderr)[:10000000] # let's limit to 10 mb
+                            chunk_txt = decoder.decode(chunk) if decoder is not None else chunk
+                            if chunk_txt:
+                                with job.lock:
+                                    job.stderr = (job.stderr or '') + chunk_txt
+                                    job.stderr = job.stderr[:10000000]  # let's limit to 10 mb
                         returncode = pipe_process.poll()
                         if returncode is not None:
                             # let's check if it's gone

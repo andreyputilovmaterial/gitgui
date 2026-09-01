@@ -1,6 +1,11 @@
 
 import { ref, onMounted, watch, nextTick } from 'vue';
 
+
+import { makeFetchResponseErrorMessage, } from '../../../common_defs/helper_functions';
+
+
+
 import './style.css';
 import './styles_diffview.css';
 
@@ -139,8 +144,8 @@ function identifyLineStatus(line) {
 const View = {
   props: [
     'filepath',
-    'blobIdOld',
-    'blobIdNew',
+    'blobIdLeft',
+    'blobIdRight',
     'repoStatus',
     'repoActions',
   ],
@@ -215,13 +220,23 @@ const View = {
     async function getContentsFromBlob(blobid) {
       if( /^0+$/.test(blobid) )
         return new Uint8Array([]);
-      return await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',blobid]);
+      const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',blobid],{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
+      await jobData.promiseDownloadLinkReady;
+      await jobData.promiseDownloadLinkReady;
+      // TODO: streamed
+      // TODO: direct textconv
+      const response = await fetch( jobData.download_url );
+      if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
+      const bufferPromise = response.arrayBuffer();
+      await jobData.promise;
+      const buffer = await bufferPromise;
+      return new Uint8Array(buffer);
     }
 
     const fetchDataLeft = async () => {
       try {
         statisticsLeft.value.binaryFileSize = '???';
-        const binaryDataLeft = await getContentsFromBlob(props.blobIdOld);
+        const binaryDataLeft = await getContentsFromBlob(props.blobIdLeft);
         statisticsLeft.value.binaryFileSize = binaryDataLeft.length;
         const txtLeft = await props.repoActions.textconv(binaryDataLeft,props.filepath);
         statisticsLeft.value.textFileSize = txtLeft.length;
@@ -236,7 +251,7 @@ const View = {
     const fetchDataRight = async () => {
       try {
         statisticsRight.value.binaryFileSize = '???';
-        const binaryDataRight = await getContentsFromBlob(props.blobIdNew);
+        const binaryDataRight = await getContentsFromBlob(props.blobIdRight);
         statisticsRight.value.binaryFileSize = binaryDataRight.length;
         const txtRight = await props.repoActions.textconv(binaryDataRight,props.filepath);
         statisticsRight.value.textFileSize = txtRight.length;

@@ -38,7 +38,8 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         def startswith(seq, prefix):
             return seq[:len(prefix)] == prefix
         command = [*command]
-        is_allowed = startswith(command,['git']) or startswith(command,['python','~/test.py'])
+        # is_allowed = startswith(command,['git']) or startswith(command,['python','~/test.py'])
+        is_allowed = startswith(command,['git'])
         if not is_allowed:
             raise Exception(f'Not a git command')
         if startswith(command,['python','~/test.py']):

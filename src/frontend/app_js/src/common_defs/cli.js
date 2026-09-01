@@ -5,6 +5,19 @@ import { genId, makeFetchResponseErrorMessage, } from './helper_functions.js';
 
 
 
+
+const isNotEmpty = value => {
+  if( typeof value==='number' )
+    return true;
+  else if( typeof value==='string' )
+    return !( /^\s*$/.test(value) );
+  else
+    return !!value;
+};
+
+
+
+
 function preparePayload(command) {
   return command
 }
@@ -16,8 +29,10 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
   const timeRequestIssued = new Date();
   const requestId = genId([command,new Date()]);
   const context = {
-    promiseResolve: ()=>{throw new Error('promise not inited')},
-    promiseReject: ()=>{throw new Error('promise not inited')},
+    promiseResolve: ()=>{ throw new Error('promise not inited'); },
+    promiseReject: ()=>{ throw new Error('promise not inited'); },
+    promiseDownloadLinkReadyResolve: ()=>{ throw new Error('promise not inited'); },
+    promiseDownloadLinkReadyReject: ()=>{ throw new Error('promise not inited'); },
     _id: requestId,
     job_id: null,
     jobData: reactive({}),
@@ -29,7 +44,11 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
     pollIntervalSetAt: null,
     numberOfPolls: 0,
     currentPollInterval: null,
-  }
+  };
+  context.jobData.promiseDownloadLinkReady = new Promise((resolve,reject) => {
+    context.promiseDownloadLinkReadyResolve = resolve;
+    context.promiseDownloadLinkReadyReject = reject;
+  });
   async function sendCommand() {
     const payload = preparePayload(command);
     const endpoint = new URL(`/command`, window.location.origin);
@@ -72,10 +91,10 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
     if( context.currentPollInterval < goodInterval ) {
       clearInterval(context.pollTimerId);
       context.currentPollInterval = goodInterval;
-      context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
+      context.pollTimerId = setInterval( pollStatusUpdate, context.currentPollInterval );
     }
   }
-  async function pendStatus() {
+  async function pollStatusUpdate() {
     try{
       context.numberOfPolls++;
       await checkIfNeedResetInterval();
@@ -96,8 +115,10 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
       jobData._id = context._id;
       context.status = jobData.status;
       Object.assign(context.jobData, jobData);
+      if( isNotEmpty(jobData.download_url) )
+        context.promiseDownloadLinkReadyResolve(jobData.download_url);
       if( jobData.status==='done' )
-        return context.promiseResolve(context.jobData);
+        context.promiseResolve(context.jobData);
       else if( jobData.status==='error' ) {
         const error = jobData?.error ? jobData?.error : JSON.stringify(jobData);
         throw new Error(error);
@@ -120,12 +141,73 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
         Object.assign(context.jobData,jobData);
         // set timer and polling
         context.currentPollInterval = 207;
-        context.pollTimerId = setInterval( pendStatus, context.currentPollInterval );
+        context.pollTimerId = setInterval( pollStatusUpdate, context.currentPollInterval );
         context.pollIntervalSetAt = new Date();
         context.numberOfPolls = 0;
-        context.jobData.pollStatusUpdate = pendStatus;
+        context.jobData.pollStatusUpdate = pollStatusUpdate;
         context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
-        context.jobData.downloadStdout = async (filename='file') => {
+        context.jobData.getData = async function* ({maxSize = 100*1000*1000,...options} = {}) {
+          const downloadUrl = context.jobData.getDownloadUrl('output');
+          const fileDataResponse = await fetch(
+            downloadUrl,
+            {
+              method: 'GET',
+              headers: {
+                "Content-Type": "application/octet-stream"
+              },
+            },
+          );
+          if (!fileDataResponse.ok) {
+            throw Error(`executeGidCommand: downloadBinaryData: ${await makeFetchResponseErrorMessage(fileDataResponse)}`);
+          }
+          if (!fileDataResponse.body)
+            throw new Error(`executeGidCommand: downloadBinaryData: Response does not contain a readable body`);
+          const reader = fileDataResponse.body.getReader();
+          const decoder = context.jobData.is_binary ? null : new TextDecoder("utf-8");
+          let totalSize = 0;
+          let txtBuffer = '';
+          while (true) {
+            const { value, done } = await reader.read();
+            if( done ) {
+              if( !context.jobData.is_binary ) {
+                // if is text
+                // Decode any remaining UTF-8 bytes.
+                txtBuffer += decoder.decode();
+                if (txtBuffer) {
+                  yield txtBuffer;
+                }
+              }
+              // else if is binary - nothing, just skip
+              break;
+            }
+            if( !context.jobData.is_binary ) {
+              // if is text
+              // stream: true is important — TextDecoder keeps incomplete
+              // UTF-8 sequences between chunks.
+              txtBuffer += decoder.decode( value, { stream: true } );
+              // Process complete lines.
+              const lines = txtBuffer.split( /(?<=\n)/ );
+              txtBuffer = lines.pop();
+              for( const line of lines ) {
+                yield line;
+              }
+            } else {
+              // if is binary
+              if (!value)
+                continue;
+              totalSize += value.byteLength;
+              if (totalSize > maxSize) {
+                await reader.cancel();
+                throw new Error(
+                  `executeGidCommand: downloadBinaryData: Downloaded data exceeds the maximum allowed size of ` +
+                  `${Math.round(maxSize / (1000 * 1000))} MB`
+                );
+              }
+              yield value;
+            }
+          }
+        };
+        context.jobData.downloadFullStdout = async (filename='file') => {
           const downloadUrl = context.jobData.getDownloadUrl(filename);
           const fileDataResponse = await fetch(
             downloadUrl,
@@ -172,7 +254,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
   //   result => { /* console.log can be placed here */ },
   //   err => { /* console.log can be placed here */ },
   // );
-  return !is_interactive ? promise : context.jobData;
+  return !is_interactive ? context.jobData.promise : context.jobData;
 }
 
 

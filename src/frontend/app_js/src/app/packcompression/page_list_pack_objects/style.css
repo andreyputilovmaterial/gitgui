@@ -15,7 +15,7 @@
   color: #ffffff;
   background: #226633;
   font-weight: 600;
-  border: 4px solid transparent;
+  border: 2px solid transparent;
 }
 .mdm-git-gui-verifypack .mdmreport-controls .click-me-next button:hover, .mdm-git-gui-verifypack .mdmreport-controls button.click-me-next:hover {
   color: #116622;

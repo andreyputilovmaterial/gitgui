@@ -2,6 +2,10 @@
 
 import { ref, onMounted, watch, computed } from 'vue';
 
+
+import { makeFetchResponseErrorMessage, } from '../../../common_defs/helper_functions';
+
+
 import DiffRecord from './component_record';
 
 import './style.css';
@@ -69,7 +73,7 @@ const View = {
     const changedFiles = ref(null);
 
     const getFiles = async data => {
-      function handleResult(data) {
+      function parseDiffOutputs(data) {
         const decoder = new TextDecoder();
 
         function splitBytes(bytes, separator) {
@@ -144,14 +148,13 @@ const View = {
 
         return results;
       }
-
-      try {
+      async function executeGitDiff( hashLeft, hashRight ) {
         // git diff --raw -z --no-abbrev -M ec18f2c b4c0edf
         const { leftIsWorktree, leftIsIndex, rightIsWorktree, rightIsIndex, } = {
-          leftIsWorktree: props.hashLeft==='worktree',
-          leftIsIndex: props.hashLeft==='index',
-          rightIsWorktree: props.hashRight==='worktree',
-          rightIsIndex: props.hashRight==='index',
+          leftIsWorktree: hashLeft==='worktree',
+          leftIsIndex: hashLeft==='index',
+          rightIsWorktree: hashRight==='worktree',
+          rightIsIndex: hashRight==='index',
         };
         const { leftIsHash, rightIsHash, } = {
           leftIsHash: !leftIsWorktree && !leftIsIndex,
@@ -159,30 +162,44 @@ const View = {
         };
         const args = (()=>{
           if     ( leftIsWorktree && rightIsWorktree )
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: compare same revisions - should not be called`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: compare same revisions - should not be called`);
           else if( leftIsWorktree && rightIsIndex )
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we can't show diff when worktree is left source, please select it as right`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: we can't show diff when worktree is left source, please select it as right`);
           else if( leftIsWorktree && rightIsHash )
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we can't show diff when worktree is left source, please select it as right`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: we can't show diff when worktree is left source, please select it as right`);
           else if( leftIsIndex && rightIsWorktree )
             // return ['--cached'];
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we don't show diff with worktree - please stage files first`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: we don't show diff with worktree - please stage files first`);
           else if( leftIsIndex && rightIsIndex )
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: compare same revisions - should not be called`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: compare same revisions - should not be called`);
           else if( leftIsIndex && rightIsHash )
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we can't show diff when index is left source and worktree is right, please select them in reverse order`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: we can't show diff when index is left source and worktree is right, please select them in reverse order`);
           else if( leftIsHash && rightIsWorktree )
-            // return [ props.hashLeft ];
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: we don't show diff with worktree - please stage files first`);
+            // return [ hashLeft ];
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: we don't show diff with worktree - please stage files first`);
           else if( leftIsHash && rightIsIndex )
-            return [ '--cached', props.hashLeft ];
+            return [ '--cached', hashLeft ];
           else if( leftIsHash && rightIsHash )
-            return [ props.hashLeft, props.hashRight ];
+            return [ hashLeft, hashRight ];
           else
-            throw new Error(`diff ${leftIsHash?'hash':props.hashLeft} vs ${rightIsHash?'hash':props.hashRight}: not implemented`);
+            throw new Error(`diff ${leftIsHash?'hash':hashLeft} vs ${rightIsHash?'hash':hashRight}: not implemented`);
         })();
-        const result = ( props.hashLeft==props.hashRight ? new Uint8Array([]) : await props.repoActions.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]) );
-        changedFiles.value = handleResult(result);
+        if( hashLeft===hashRight ) {
+          return new Uint8Array([]);
+        } else {
+          const jobData = await props.repoActions.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]);
+          await jobData.promiseDownloadLinkReady;
+          const response = await fetch( jobData.download_url );
+          if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
+          const bufferPromise = response.arrayBuffer();
+          await jobData.promise;
+          const buffer = await bufferPromise;
+          return new Uint8Array(buffer);
+        }
+      }
+      try {
+        const result = await executeGitDiff(props.hashLeft,props.hashRight);
+        changedFiles.value = parseDiffOutputs(result);
         error.value = '';
       } catch(e) {
         error.value = e;

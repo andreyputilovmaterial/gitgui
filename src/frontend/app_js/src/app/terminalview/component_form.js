@@ -4,7 +4,7 @@ import { ref, reactive } from 'vue';
 
 
 import { parseCommand, grabAdditionsFromCommandString } from './common_functions';
-import Lock from '../../common_defs/lock';
+import Lock from '../../common_defs/concurrency/lock.js';
 
 import './styles.css';
 

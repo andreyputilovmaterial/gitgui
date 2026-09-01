@@ -90,7 +90,7 @@ def handler(context,task,job):
             job.execution_started_at = datetime.now(timezone.utc)
             job.last_activity_at = job.execution_started_at
         with job.job_data.pipe_process_lock:
-            print(f'[DEBUG-cli]: interactive task: process (pipe) created, command == {command}, job_id = {job.job_id}')
+            # print(f'[DEBUG-cli]: interactive task: process (pipe) created, command == {command}, job_id = {job.job_id}')
             process = subprocess.Popen(
                 command,
                 stdin = subprocess.PIPE,
@@ -103,7 +103,7 @@ def handler(context,task,job):
             )
 
             def consume_stderr():
-                print(f'[DEBUG-cli]: interactive task: stderr consumer task called, job_id = {job.job_id}')
+                # print(f'[DEBUG-cli]: interactive task: stderr consumer task called, job_id = {job.job_id}')
                 with job.lock:
                     if not job.job_data:
                         job.job_data = JobInternalData()
@@ -122,7 +122,7 @@ def handler(context,task,job):
                         stderr_read_chunk_size = int(options.get('stderr_chunk_size', STDERR_DEFAULT_READ_CHUNK_SIZE))
                         decoder = codecs.getincrementaldecoder("utf-8")( errors="replace" ) if is_binary else None
                         while True:
-                            print(f'[DEBUG-cli]: interactive task: stderr consumer task read({stderr_read_chunk_size}), job_id = {job.job_id}')
+                            # print(f'[DEBUG-cli]: interactive task: stderr consumer task read({stderr_read_chunk_size}), job_id = {job.job_id}')
                             chunk = pipe_process.stderr.read(stderr_read_chunk_size)
                             if not chunk:
                                 # Flush any incomplete UTF-8 sequence at EOF.
@@ -149,19 +149,19 @@ def handler(context,task,job):
                                 job.last_activity_at = dt_now
 
             def worker_consume_stderr():
-                print( f'[DEBUG-cli]: interactive task: stderr consumer worker started, job_id = {job.job_id}')
+                # print( f'[DEBUG-cli]: interactive task: stderr consumer worker started, job_id = {job.job_id}')
 
                 def check_if_alive():
                     with job.lock:
                         return not ( not process or (job.returncode is not None) or (not not job.execution_finished_at) )
                 while True:
-                    print(f'[DEBUG-cli]: interactive task: stderr consumer, continue reading, job_id = {job.job_id}')
+                    # print(f'[DEBUG-cli]: interactive task: stderr consumer, continue reading, job_id = {job.job_id}')
                     if not check_if_alive():
                         consume_stderr()  # final drain
                         break
                     consume_stderr()
                     time.sleep(1) # once per second
-                print( f'[DEBUG-cli]: interactive task: stderr consumer worker end, job_id = {job.job_id}')
+                # print( f'[DEBUG-cli]: interactive task: stderr consumer worker end, job_id = {job.job_id}')
 
             def stdout_reader():
                 with job.job_data.stdout_reader_lock:
@@ -171,17 +171,17 @@ def handler(context,task,job):
                     # but should anyway not be a blocker, because one of those 2 should be true:
                     #  1. either the pipe_process finishes at some time, and the pipe is closed, and stdout read is released
                     #  2. or the reader pipe_process knows how many bytes to read <- not the case, as of now, we read in infinite loop, but this functionality will be added, to read arbitrary number of bytes
-                    print(f'[DEBUG-cli]: interactive task: output reader called, job_id = {job.job_id}')
+                    # print(f'[DEBUG-cli]: interactive task: output reader called, job_id = {job.job_id}')
                     # result = '' if not is_binary else b''
                     while True:
-                        print(f'[DEBUG-cli]: interactive task: output reader, reading..., job_id = {job.job_id}')
+                        # print(f'[DEBUG-cli]: interactive task: output reader, reading..., job_id = {job.job_id}')
                         # chunk = '' if not is_binary else b''
                         chunk = process.stdout.read(int(options.get('stdout_chunk_size',STDOUT_DEFAULT_READ_CHUNK_SIZE)))
                         if not chunk:
                             break
                         # result += chunk
                         yield chunk
-                    print(f'[DEBUG-cli]: interactive task: output reader reached the end, job_id = {job.job_id}')
+                    # print(f'[DEBUG-cli]: interactive task: output reader reached the end, job_id = {job.job_id}')
                     # return result
 
             with job.lock:
@@ -195,7 +195,7 @@ def handler(context,task,job):
 
 
     def handle_terminate():
-        print(f'[DEBUG-cli]: interactive task: terminate task, job_id = {job.job_id}')
+        # print(f'[DEBUG-cli]: interactive task: terminate task, job_id = {job.job_id}')
         with job.lock:
             job.last_activity_at = datetime.now(timezone.utc)
         if pipe_process is None:
@@ -205,18 +205,18 @@ def handler(context,task,job):
         # handle_consume_stderr() # no parallel - there is an already running thread for this!
         if returncode is None:
             with pipe_process_lock:
-                print(f'[DEBUG-cli]: interactive task: terminate, call "terminate", job_id = {job.job_id}')
+                # print(f'[DEBUG-cli]: interactive task: terminate, call "terminate", job_id = {job.job_id}')
                 pipe_process.terminate()
                 try:
                     pipe_process.wait(timeout=10)
                 except subprocess.TimeoutExpired:
-                    print(f'[DEBUG-cli]: interactive task: terminate, call "kill", job_id = {job.job_id}')
+                    # print(f'[DEBUG-cli]: interactive task: terminate, call "kill", job_id = {job.job_id}')
                     pipe_process.kill()
                     pipe_process.wait()
         with job.lock:
             dt_now = datetime.now(timezone.utc)
             job.status = "done"
-            print(f'[DEBUG-cli]: interactive task: terminate, set status to "done", job_id = {job.job_id}')
+            # print(f'[DEBUG-cli]: interactive task: terminate, set status to "done", job_id = {job.job_id}')
             job.returncode = returncode
             if not job.execution_finished_at:
                 job.execution_finished_at = dt_now
@@ -225,7 +225,7 @@ def handler(context,task,job):
 
 
     def handle_new_input():
-        print(f'[DEBUG-cli]: interactive task: new input, job_id = {job.job_id}')
+        # print(f'[DEBUG-cli]: interactive task: new input, job_id = {job.job_id}')
         with job.job_data.pipe_process_lock:
             process = job.job_data.pipe_process
             with job.lock:
@@ -259,11 +259,11 @@ def handler(context,task,job):
 
 
     if task.action=="new_command":
-        print(f'[DEBUG-cli]: interactive task: received "new command" task, job_id = {job.job_id}')
+        # print(f'[DEBUG-cli]: interactive task: received "new command" task, job_id = {job.job_id}')
         return handle_new_command()
 
     elif task.action=="terminate":
-        print(f'[DEBUG-cli]: interactive task: received "terminate" task, job_id = {job.job_id}')
+        # print(f'[DEBUG-cli]: interactive task: received "terminate" task, job_id = {job.job_id}')
         return handle_terminate()
 
     # elif task.action=="stderr":
@@ -273,7 +273,7 @@ def handler(context,task,job):
     #     return handle_consume_stdout()
 
     elif task.action=="input":
-        print(f'[DEBUG-cli]: interactive task: received "new input" task, job_id = {job.job_id}')
+        # print(f'[DEBUG-cli]: interactive task: received "new input" task, job_id = {job.job_id}')
         return handle_new_input()
 
     else:

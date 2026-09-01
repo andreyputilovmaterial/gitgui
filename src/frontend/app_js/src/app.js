@@ -255,7 +255,9 @@ document.addEventListener("DOMContentLoaded", () => {
           stdout: command_str,
           stderr: '',
           exit_code: '',
-          payload: {'message':command_str,'is_binary':is_binary},
+          is_binary: is_binary,
+          is_interactive: options.is_interactive,
+          // payload: {'message':command_str,'is_binary':is_binary},
           source: undefined,
           type: 'input',
         });
@@ -268,6 +270,8 @@ document.addEventListener("DOMContentLoaded", () => {
           stdout: null,
           stderr: null,
           exit_code: null,
+          is_binary: is_binary,
+          is_interactive: options.is_interactive,
           source: source_command,
           'type': 'output',
         });

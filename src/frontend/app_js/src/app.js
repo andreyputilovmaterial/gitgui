@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     />
   </div>
   <modals></modals>
-  <nav-links-manipulate-dummy-wrapper></nav-links-manipulate-dummy-wrapper>
+  <nav-links-manipulate-dummy-wrapper :repoActions="repoActions" />
   <online-indicator :isonline="isOnline" :repoActions="repoActions" :config="config" :configPathsFirstCaptured="configPathsFirstCaptured" :configPathsMismatch="configPathsMismatch"></online-indicator>
 </div>
 `,

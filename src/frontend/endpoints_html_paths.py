@@ -28,7 +28,7 @@ def render_block_header_nav():
         <li navigation-role="about"><a href="/about" target="_blank">About</a></li>
         <li navigation-role="version"><a href="/version" target="_blank">Version</a></li>
         <li navigation-role="help"><a href="/help" target="_blank">Help</a></li>
-        <li navigation-role="help"><a href="/testpage" target="_blank">Test page</a></li>
+        <!--<li navigation-role="help"><a href="/testpage" target="_blank">Test page</a></li>-->
     </ul>
 </div>
 '''

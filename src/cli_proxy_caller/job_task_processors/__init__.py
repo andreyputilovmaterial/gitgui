@@ -17,13 +17,20 @@
         - "interactive" handler is caled
         ...somewhat similar, but async
 
+    3. for pipes
+        - similar infrastructure, keeping commands in same job dict, accessible from frontend
+        - but is implemented from arbitrary function passed in argument
+        - for example, the function that handles tar, or textconv
+
 """
 
 from .handle_run_cli_command import handler as process_run_cli_command
 from .handle_interactive_command import handler as process_interactive_commands
+from .handle_task_from_function import handler as process_task_from_function
 
 
 job_task_processors = {
     'new_command': process_run_cli_command,
     'interactive': process_interactive_commands,
+    'processor_from_function': process_task_from_function,
 }

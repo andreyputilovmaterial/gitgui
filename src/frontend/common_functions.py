@@ -83,3 +83,14 @@ def get_matching_endpoint(path, endpoints):
         return best_match
 
     return None
+
+
+def read_file_stream_to_chunks(file_object, chunk_size=1024):
+    """Reads file stream and yields chunks
+
+    Please apply lock when calling read_file_stream_to_chunks"""
+    while True:
+        chunk = file_object.read(chunk_size)
+        if not chunk:
+            break
+        yield chunk

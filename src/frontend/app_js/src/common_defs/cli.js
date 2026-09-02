@@ -124,7 +124,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
         throw new Error(error);
       }
     } catch(e) {
-      return context.promiseReject(e)
+      return context.promiseReject(e);
     }
   }
   const promise = new Promise((resolve,reject)=> {
@@ -145,9 +145,12 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
         context.pollIntervalSetAt = new Date();
         context.numberOfPolls = 0;
         context.jobData.pollStatusUpdate = pollStatusUpdate;
+
+         // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
         context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+
         context.jobData.getData = async function* ({maxSize = 100*1000*1000,...options} = {}) {
-          const downloadUrl = context.jobData.getDownloadUrl('output');
+          const downloadUrl = context.jobData.getDownloadUrl('output'); // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
           const fileDataResponse = await fetch(
             downloadUrl,
             {
@@ -207,8 +210,9 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
             }
           }
         };
+
         context.jobData.downloadFullStdout = async (filename='file') => {
-          const downloadUrl = context.jobData.getDownloadUrl(filename);
+          const downloadUrl = context.jobData.getDownloadUrl(filename); // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
           const fileDataResponse = await fetch(
             downloadUrl,
             {
@@ -224,6 +228,27 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
           const fileDataBuffer = await fileDataResponse.arrayBuffer();
           return new Uint8Array(fileDataBuffer);
         };
+
+        context.jobData.configureStdoutReaderPipe = async dest => {
+          const payload = dest;
+          const downloadUrl = context.jobData.getDownloadUrl('pipe'); // last part ("pipe") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
+          const response = await fetch(
+            downloadUrl,
+            {
+              method: 'PUT',
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(payload),
+            },
+          );
+          if (!response.ok) {
+            const error = await makeFetchResponseErrorMessage(response);
+            throw new Error(error);
+          }
+          return await response.json();
+        };
+
         context.jobData.terminateJob = async () => {
           const termRequestResponse = await fetch(
             `/command/${context.job_id}`,
@@ -240,6 +265,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
           }
           return true;
         };
+
       },
       err => reject(err)
     );

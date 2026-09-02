@@ -170,19 +170,13 @@ def handler(context,task,job):
                     # stdout is not - the recipient must receive the reader and read it in more "sync" way
                     # but should anyway not be a blocker, because one of those 2 should be true:
                     #  1. either the pipe_process finishes at some time, and the pipe is closed, and stdout read is released
-                    #  2. or the reader pipe_process knows how many bytes to read <- not the case, as of now, we read in infinite loop, but this functionality will be added, to read arbitrary number of bytes
-                    # print(f'[DEBUG-cli]: interactive task: output reader called, job_id = {job.job_id}')
-                    # result = '' if not is_binary else b''
-                    while True:
-                        # print(f'[DEBUG-cli]: interactive task: output reader, reading..., job_id = {job.job_id}')
-                        # chunk = '' if not is_binary else b''
-                        chunk = process.stdout.read(int(options.get('stdout_chunk_size',STDOUT_DEFAULT_READ_CHUNK_SIZE)))
-                        if not chunk:
-                            break
-                        # result += chunk
-                        yield chunk
-                    # print(f'[DEBUG-cli]: interactive task: output reader reached the end, job_id = {job.job_id}')
-                    # return result
+                    #  2. or the reader pipe_process knows how many bytes to read <- not the case,
+                    #      as of now, we read in infinite loop, but this functionality will be added, to read arbitrary number of bytes
+
+                    # lol lock used this way is useless...
+                    # Anyway, I will not pass it back - to not overcomplicate;
+                    # unix default strategy is to allow races, no exclusive access to files... I'll stick to same strategy
+                    return process.stdout
 
             with job.lock:
                 job.job_data.pipe_process = process

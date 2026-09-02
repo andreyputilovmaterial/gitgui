@@ -14,11 +14,14 @@ from .webserver_engine.webserve.src.launch_browser import launch_browser
 from .cli_proxy_caller import (
     initiate_worker_loop as cli_initiate_worker_loop,
     initiate_command as cli_command_initiate,
+    initiate_from_function as cli_initiate_from_function,
     get_job as cli_command_get_job,
     get_job_stdout_reader as cli_command_get_job_stdout_reader,
     terminate_job as cli_command_terminate_job,
 )
 from .textconv import textconv
+from .output_postprocessors import register_output_postprocessor, output_postprocessors #, get_output_postprocessor
+from .util.tar import tar_output_processor
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
@@ -100,6 +103,7 @@ def main(*argcs,**kwargs):
 
         'iface': {
             'cli_command_initiate': cli_command_initiate,
+            'cli_initiate_from_function': cli_initiate_from_function,
             'cli_command_get_job': cli_command_get_job,
             'cli_command_get_job_stdout_reader': cli_command_get_job_stdout_reader,
             'cli_command_terminate_job': cli_command_terminate_job,
@@ -107,8 +111,12 @@ def main(*argcs,**kwargs):
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,
             'textconv': textconv,
+            'output_postprocessors': dict(output_postprocessors),
         },
     }
+
+    register_output_postprocessor('tar',tar_output_processor)
+    register_output_postprocessor('textconv',textconv)
 
     if args.work_tree_folder:
         work_tree_folder = f'{args.work_tree_folder}' # make sure it's text

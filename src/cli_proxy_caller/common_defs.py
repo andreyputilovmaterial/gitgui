@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from threading import Lock
-import subprocess # for type annotations
+# import subprocess # for type annotations
 from typing import Any
 from dataclasses import dataclass, field
 # from collections.abc import Iterable, Iterator, Mapping, Sequence, Callable
@@ -17,6 +17,7 @@ class JobTask:
     action: str
     command: Any | None = None
     is_binary: bool | None = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 @dataclass
 class JobMessage:

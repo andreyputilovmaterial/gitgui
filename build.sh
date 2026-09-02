@@ -56,6 +56,13 @@ echo -
 echo -
 
 
+echo "Pull necessary project submodules"
+git submodule update --init --recursive
+echo "done"
+echo -
+echo -
+
+
 echo "And help pages in src/GENERATED"
 echo "" > src/GENERATED/HELP.py
 echo "# THIS IS AUTO_GENERATED from ./help.md" >> src/GENERATED/HELP.py

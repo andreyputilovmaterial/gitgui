@@ -4,7 +4,7 @@ import { ref, onMounted, h } from 'vue';
 
 import PagesSite from '../../common_components/pages/index';
 
-import PageListPackObjects from './page_list_pack_objects/index';
+import PageListPackObjects from '@/app/page_pack_list_objects/index';
 
 import './style.css';
 

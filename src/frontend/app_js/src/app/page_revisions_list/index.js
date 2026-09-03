@@ -4,9 +4,9 @@ import { ref, reactive, h } from 'vue';
 
 import './style.css';
 
-import PageVersionCompare from '../page_version_compare/index';
+import PageVersionCompare from '@/app/page_version_compare/index.js';
 
-import HistoryRecords from './component_records';
+import HistoryRecords from './component_records.js';
 
 
 

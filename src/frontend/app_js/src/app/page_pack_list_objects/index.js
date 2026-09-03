@@ -5,7 +5,7 @@ import { ref, watch, computed, onMounted, } from 'vue';
 
 
 import PackRecord from './component_record.js';
-import StatisticsPane from './component_statistics_pane';
+import StatisticsPane from './component_statistics_pane.js';
 
 import './style.css';
 

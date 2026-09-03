@@ -1,9 +1,9 @@
 
 import { ref, h } from 'vue';
 
-import FormCompareVersionsControls from './component_ver_compare_radioboxes';
+import FormCompareVersionsControls from './component_ver_compare_radioboxes.js';
 
-import PageFilesList from '../page_files_list/index';
+import PageFilesList from '@/app/page_files_list/index.js';
 
 import './style.css';
 

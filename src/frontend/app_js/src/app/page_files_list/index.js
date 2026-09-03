@@ -6,7 +6,7 @@ import './style.css';
 
 
 
-import FilesRecords from './component_records';
+import FilesRecords from './component_records.js';
 
 
 

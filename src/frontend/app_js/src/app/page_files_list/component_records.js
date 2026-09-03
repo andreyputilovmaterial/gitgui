@@ -2,9 +2,9 @@
 
 import { ref, computed, reactive } from 'vue';
 
-import ModalChooseDestPath from './component_bulk_restore_choose_path_modal';
+import ModalChooseDestPath from './component_bulk_restore_choose_path_modal.js';
 
-import Record from './component_record';
+import Record from './component_record.js';
 
 import './style.css';
 import './style_bulk_restore_form.css';

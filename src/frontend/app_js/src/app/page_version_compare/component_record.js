@@ -1,7 +1,7 @@
 
 import { h } from 'vue';
 
-import DiffView from './diffview';
+import DiffView from './diffview.js';
 
 import './style.css';
 

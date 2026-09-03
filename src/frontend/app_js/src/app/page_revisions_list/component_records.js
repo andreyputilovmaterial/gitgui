@@ -2,7 +2,7 @@
 
 import { ref, computed } from 'vue';
 
-import Record from './component_record';
+import Record from './component_record.js';
 
 import './style.css';
 

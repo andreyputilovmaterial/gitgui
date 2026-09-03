@@ -4,7 +4,7 @@ import { ref, reactive, watch, onMounted, toRaw, h } from 'vue';
 
 import PagesSite from '../../common_components/pages/index';
 
-import PageHistoryOverview from './page_revisions_list/index';
+import PageHistoryOverview from '@/app/page_revisions_list/index';
 
 import './style.css';
 

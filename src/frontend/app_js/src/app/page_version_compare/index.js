@@ -3,10 +3,10 @@
 import { ref, onMounted, watch, computed } from 'vue';
 
 
-import { makeFetchResponseErrorMessage, } from '../../../common_defs/helper_functions';
+import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functions.js';
 
 
-import DiffRecord from './component_record';
+import DiffRecord from './component_record.js';
 
 import './style.css';
 

@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, nextTick } from 'vue';
 
 
-import { makeFetchResponseErrorMessage, } from '../../../common_defs/helper_functions';
+import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functions.js';
 
 
 

@@ -20,17 +20,17 @@ if __name__ == '__main__':
     # run as a program
     from src.helper_utilities import sanitize
     from src.frontend.template.minify_assets import minify_js, minify_css
-    from src.frontend.bundler_engine.lib.py_js_bundler.pack import process as pack_js
+    from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 elif '.' in __name__:
     # package
     from .src.helper_utilities import sanitize
     from .src.frontend.template.minify_assets import minify_js, minify_css
-    from .src.frontend.bundler_engine.lib.py_js_bundler.pack import process as pack_js
+    from .src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 else:
     # included with no parent package
     from src.helper_utilities import sanitize
     from src.frontend.template.minify_assets import minify_js, minify_css
-    from src.frontend.bundler_engine.lib.py_js_bundler.pack import process as pack_js
+    from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 
 
 
@@ -355,8 +355,8 @@ def call_build_program(*argcs,**kwargs):
         raise e
 
     for result in results:
+        result_fname = Path(out_path) / result.filename
         try:
-            result_fname = Path(out_path) / result.filename
             print('{script_name}: saving as "{fname}"'.format(fname=result_fname,script_name=script_name))
             result_fname.parent.mkdir(parents=True, exist_ok=True)
             with open(result_fname, 'wb' if result.is_binary else 'w', encoding=None if result.is_binary else 'utf-8') as outfile:
@@ -370,7 +370,7 @@ def call_build_program(*argcs,**kwargs):
             raise e
 
     time_finish = datetime.now()
-    print('{script_name}: finished at {dt} (elapsed {duration})'.format(dt=time_finish,duration=time_finish-time_start,script_name=script_name))
+    print(f'{script_name}: {STDOUT_COLOR_GREEN}finished at {time_finish} (elapsed {time_finish-time_start}){STDOUT_COLOR_RESET}')
 
 
 

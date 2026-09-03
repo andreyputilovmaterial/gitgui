@@ -32,18 +32,19 @@ import './common_components/css_grid/styles.css';
 // all "system" components - modals, pages, environment for showing errors...
 import { _logErrorProxyContext } from './common_components/_log_error_proxy';
 import { ModalsSite, createModal } from './common_components/modals/modals';
-import TerminalSessionView from './app/terminalview/index';
-import ManipulateNavLinksDummyWrapper from './app/beautify_page_nav_links_handler/manipulate_links';
-import AppOnlineIndicator from './app/onlineindicator';
-import ErrorView from './app/errorview/index';
+import ManipulateNavLinksDummyWrapper from '@/app/background_navlinks_attachmodals/manipulate_links';
 
-// direct children shown in starting view in app
-import RepoInitView from './app/repoinitview/init_repo';
-import PageWelcome from './app/mainview_welcome/index';
-import PageFiles from './app/filesview/index';
-import PageHistory from './app/historyview/index';
-import PageGitignore from './app/repoinitview/section_gitignore';
-import PagePackcompression from './app/packcompression/index';
+// direct children shown in starting view in app - window panes
+import AppOnlineIndicator from './app/background_onlineindicator_overlay/index.js';
+import ErrorView from '@/app/apppane_errorview/index';
+import TerminalSessionView from '@/app/apppane_terminalview/index';
+// direct children shown in starting view in app - tabs in main view
+import RepoInitView from '@/app/window_repoinitview/init_repo';
+import PageWelcome from '@/app/apptab_mainview_welcome/index';
+import PageFiles from '@/app/apptab_filesview/index';
+import PageHistory from '@/app/apptab_historyview/index';
+import PageGitignore from '@/app/window_repoinitview/section_gitignore';
+import PagePackcompression from '@/app/apptab_packcompression/index';
 
 
 

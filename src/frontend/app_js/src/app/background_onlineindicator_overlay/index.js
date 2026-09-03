@@ -1,6 +1,6 @@
 
 
-import './onlineindicator.css';
+import './styles.css';
 
 
 const Monitor = {

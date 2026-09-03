@@ -137,7 +137,6 @@ const Records = {
           isBusy.value = false;
           return;
         }
-        alert('DONE!'); // TODO: make this a modal
 
 
         // import subprocess

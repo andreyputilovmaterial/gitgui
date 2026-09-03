@@ -72,8 +72,8 @@ const PackRecord = {
     <span class="label">Pack object hash: </span>
     <component-format-hash :hash="hash" highlight="auto" />
   </span>
-  <span class="blob-record-element object-type" title="Type">
-    <span class="label">Type: </span>
+  <span class="blob-record-element object-type" title="Pack object type">
+    <span class="label">Pack object type: </span>
     {{ objectType }}
   </span>
   <span class="blob-record-element blob-hash" title="Blob Hash">

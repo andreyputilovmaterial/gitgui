@@ -25,7 +25,7 @@ const Monitor = {
     <div v-if="!(config.dir_work_tree==configPathsFirstCaptured.dir_work_tree)">Launched with work tree: <code>{{ configPathsFirstCaptured.dir_work_tree }}</code></div>
     git dir: <code>{{ config.dir_git_repo }}</code><br />
     <div v-if="!(config.dir_git_repo==configPathsFirstCaptured.dir_git_repo)">Launched with git dir: <code>{{ configPathsFirstCaptured.dir_git_repo }}</code></div>
-    <span class="suggest-line"><br /><br />Please reload the page</span>
+    <span class="suggest-line"><br /><br />Please <a href="" onclick="window.location.reload(); return false;">reload the page</a></span>
   </div>
 </div>
 `,

@@ -225,7 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return true;
         }
       }
-      function _executeGitCommand(args,{is_binary=false,...options} = {}) {
+      // a bit confusing arg name,
+      // with "is_binary" style (with underscore) - because it maps to what is directly sent to backend
+      // and "attachExistingJob" (camel-case) - for purely internal flags, dispatch and caught here in js
+      function _executeGitCommand(command,{is_binary=false,attachExistingJob=false,parentJobId=null,...options} = {}) {
         const formatArgsString = args => {
           const formatArg = str => {
             const hasSpaces = str => /\s/.test(str);
@@ -243,46 +246,87 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           return args.map(formatArg).join(' ')
         };
-        args = args || [];
-        args = [...args];
+        if( !attachExistingJob ) {
+          command = command || [];
+          command = [ ...command ];
+        }
         const timestamp = new Date();
-        const cliRawCommandReturnObject = cliCommandRaw(args,{is_interactive:false,...options,is_binary,});
+        const cliRawCommandReturnObject = cliCommandRaw(command,{is_interactive:false,attachExistingJob,...options,is_binary,});
         const promise = options.is_interactive ? cliRawCommandReturnObject.promise : cliRawCommandReturnObject;
-        const jobData = options.is_interactive ? cliRawCommandReturnObject : null;
-        const command_str = formatArgsString(args);
-        const command = reactive({
+        let jobData = reactive( options.is_interactive ? cliRawCommandReturnObject : {} );
+        if( options.is_interactive )
+          cliRawCommandReturnObject.subscribeUpdates( jobDataNew => Object.assign(jobData,jobDataNew) );
+        else
+          promise.then(jobData => jobData.subscribeUpdates( jobDataNew => Object.assign(jobData,jobDataNew) ));
+        const command_str = !attachExistingJob ? formatArgsString(command) : null;
+        const inputCommandRecord = !attachExistingJob ? reactive({
           timestamp: timestamp,
           id: genId(['input',command_str,timestamp]),
           stdout: command_str,
           stderr: '',
           exit_code: '',
+          job_id: options.is_interactive ? null : jobData.job_id,
           is_binary: is_binary,
           is_interactive: options.is_interactive,
           // payload: {'message':command_str,'is_binary':is_binary},
           source: undefined,
           type: 'input',
-        });
-        const source_command = command;
-        commands.value.push(command);
-        const outputCommand = reactive({
+        }) : null;
+        if( !attachExistingJob ) {
+          commands.value.push( inputCommandRecord );
+          watch(
+            ()=>jobData.job_id,
+            newJob_id => inputCommandRecord.job_id = newJob_id,
+            { immediate: true },
+          );
+        }
+        const outputCommandRecord = reactive({
           timestamp: new Date(),
           id: genId(['output',command_str,new Date()]),
-          job_id: null,
           stdout: null,
           stderr: null,
+          job_id: jobData.job_id,
           exit_code: null,
           is_binary: is_binary,
           is_interactive: options.is_interactive,
-          source: source_command,
+          source: inputCommandRecord || {},
           'type': 'output',
         });
+        watch(
+          ()=>jobData.job_id,
+          newJob_id => outputCommandRecord.job_id = newJob_id,
+          { immediate: true },
+        );
+        if( !!attachExistingJob && !!parentJobId ) {
+          function findParentCommandRecord(parentJobId) {
+            const matching = commands.value.filter(c=>c.job_id===parentJobId);
+            if( matching.length>0 )
+              return matching[0];
+            else
+              return null;
+          }
+          const promiseParentFound = new Promise((resolve,reject) => {
+            const stopWatcher = watch(
+              jobData,
+              newJobData => {
+                const commandRecordWithParentJobId = findParentCommandRecord(parentJobId);
+                if( commandRecordWithParentJobId )
+                  resolve(commandRecordWithParentJobId);
+              },
+              { immediate: true, },
+            );
+          });
+          promiseParentFound.then( commandRecordWithParentJobId => {
+            outputCommandRecord.source = commandRecordWithParentJobId;
+          } );
+        }
         promise.then(
           jobData => {
-            outputCommand.job_id = jobData.job_id;
-            outputCommand.stdout = jobData.stdout;
-            outputCommand.stderr = jobData.stderr;
-            outputCommand.exit_code = jobData.exit_code;
-            commands.value.push(outputCommand);
+            outputCommandRecord.job_id = jobData.job_id;
+            outputCommandRecord.stdout = jobData.stdout;
+            outputCommandRecord.stderr = jobData.stderr;
+            outputCommandRecord.exit_code = jobData.exit_code;
+            commands.value.push(outputCommandRecord);
           },
           async err => {
             const error = await makeFetchResponseErrorMessage(err);
@@ -292,48 +336,22 @@ document.addEventListener("DOMContentLoaded", () => {
               stdout: '',
               stderr: error,
               exit_code: null,
-              source: source_command,
+              source: inputCommandRecord,
               'type': 'error',
             });
             commands.value.push(command);
           }
         );
         if( is_binary ) {
-          outputCommand.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url || 'output'});
+          outputCommandRecord.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url || 'output'});
         }
-        // if( is_binary ) {
-        //   return promise.then( async jobData => {
-        //     if( noDownload ) {
-        //       outputCommand.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url});
-        //       return jobData;
-        //     }
-        //     throw new Error(`Return final binary response from executeGitCommand is no longer supported: response is "binary", it means it can get big - please download streamed response separately`);
-        //     // const filename = 'output';
-        //     // const downloadUrl = `${new URL(jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
-        //     // const fileDataResponse = await fetch(
-        //     //   downloadUrl,
-        //     //     {method: 'GET',
-        //     //     headers: {
-        //     //         "Content-Type": "application/octet-stream"
-        //     //     },
-        //     //   },
-        //     // );
-        //     // if (!fileDataResponse.ok) {
-        //     //   throw Error(`Download failed: HTTP ${fileDataResponse.status}`);
-        //     // }
-        //     // const fileDataBuffer = await fileDataResponse.arrayBuffer();
-        //     // const fileDataByteArray = new Uint8Array(fileDataBuffer);
-        //     // // const fileDataSize = fileDataByteArray.byteLength;
-        //     // outputCommand.stdout = prettyprintBytes(fileDataByteArray);
-        //     // return fileDataByteArray;
-        //   });
-        // } else
-        //   // if text
-        //   return promise;
         if( options.is_interactive ) {
           return Promise.resolve(jobData);
         } else {
-          return promise;
+          return promise.then( jobDataFinal => {
+            Object.assign(jobData,jobDataFinal);
+            return jobData;
+          } );
         }
       }
       async function _executeGitAsyncCommand(args,{is_binary=false,...options} = {}) {
@@ -348,6 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
       repoActions.value.executeGitCommand = executeGitCommand;
       repoActions.value.executeGitAsyncCommand = executeGitAsyncCommand;
       repoActions.value.executeGitBinaryCommand = executeGitBinaryCommand;
+      repoActions.value.attachToRunningCommand = (job_id,options,...rest) => _executeGitCommand(job_id,{...options,attachExistingJob:true},...rest)
 
       async function gitignoreRead() {
         function handleResponse(response) {

@@ -277,7 +277,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         output_file_obj = call_cli_command_get_job_stdout_reader(job_id,config)()
         if not output_file_obj:
             return WebResponse(
-                status_code = 415,
+                status_code = 404,
                 content_type = 'application/json',
                 body = json.dumps({'status':'error','error':f'job does not provide reader, maybe it was launched in non-binary (text) mode? {job_id}'}, cls=JSONEncoder),
                 headers = [],
@@ -291,19 +291,20 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         body = net_request_handler.rfile.read(length)
         # Convert bytes -> str -> Python object
         payload = json.loads(body)
-        agr_command, args_rest = payload[0], payload[1:]
+        arg_command, args_rest = payload[0], payload[1:]
 
-        next_processor_in_pipe = config.get(agr_command,None)
+        next_processor_in_pipe = config.get('iface',{}).get('output_postprocessors',{}).get(arg_command,None)
 
         if not next_processor_in_pipe:
             return WebResponse(
                 status_code = 404,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'handle_send_binary_data: pipe processor: {agr_command}'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'handle_send_binary_data: pipe processor: {arg_command}'}, cls=JSONEncoder),
                 headers = [],
             )
 
-        job_dict = call_cli_initiate_from_function(next_processor_in_pipe,args_rest,binary_data_reader(),config,{})
+        output_file_obj = call_cli_command_get_job_stdout_reader(job_id,config)()
+        job_dict = call_cli_initiate_from_function(next_processor_in_pipe,args_rest,output_file_obj,config,{})
 
         job_id = job_dict.get('job_id')
 
@@ -329,7 +330,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
     try:
         if method=='POST' and path_parsed=='/command':
             renderer = handle_initiate_new_command
-        elif method=='GET' and path_parsed.startswith('/command/'):
+        elif path_parsed.startswith('/command/'):
             if method=='GET' and re.match(r'^/command/[^/]*/stdout\b.*',path_parsed):
                 renderer = handle_send_binary_data
             elif method == 'PUT' and re.match(r'^/command/[^/]*/stdout\b.*', path_parsed):

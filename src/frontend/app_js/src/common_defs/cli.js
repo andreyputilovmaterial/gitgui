@@ -1,8 +1,6 @@
 
-import { reactive } from 'vue';
-
 import { genId, makeFetchResponseErrorMessage, } from './helper_functions.js';
-
+import ReplayEvent from './concurrency/subscribe';
 
 
 
@@ -25,9 +23,10 @@ function preparePayload(command) {
 
 
 
-function cliCommand(command,{is_binary=false,is_interactive=false,...options} = {}) {
+function cliCommand(command,{is_binary=false,is_interactive=false,attachExistingJob=false,...options} = {}) {
   const timeRequestIssued = new Date();
   const requestId = genId([command,new Date()]);
+  const updateEvent = new ReplayEvent();
   const context = {
     promiseResolve: ()=>{ throw new Error('promise not inited'); },
     promiseReject: ()=>{ throw new Error('promise not inited'); },
@@ -35,7 +34,10 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
     promiseDownloadLinkReadyReject: ()=>{ throw new Error('promise not inited'); },
     _id: requestId,
     job_id: null,
-    jobData: reactive({}),
+    updateEvent,
+    jobData: {
+      subscribeUpdates: fn => updateEvent.subscribe(fn),
+    },
     status: 'prepare',
     pollTimerId: null,
     commandRequestCreatedAt: timeRequestIssued,
@@ -77,6 +79,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
     jobData._id = context._id;
     context.status = jobData.status;
     Object.assign(context.jobData, jobData);
+    updateEvent.emit(context.jobData);
     return context.jobData;
   }
   async function checkIfNeedResetInterval() {
@@ -115,6 +118,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
       jobData._id = context._id;
       context.status = jobData.status;
       Object.assign(context.jobData, jobData);
+      updateEvent.emit(context.jobData);
       if( isNotEmpty(jobData.download_url) )
         context.promiseDownloadLinkReadyResolve(jobData.download_url);
       if( jobData.status==='done' )
@@ -130,7 +134,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
   const promise = new Promise((resolve,reject)=> {
     context.promiseResolve = resolve;
     context.promiseReject = reject;
-    const sendCommandPromise = sendCommand(command);
+    const sendCommandPromise = !attachExistingJob ? sendCommand(command) : Promise.resolve({job_id:command});
     context.jobData.sendCommandPromise = sendCommandPromise;
     context.commandSentAt = new Date();
     sendCommandPromise.then(
@@ -139,6 +143,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,...options} = 
         context.job_id = jobData.job_id;
         context.commandConfirmationReceivedAt = new Date();
         Object.assign(context.jobData,jobData);
+        updateEvent.emit(context.jobData);
         // set timer and polling
         context.currentPollInterval = 207;
         context.pollTimerId = setInterval( pollStatusUpdate, context.currentPollInterval );

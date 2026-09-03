@@ -65,7 +65,7 @@ def handler(context,task,job):
                 # # return result
                 # chunks = [result.stdout]
                 # yield from chunks
-                io.BytesIO(result.stdout if is_binary else result.stdout.encode('utf-8'))
+                return io.BytesIO(result.stdout if is_binary else result.stdout.encode('utf-8'))
             # job.stdout = None
             job.stdout_reader = stdout_reader
         if not is_binary:

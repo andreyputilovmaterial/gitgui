@@ -21,7 +21,7 @@ from .cli_proxy_caller import (
 )
 from .textconv import textconv
 from .output_postprocessors import register_output_postprocessor, output_postprocessors #, get_output_postprocessor
-from .util.tar import tar_output_processor
+from .output_postprocessors.tar import tar_output_processor
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
@@ -111,7 +111,7 @@ def main(*argcs,**kwargs):
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,
             'textconv': textconv,
-            'output_postprocessors': dict(output_postprocessors),
+            'output_postprocessors': output_postprocessors,
         },
     }
 

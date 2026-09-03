@@ -8,6 +8,7 @@ import Record from './component_record.js';
 
 import './style.css';
 import './style_bulk_restore_form.css';
+import { makeFetchResponseErrorMessage } from "@/common_defs/helper_functions.js";
 
 const Records = {
   props: [
@@ -97,15 +98,46 @@ const Records = {
           return false;
         }
         const dest = await props.repoActions.createModal(ModalChooseDestPath);
-        const commandArgs = [ 'git', 'archive', props.hash, '--', ...selectedFiles, '|', 'tar', '-x', '-C', dest ]
-        const result = await props.repoActions.executeGitCommand(commandArgs);
-        if( (result.exit_code!==0) || (!!result.stderr) ) {
-          error.value = `git archive: failed with exit_code ${result.exit_code}: ${result.stderr}`;
+        const commandArgs = [ 'git', 'archive', props.hash, '--', ...selectedFiles, ];
+        const pipeArgs = [ 'tar', '-x', '-C', dest, ];
+        const jobData = await props.repoActions.executeGitCommand(commandArgs,{is_interactive:true,is_binary:true,});
+        await jobData.promiseDownloadLinkReady;
+        const downloadUrl = jobData.getDownloadUrl('tar');
+        const pipeRequest = await fetch(
+          downloadUrl,
+          {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([...pipeArgs]),
+          },
+        );
+        if( !pipeRequest.ok ) {
+          error.value = `git archive: tar postprocessing failed`;
+          props.repoActions.logError('"Restore files" failed');
+          throw new Error(await makeFetchResponseErrorMessage(pipeRequest));
+        }
+        const pipeJobRequestPlaced= await pipeRequest.json();
+        const pipeJobId = pipeJobRequestPlaced.job_id;
+        const pipeJobData = await props.repoActions.attachToRunningCommand(pipeJobId,{parentJobId:jobData.job_id});
+        await jobData.promise;
+        if( (jobData.exit_code!==0) || (!!jobData.stderr) ) {
+          error.value = `git archive: failed with exit_code ${jobData.exit_code}: ${jobData.stderr}`;
           props.repoActions.logError('"Restore files" failed');
           props.repoActions.logError(error.value);
           isBusy.value = false;
           return;
         }
+        await pipeJobData.promise;
+        if( (pipeJobData.exit_code!==0) || (!!pipeJobData.stderr) ) {
+          error.value = `tar: failed with exit_code ${pipeJobData.exit_code}: ${pipeJobData.stderr}`;
+          props.repoActions.logError('"Restore files" failed');
+          props.repoActions.logError(error.value);
+          isBusy.value = false;
+          return;
+        }
+        alert('DONE!'); // TODO: make this a modal
 
 
         // import subprocess

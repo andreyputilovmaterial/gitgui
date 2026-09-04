@@ -9,9 +9,9 @@ from .main_gitgui_program import main as call_gitgui_program
 
 from .lib.webinput import (
     QuestionTypeSinglePunch,
-    QuestionTypeBlock,
+    QuestionTypeRoot,
     Category,
-    inp,
+    input,
 )
 
 
@@ -27,8 +27,7 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 def make_schema(choices):
-    return QuestionTypeBlock(
-        name = 'root',
+    return QuestionTypeRoot(
         label = 'Project selector',
         fields = [
             QuestionTypeSinglePunch(
@@ -76,6 +75,6 @@ def main(*argcs,**kwargs):
         projects_db = yaml.safe_load(file)
         choices = projects_db["projects"]
         schema = make_schema(choices)
-        result: QuestionTypeBlock = inp(schema)
+        result: QuestionTypeRoot = input(schema)
         choice = next(iter([ c for c in choices if c.name == result.response[0].response.name ]))
         return call_gitgui_program(['--work-tree-folder',choice.get('work_tree_folder'),'--git-repo-folder',choice.get('git_repo_folder')],)

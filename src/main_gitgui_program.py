@@ -40,6 +40,7 @@ else:
 
 CONFIG_WEBSERVER_MULTITHREADED = True
 CONFIG_CLI_COMMAND_EXEC_WORKERS = 3
+PORT_START_WITH = 5180
 
 
 script_version = f'{script_version}'.strip()
@@ -142,7 +143,7 @@ def main(*argcs,**kwargs):
 
     print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'
-    config['http_port'] = find_free_port(config['http_host'], start=5180)
+    config['http_port'] = find_free_port(config['http_host'], start=PORT_START_WITH)
     config['http_protocol'] = 'http'
     config['http_address'] = (
         f'{config["http_protocol"]}://'

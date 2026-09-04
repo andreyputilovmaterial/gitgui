@@ -10,3 +10,6 @@
 [submodule "src/webserver_engine/webserve"]
 	path = src/webserver_engine/webserve
 	url = https://github.com/The-city-not-present/webserve.git
+[submodule "src/lib/webinput"]
+	path = src/lib/webinput
+	url = https://github.com/The-city-not-present/webinput.git

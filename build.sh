@@ -166,8 +166,16 @@ echo -
 echo -
 
 echo "Produce dist"
-mkdir -p dist
-echo "" > dist/gitgui_bundle.py
+rm -rf -- ./dist || true
+mkdir -p -- dist
+echo "Bring run.sh and requirements.txt to ./dist/"
+cp requirements.txt ./dist/
+sed -e "s|dist/||g" ./run.sh > ./dist/run.sh
+sed -e "s|dist/||g" ./run_project_example.bat > ./dist/run_project_example.bat
+echo "done"
+echo -
+echo -
+
 echo "Calling pinliner..."
 "$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o dist/gitgui_bundle.py
 echo "done"
@@ -178,8 +186,8 @@ echo "# print('within gitgui_bundle')" >> "dist/gitgui_bundle.py"
 # echo "# import gitgui_bundle" >> "dist/gitgui_bundle.py"
 echo "from src import launcher" >> "dist/gitgui_bundle.py"
 echo "launcher.main()" >> "dist/gitgui_bundle.py"
-echo "# print('out of gitgui_bundle')" >> "dist/gitgui_bundle.py"
+echo "# print('out of gitgui_bundle')" >> "./dist/gitgui_bundle.py"
 echo "done"
 echo -
 echo -
-"$pythonexecutable" dist/gitgui_bundle.py --program done
+"$pythonexecutable" ./dist/gitgui_bundle.py --program done

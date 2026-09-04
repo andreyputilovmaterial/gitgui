@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+WORKDIR="$1"
+GITDIR="$2"
+
 
 echo "Prep python"
 echo "set venv"
@@ -28,4 +31,4 @@ echo -
 
 
 # "$pythonexecutable" -m src.launcher --program gitgui --work-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"
-"$pythonexecutable" "dist/gitgui_bundle.py" --program gitgui --work-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"
+"$pythonexecutable" "./dist/gitgui_bundle.py" --program gitgui --work-tree-folder "$WORKDIR" --git-repo-folder "$GITDIR"

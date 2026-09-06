@@ -26,7 +26,7 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 
-def make_schema(choices):
+def prep_qre(choices):
     return QuestionTypeRoot(
         label = 'Project selector',
         fields = [
@@ -73,8 +73,8 @@ def main(*argcs,**kwargs):
 
     with open(projects_db_filename, "r") as file:
         projects_db = yaml.safe_load(file)
-        choices = projects_db["projects"]
-        schema = make_schema(choices)
-        result: QuestionTypeRoot = input(schema)
-        choice = next(iter([ c for c in choices if c.name == result.response[0].response.name ]))
+        choices = projects_db['projects']
+        qre = prep_qre(choices)
+        result: QuestionTypeRoot = input(qre)
+        choice = next(iter([ c for c in choices if c.get('name') == result.response[0].response.name ]))
         return call_gitgui_program(['--work-tree-folder',choice.get('work_tree_folder'),'--git-repo-folder',choice.get('git_repo_folder')],)

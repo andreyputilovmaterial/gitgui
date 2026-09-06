@@ -20,16 +20,27 @@ else
         exit 1
     fi
 fi
-echo "upd dependencies"
+echo "Upd dependencies"
 "$pythonexecutable" -m pip install -r requirements.txt
 echo "done"
 echo -
 echo -
 
 
-echo "upd optional dependencies for textconv processors"
-find src/textconv/processors -type f -path '*/requirements.txt' -print0 | 
-while IFS= read -r -d '' requirements; do
+
+echo "Discover optional dependencies for textconv processors"
+#optional_dependencies=$(find src/textconv/processors -type f -path '*/requirements.txt' -print0)
+optional_dependencies=$(find src/textconv/processors -type f -path '*/requirements.txt' -print)
+echo "done"
+echo -
+echo -
+
+
+
+echo "Install optional dependencies for textconv processors"
+echo "$optional_dependencies" |
+#while IFS= read -r -d '' requirements; do
+while IFS= read -r requirements; do
     echo "installing for $requirements:"
     if ! "$pythonexecutable" -m pip install -r "$requirements"; then
         echo "WARNING: not installed"
@@ -38,6 +49,7 @@ done
 echo "done"
 echo -
 echo -
+
 
 
 echo "Update program version"
@@ -56,11 +68,22 @@ echo -
 echo -
 
 
+
 echo "Pull necessary project submodules"
 git submodule update --init --recursive
 echo "done"
 echo -
 echo -
+
+
+
+echo "Produce dist - clear up and re-create"
+rm -rf -- ./dist || true
+mkdir -p -- dist
+echo "done"
+echo -
+echo -
+
 
 
 echo "And help pages in src/GENERATED"
@@ -165,16 +188,44 @@ echo "done"
 echo -
 echo -
 
-echo "Produce dist"
-rm -rf -- ./dist || true
-mkdir -p -- dist
+
+
 echo "Bring run.sh and requirements.txt to ./dist/"
 cp requirements.txt ./dist/
-sed -e "s|dist/||g" ./run.sh > ./dist/run.sh
-sed -e "s|dist/||g" ./run_project_example.bat > ./dist/run_project_example.bat
+cat ./run.sh                    | sed -e "s|dist/||g"    > ./dist/run.sh
+cat ./run_project_example.bat   | sed -e "s|dist/||g"    > ./dist/run_project_example.bat
+cat ./run_project_example.sh    | sed -e "s|dist/||g"    > ./dist/run_project_example.sh
+chmod +x ./dist/run.sh
+chmod +x ./dist/run_project_example.bat
+chmod +x ./dist/run_project_example.sh
 echo "done"
 echo -
 echo -
+
+
+
+echo "Bring other optional dependencies to ./dist/"
+mkdir -p dist/optional_dependencies
+counter=0
+echo "$optional_dependencies" |
+#while IFS= read -r -d '' requirements; do
+while IFS= read -r requirements; do
+    destination="dist/optional_dependencies/requirements-${counter}.txt"
+    echo "copying $requirements -> $destination"
+    cp "$requirements" "$destination"
+    ((counter++))
+done
+runsh_content=$( cat ./dist/run.sh )
+optional_dependencies_esc=${optional_dependencies//$'\n'/\\n}
+pattern_runsh_optionaldeps="optional_dependencies=\"\""
+pattern_runsh_optionaldeps_esc="optional_dependencies=\"$optional_dependencies_esc\""
+runsh_content=${runsh_content//"$pattern_runsh_optionaldeps"/"$pattern_runsh_optionaldeps_esc"}
+echo "$runsh_content" > ./dist/run.sh
+echo "done"
+echo -
+echo -
+
+
 
 echo "Calling pinliner..."
 "$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o dist/gitgui_bundle.py

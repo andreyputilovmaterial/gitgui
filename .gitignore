@@ -11,6 +11,7 @@ COMPILED/
 
 # Reports generated from real data
 report.*
+pytest-outputs/
 
 # Examples directory (top-level only)
 examples/

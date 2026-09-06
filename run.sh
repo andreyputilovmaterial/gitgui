@@ -29,6 +29,19 @@ echo "done"
 echo -
 echo -
 
+echo "Install optional dependencies for textconv processors"
+optional_dependencies=""
+echo "$optional_dependencies" |
+#while IFS= read -r -d '' requirements; do
+while IFS= read -r requirements; do
+    echo "installing for $requirements:"
+    if ! "$pythonexecutable" -m pip install -r "$requirements"; then
+        echo "WARNING: not installed"
+    fi
+done
+echo "done"
+echo -
+echo -
 
 # "$pythonexecutable" -m src.launcher --program gitgui --work-tree-folder "tests-real-sensitive-data/my-test-project" --git-repo-folder "tests-real-sensitive-data/test-project-repo"
 "$pythonexecutable" "./dist/gitgui_bundle.py" --program gitgui --work-tree-folder "$WORKDIR" --git-repo-folder "$GITDIR"

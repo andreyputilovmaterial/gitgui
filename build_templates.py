@@ -374,8 +374,54 @@ def call_build_program(*argcs,**kwargs):
 
 
 
+def call_bundle_program(*argcs,**kwargs):
+    time_start = datetime.now()
+    script_name = 'build helper'
+
+    parser = argparse.ArgumentParser(
+        description="Produce py",
+        prog='htmltemplate --program bundle-file-into-py'
+    )
+    parser.add_argument(
+        '--varname',
+        help='varname',
+        type=str,
+        required=True
+    )
+    # args = None
+    # args_rest = None
+    # if( ('arglist_strict' in config) and (not config['arglist_strict']) ):
+    #     args, args_rest = parser.parse_known_args()
+    # else:
+    args = None
+    try:
+        args = parser.parse_args(*argcs,**kwargs)
+    except SystemExit as e:
+        print(f'{STDOUT_COLOR_RED}Error: Invalid command-line arguments{STDOUT_COLOR_RESET}',file=sys.stderr)
+        raise e
+
+    txt = sys.stdin.buffer.read().decode(encoding='utf-8')
+
+    # print(f'{script_name}: script started at {time_start}')
+
+    result = f'''
+# THIS IS AUTO_GENERATED
+# updated {time_start}
+
+{args.varname} = {repr(txt)}
+
+'''
+
+    sys.stdout.buffer.write(result.encode(encoding='utf-8'))
+
+    time_finish = datetime.now()
+    # print(f'{script_name}: {STDOUT_COLOR_GREEN}finished at {time_finish} (elapsed {time_finish-time_start}){STDOUT_COLOR_RESET}')
+
+
+
 run_programs = {
     'build': call_build_program,
+    'bundle-file-into-py': call_bundle_program,
 }
 
 

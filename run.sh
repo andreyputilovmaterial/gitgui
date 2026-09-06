@@ -31,14 +31,16 @@ echo -
 
 echo "Install optional dependencies for textconv processors"
 optional_dependencies=""
-echo "$optional_dependencies" |
+# echo "$optional_dependencies" |
 #while IFS= read -r -d '' requirements; do
 while IFS= read -r requirements; do
-    echo "installing for $requirements:"
-    if ! "$pythonexecutable" -m pip install -r "$requirements"; then
-        echo "WARNING: not installed"
+    if [[ "$requirements" == *"txt"* ]]; then
+        echo "installing for $requirements:"
+        if ! "$pythonexecutable" -m pip install -r "$requirements"; then
+            echo "WARNING: not installed"
+        fi
     fi
-done
+done < <(echo "$optional_dependencies")
 echo "done"
 echo -
 echo -

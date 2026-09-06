@@ -38,14 +38,14 @@ echo -
 
 
 echo "Install optional dependencies for textconv processors"
-echo "$optional_dependencies" |
-#while IFS= read -r -d '' requirements; do
+# printf '%s' "$optional_dependencies" |
+# while IFS= read -r -d '' requirements; do
 while IFS= read -r requirements; do
     echo "installing for $requirements:"
     if ! "$pythonexecutable" -m pip install -r "$requirements"; then
         echo "WARNING: not installed"
     fi
-done
+done < <(echo "$optional_dependencies")
 echo "done"
 echo -
 echo -
@@ -53,16 +53,11 @@ echo -
 
 
 echo "Update program version"
+rm -rf -- src/GENERATED || true
 mkdir -p src/GENERATED
-echo "" >> src/GENERATED/__init__.py
+touch src/GENERATED/__init__.py
 git fetch --tags || true
-echo "" > src/GENERATED/VERSION.py
-echo "# THIS IS AUTO_GENERATED" >> src/GENERATED/VERSION.py
-echo "# updated" >> src/GENERATED/VERSION.py
-"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/VERSION.py
-echo "_VERSION = '''" >> src/GENERATED/VERSION.py
-git describe >> src/GENERATED/VERSION.py
-echo "'''" >> src/GENERATED/VERSION.py
+git describe | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _VERSION > src/GENERATED/VERSION.py
 echo "done"
 echo -
 echo -
@@ -87,25 +82,22 @@ echo -
 
 
 echo "And help pages in src/GENERATED"
-echo "" > src/GENERATED/HELP.py
-echo "# THIS IS AUTO_GENERATED from ./help.md" >> src/GENERATED/HELP.py
-echo "# updated" >> src/GENERATED/HELP.py
-"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/HELP.py
-echo "_MD = '''" >> src/GENERATED/HELP.py
-cat help.md >> src/GENERATED/HELP.py
-echo "'''" >> src/GENERATED/HELP.py
+cat help.md | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _MD > src/GENERATED/HELP.py
 echo "done"
 echo -
 echo -
 
 
 echo "Build templates"
+rm -rf -- src/frontend/GENERATED || true
 mkdir -p src/frontend/GENERATED
-echo "" >> src/frontend/GENERATED/__init__.py
+touch src/frontend/GENERATED/__init__.py
+rm -rf -- src/frontend/template/GENERATED || true
 mkdir -p src/frontend/template/GENERATED
-echo "" >> src/frontend/template/GENERATED/__init__.py
+touch src/frontend/template/GENERATED/__init__.py
+rm -rf -- src/frontend/template/GENERATED/TEMPLATE_COMPILED || true
 mkdir -p src/frontend/template/GENERATED/TEMPLATE_COMPILED
-echo "" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
+touch src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
 
 # at least you need LLM to read this, or a human - simple regex parser will not grab it
 "$pythonexecutable" -c 'print( "CREDENTIALS=\""+"".join( [ (bytes(c ^ f"he{i}me".encode()[i % len(f"he{i}me".encode())] for i, c in enumerate(s))).decode() for i,s in enumerate([b")\x0bV\x1f", b"\r\x1c\x1c=", b"\x1d\x11[", b"\x04\nD", b"(\x08S", b"\x1c\x00@\x04", b"\t\tB\x01", b"\x1d\x16\x1c\x04\n"]) ] )+"\"" )' > .env
@@ -130,60 +122,26 @@ echo "" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/__init__.py
 
 "$pythonexecutable" build_templates.py --program build --resource src_template --dest src/frontend/template/GENERATED/TEMPLATE_COMPILED
 
-echo "" > src/GENERATED/HARDCODED.py
-echo "# THIS IS AUTO_GENERATED" >> src/GENERATED/HARDCODED.py
-echo "# updated" >> src/GENERATED/HARDCODED.py
-"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/HARDCODED.py
-echo "_CREDENTIALS_STR = '''" >> src/GENERATED/HARDCODED.py
-"$pythonexecutable" -c 'from dotenv import load_dotenv;import os;load_dotenv();print(os.getenv("CREDENTIALS", "-"))' >> src/GENERATED/HARDCODED.py
-echo "'''" >> src/GENERATED/HARDCODED.py
+rm -rf -- src/GENERATED/HARDCODED.py
+"$pythonexecutable" -c 'from dotenv import load_dotenv;import os;load_dotenv();print(os.getenv("CREDENTIALS", "-"))' | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _CREDENTIALS_STR >> src/GENERATED/HARDCODED.py
 
-echo "" > src/GENERATED/CONFIG.py
-echo "# THIS IS AUTO_GENERATED" >> src/GENERATED/CONFIG.py
-echo "# updated" >> src/GENERATED/CONFIG.py
-"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/GENERATED/CONFIG.py
-echo "GITIGNORE_PRESETS = \\" >> src/GENERATED/CONFIG.py
-"$pythonexecutable" -c 'import json;from pathlib import Path;cfg = json.loads(Path("./gitignore-config-presets.json").read_text(encoding="utf-8"));print(repr(cfg))' >> src/GENERATED/CONFIG.py
-echo "" >> src/GENERATED/CONFIG.py
+rm -rf -- src/GENERATED/CONFIG.py
+"$pythonexecutable" -c 'import json;from pathlib import Path;cfg = json.loads(Path("./gitignore-config-presets.json").read_text(encoding="utf-8"));print(repr(cfg))' | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname GITIGNORE_PRESETS >> src/GENERATED/CONFIG.py
 
-echo "" > src/frontend/GENERATED/ASSETS.py
-echo "# THIS IS AUTO_GENERATED" >> src/frontend/GENERATED/ASSETS.py
-echo "# updated" >> src/frontend/GENERATED/ASSETS.py
-"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/frontend/GENERATED/ASSETS.py
-echo "app_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/app.js >> src/frontend/GENERATED/ASSETS.py
-echo "'''" >> src/frontend/GENERATED/ASSETS.py
-# echo "app_css = r'''" >> src/frontend/GENERATED/ASSETS.py
-# cat src/frontend/GENERATED/app.css >> src/frontend/GENERATED/ASSETS.py
-# echo "'''" >> src/frontend/GENERATED/ASSETS.py
-echo "project_specific_styles_css = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/project-specific.css >> src/frontend/GENERATED/ASSETS.py
-echo "'''" >> src/frontend/GENERATED/ASSETS.py
-echo "vendorlibs_vue_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/vendorlibs/vue.js >> src/frontend/GENERATED/ASSETS.py
-echo "'''" >> src/frontend/GENERATED/ASSETS.py
-echo "vendorlibs_marked_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/vendorlibs/marked.js >> src/frontend/GENERATED/ASSETS.py
-echo "'''" >> src/frontend/GENERATED/ASSETS.py
-echo "vendorlibs_dompurify_js = r'''" >> src/frontend/GENERATED/ASSETS.py
-cat src/frontend/GENERATED/vendorlibs/dompurify.js >> src/frontend/GENERATED/ASSETS.py
-echo "'''" >> src/frontend/GENERATED/ASSETS.py
+rm -rf -- src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/app.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname app_js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/project-specific.css | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname project_specific_styles_css >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/vue.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_vue_js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/marked.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_marked_js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/dompurify.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_dompurify_js >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-sans/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-mono/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 
-echo "" > src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "# THIS IS AUTO_GENERATED" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "# updated" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-"$pythonexecutable" -c 'from datetime import datetime; print(f"# {datetime.now()}")' >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "common_css = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "normalize_css = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/normalize.css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "common_js = r'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
-echo "'''" >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+rm -rf -- src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.css | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname common_css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/normalize.css | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname normalize_css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname common_js >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
+
 echo "done"
 echo -
 echo -
@@ -207,20 +165,25 @@ echo -
 echo "Bring other optional dependencies to ./dist/"
 mkdir -p dist/optional_dependencies
 counter=0
-echo "$optional_dependencies" |
+optional_dependencies_esc=""
+# # printf '%s' "$optional_dependencies" |
+# echo "$optional_dependencies" |
 #while IFS= read -r -d '' requirements; do
 while IFS= read -r requirements; do
-    destination="dist/optional_dependencies/requirements-${counter}.txt"
-    echo "copying $requirements -> $destination"
-    cp "$requirements" "$destination"
-    ((counter++))
-done
+    if [[ "$requirements" == *"txt"* ]]; then
+        destination="optional_dependencies/requirements-${counter}.txt"
+        echo "copying $requirements -> ./dist/$destination"
+        optional_dependencies_esc="$optional_dependencies_esc$destination\\n"
+        cp "$requirements" "./dist/$destination"
+        ((counter++)) || true
+    fi
+done < <(echo "$optional_dependencies")
 runsh_content=$( cat ./dist/run.sh )
-optional_dependencies_esc=${optional_dependencies//$'\n'/\\n}
+# optional_dependencies_esc=${optional_dependencies//$'\n'/\\n}
 pattern_runsh_optionaldeps="optional_dependencies=\"\""
-pattern_runsh_optionaldeps_esc="optional_dependencies=\"$optional_dependencies_esc\""
+pattern_runsh_optionaldeps_esc="optional_dependencies=\$'$optional_dependencies_esc'"
 runsh_content=${runsh_content//"$pattern_runsh_optionaldeps"/"$pattern_runsh_optionaldeps_esc"}
-echo "$runsh_content" > ./dist/run.sh
+printf '%s' "$runsh_content" > ./dist/run.sh
 echo "done"
 echo -
 echo -
@@ -231,13 +194,20 @@ echo "Calling pinliner..."
 "$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o dist/gitgui_bundle.py
 echo "done"
 echo "Patching gitgui_bundle.py..."
-echo "# ..." >> "dist/gitgui_bundle.py"
-echo "# print('within gitgui_bundle')" >> "dist/gitgui_bundle.py"
+printf '%s' "
+# ...
+# print('within gitgui_bundle')
+" >> "dist/gitgui_bundle.py"
 # no need for this, the root package is loaded automatically
-# echo "# import gitgui_bundle" >> "dist/gitgui_bundle.py"
-echo "from src import launcher" >> "dist/gitgui_bundle.py"
-echo "launcher.main()" >> "dist/gitgui_bundle.py"
-echo "# print('out of gitgui_bundle')" >> "./dist/gitgui_bundle.py"
+# printf '%s' "
+# # import gitgui_bundle
+# " >> "dist/gitgui_bundle.py"
+printf '%s' "
+from src import launcher
+launcher.main()
+# print('out of gitgui_bundle')
+
+" >> "./dist/gitgui_bundle.py"
 echo "done"
 echo -
 echo -

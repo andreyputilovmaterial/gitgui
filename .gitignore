@@ -28,7 +28,7 @@ __pycache__/
 .env
 
 # --- Editor files ---
-.vscode/*
+# .vscode/*
 !.vscode/extensions.json
 .idea
 

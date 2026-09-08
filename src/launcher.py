@@ -72,7 +72,7 @@ def call_help_program(*argcs,**kwargs):
 
 run_programs = {
     'gitgui': call_gitgui_program,
-    'gitgui-project-selector': call_gitgui_project_selector_program,
+    'project-selector': call_gitgui_project_selector_program,
     'test': call_test_program,
     'done': call_done_program,
     'help': call_help_program,

@@ -16,6 +16,6 @@
                 "tests-real-sensitive-data/projects.yaml",
             ],
             "console": "integratedTerminal"
-        }
+        },
     ]
 }

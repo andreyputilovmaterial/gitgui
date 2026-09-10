@@ -11,6 +11,8 @@ SET "BUNDLE_INSTALL_DIR=%USERPROFILE%\AppData\Local\gitgui"
 PUSHD "%BUNDLE_INSTALL_DIR%"
 
 bash run.sh "!WORKDIR!" "!GITDIR!"
+IF !ERRORLEVEL! NEQ 0 ( ECHO Error! && pause && exit /b !ERRORLEVEL! )
+
 
 POPD
 

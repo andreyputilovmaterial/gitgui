@@ -130,7 +130,6 @@ endpoints = {
     re.compile('^/vendorlibs/fonts/ibm-plex-sans/.*'): render_assets_vendorlibs_font_ibmplexsans,
     re.compile('^/vendorlibs/fonts/ibm-plex-mono/.*'): render_assets_vendorlibs_font_ibmplexmono,
     '/app.js': render_assets_app_js,
-    # '/app.css': render_assets_app_css,
     '/project-specific.css': render_assets_project_specific_styles_css,
 }
 
@@ -141,7 +140,7 @@ def renderer_assets(server_instance, config: dict,added_data=None):
         payload = f'Resource not found: {repr(server_instance.path)}'
         return WebResponse(
             status_code = 404,
-            content_type = 'text/plain', #'text/css',
+            content_type = 'text/plain',
             body = payload,
             headers = [],
             is_binary=False,
@@ -150,14 +149,17 @@ def renderer_assets(server_instance, config: dict,added_data=None):
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')
     method = server_instance.command
-    if len(path)>=3 and path[0]=='':
+    if len(path)>=3 and path[0]=='' and (method in ('GET','HEAD',)):
         path = '/'.join([]+['']+path[2:])
         renderer = get_matching_endpoint(path,endpoints) or not_found
     else:
         renderer = not_found
     try:
-        return renderer(server_instance,config,added_data)
+        result = renderer(server_instance,config,added_data)
+        if method in ('HEAD',):
+            result.body = None
+        return result
     except FileNotFoundError:
         return not_found()
-    except Exception as e:
-        raise e # for readability - to make it clear any exception normally passes up to webserver engine
+    except Exception:
+        raise # for readability - to make it clear any exception normally passes up to webserver engine

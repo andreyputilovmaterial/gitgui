@@ -1,0 +1,20 @@
+name: "growth projects"
+version: "0"
+
+projects:
+
+  - name: "test0" # similar to "Category Name" - should be alphanumeric
+    # Comment here
+    label: "Test project #01"
+    type: "something"
+    work_tree_folder: "tests-real-sensitive-data/my-test-project"
+    git_repo_folder: "tests-real-sensitive-data/test-project-repo"
+    notes: "hey you"
+
+  - name: "test2" # similar to "Category Name" - should be alphanumeric
+    # Comment here
+    label: "Test project #02"
+    type: "something"
+    work_tree_folder: "tests-real-sensitive-data/my-test-project"
+    git_repo_folder: "tests-real-sensitive-data/test-project-repo"
+    notes: "hey you"

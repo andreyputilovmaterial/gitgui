@@ -2,6 +2,11 @@
 set -e
 
 
+
+DIST_DIR="dist"
+
+
+
 echo "Prep python"
 echo "set venv"
 if [ -x ".venv/Scripts/python.exe" ]; then
@@ -45,7 +50,7 @@ while IFS= read -r requirements; do
     if ! "$pythonexecutable" -m pip install -r "$requirements"; then
         echo "WARNING: not installed"
     fi
-done < <(echo "$optional_dependencies")
+done <<< "$optional_dependencies"
 echo "done"
 echo -
 echo -
@@ -72,9 +77,9 @@ echo -
 
 
 
-echo "Produce dist - clear up and re-create"
-rm -rf -- ./dist || true
-mkdir -p -- dist
+echo "Produce \"$DIST_DIR\" - clear up and re-create"
+rm -rf -- "$DIST_DIR" || true
+mkdir -p -- "$DIST_DIR"
 echo "done"
 echo -
 echo -
@@ -148,42 +153,59 @@ echo -
 
 
 
-echo "Bring run.sh and requirements.txt to ./dist/"
-cp requirements.txt ./dist/
-cat ./run.sh                    | sed -e "s|dist/||g"    > ./dist/run.sh
-cat ./run_project_example.bat   | sed -e "s|dist/||g"    > ./dist/run_project_example.bat
-cat ./run_project_example.sh    | sed -e "s|dist/||g"    > ./dist/run_project_example.sh
-chmod +x ./dist/run.sh
-chmod +x ./dist/run_project_example.bat
-chmod +x ./dist/run_project_example.sh
-echo "done"
-echo -
-echo -
-
-
-
-echo "Bring other optional dependencies to ./dist/"
-mkdir -p dist/optional_dependencies
+echo "Bring run.sh and requirements.txt to \"$DIST_DIR\""
+cp "requirements.txt" "$DIST_DIR/"
+echo "Bring other optional dependencies to $DIST_DIR/"
+mkdir -p $DIST_DIR/optional_dependencies
 counter=0
-optional_dependencies_esc=""
+optional_dependencies_block=""
 # # printf '%s' "$optional_dependencies" |
 # echo "$optional_dependencies" |
 #while IFS= read -r -d '' requirements; do
 while IFS= read -r requirements; do
-    if [[ "$requirements" == *"txt"* ]]; then
-        destination="optional_dependencies/requirements-${counter}.txt"
-        echo "copying $requirements -> ./dist/$destination"
-        optional_dependencies_esc="$optional_dependencies_esc$destination\\n"
-        cp "$requirements" "./dist/$destination"
-        ((counter++)) || true
-    fi
-done < <(echo "$optional_dependencies")
-runsh_content=$( cat ./dist/run.sh )
-# optional_dependencies_esc=${optional_dependencies//$'\n'/\\n}
-pattern_runsh_optionaldeps="optional_dependencies=\"\""
-pattern_runsh_optionaldeps_esc="optional_dependencies=\$'$optional_dependencies_esc'"
-runsh_content=${runsh_content//"$pattern_runsh_optionaldeps"/"$pattern_runsh_optionaldeps_esc"}
-printf '%s' "$runsh_content" > ./dist/run.sh
+    [ -z "$requirements" ] && continue
+    destination="optional_dependencies/requirements-${counter}.txt"
+    echo "copying $requirements -> $DIST_DIR/$destination"
+    # optional_dependencies_esc="$optional_dependencies_esc$destination\\n"
+    optional_dependencies_block+="    \"$destination\""$'\n'
+    cp "$requirements" "$DIST_DIR/$destination"
+    ((counter++)) || true
+done <<< "$optional_dependencies"
+awk '
+    BEGIN { deps=ARGV[2]; delete ARGV[2] }
+    { gsub(/dist[\/\\]/, "") }
+    /# BEGIN GENERATED OPTIONAL DEPENDENCIES/ {
+        print
+        print "optional_dependencies=("
+        printf "%s", deps
+        print ")"
+        in_generated_block = 1
+        next
+    }
+    /# END GENERATED OPTIONAL DEPENDENCIES/ {
+        print
+        in_generated_block = 0
+        next
+    }
+    !in_generated_block {
+        print
+    }
+' "example.run.sh" "$optional_dependencies_block" > "$DIST_DIR/run.sh"
+awk '
+    { gsub(/dist[\/\\]/, "") }
+    { print }
+' "example.run_project_example.sh" > "$DIST_DIR/run_project_example.sh"
+awk '
+    { gsub(/dist[\/\\]/, "") }
+    { print }
+' "example.run_project_example.bat" > "$DIST_DIR/run_project_example.bat"
+cp example.projects-config.yaml "$DIST_DIR/"
+cp LICENSE "$DIST_DIR/"
+cp README.md "$DIST_DIR/"
+cp help.md "$DIST_DIR/"
+chmod +x "$DIST_DIR/run.sh"
+chmod +x "$DIST_DIR/run_project_example.bat"
+chmod +x "$DIST_DIR/run_project_example.sh"
 echo "done"
 echo -
 echo -
@@ -191,24 +213,24 @@ echo -
 
 
 echo "Calling pinliner..."
-"$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o dist/gitgui_bundle.py
+"$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o "$DIST_DIR/gitgui_bundle.py"
 echo "done"
 echo "Patching gitgui_bundle.py..."
 printf '%s' "
 # ...
 # print('within gitgui_bundle')
-" >> "dist/gitgui_bundle.py"
+" >> "$DIST_DIR/gitgui_bundle.py"
 # no need for this, the root package is loaded automatically
 # printf '%s' "
 # # import gitgui_bundle
-# " >> "dist/gitgui_bundle.py"
+# " >> "$DIST_DIR/gitgui_bundle.py"
 printf '%s' "
 from src import launcher
 launcher.main()
 # print('out of gitgui_bundle')
 
-" >> "./dist/gitgui_bundle.py"
+" >> "$DIST_DIR/gitgui_bundle.py"
 echo "done"
 echo -
 echo -
-"$pythonexecutable" ./dist/gitgui_bundle.py --program done
+"$pythonexecutable" "$DIST_DIR/gitgui_bundle.py" --program done

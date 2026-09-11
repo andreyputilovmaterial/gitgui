@@ -146,6 +146,8 @@ const View = {
     'filepath',
     'blobIdLeft',
     'blobIdRight',
+    'filepath_left', // not used
+    'filepath_right', // not used
     'repoStatus',
     'repoActions',
   ],
@@ -212,7 +214,7 @@ const View = {
         return true;
       if( v===0 )
         return true;
-      if( v===[] )
+      if( Array.isArray(v) && (v.length===0) )
         return true;
       return !!v;
     }
@@ -221,7 +223,6 @@ const View = {
       if( /^0+$/.test(blobid) )
         return new Uint8Array([]);
       const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',blobid],{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
-      await jobData.promiseDownloadLinkReady;
       await jobData.promiseDownloadLinkReady;
       // TODO: streamed
       // TODO: direct textconv
@@ -341,7 +342,7 @@ const View = {
       await Promise.all([
         fetchDataLeft(),
         fetchDataRight(),
-        (async () => { console.log(`[DEBUG-diffview-component]: mounted: `,props); return true; })(),
+        (async () => { /* console.log(`[DEBUG-diffview-component]: mounted: `,props); */ return true; })(),
       ]).then(prepareDiffs)
     });
 

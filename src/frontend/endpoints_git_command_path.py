@@ -8,7 +8,7 @@ import re # to check url params against "1", "yes", "affirmative", etc...
 
 
 
-from .common_functions import JSONEncoder, read_file_stream_to_chunks
+from .common_functions import JSONEncoder
 
 
 
@@ -118,7 +118,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         job_id = job_dict.get('job_id')
 
         headers = []
-        need_add_downloadurl = True
+        need_add_downloadurl = ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
         if need_add_downloadurl:
             filename = Path('%FILENAME%').name
             url_get_rawbytes = make_download_url(path_parts, job_id,
@@ -160,7 +160,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         if method=='GET':
             job_dict = call_cli_command_get_job(job_id,config)
             headers = []
-            need_add_downloadurl = True
+            need_add_downloadurl = ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
             if need_add_downloadurl:
                 filename = Path('%FILENAME%').name
                 url_get_rawbytes = make_download_url(path_parts,job_id,filename) # f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
@@ -189,6 +189,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
             )
 
     def handle_send_binary_data(net_request_handler):
+        """Handle a request for binary data and prepare a response to stream it."""
 
         def parse_path(path_parts):
             # path_parts[0] == ''
@@ -245,6 +246,10 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         return response
 
     def handle_pipe_binary_data(net_request_handler):
+        """Handle a request by piping its output to another component for processing.
+        For example, tar, or textconv, or other consumer.
+        Somewhat similar to what "piping" does in command line tools.
+        Response is HTTP 202 with job dict that contains job id."""
 
         def parse_path(path_parts):
             # path_parts[0] == ''
@@ -309,7 +314,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         job_id = job_dict.get('job_id')
 
         headers = []
-        need_add_downloadurl = True
+        need_add_downloadurl = ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
         if need_add_downloadurl:
             filename = Path('%FILENAME%').name
             url_get_rawbytes = make_download_url(path_parts, job_id,
@@ -347,4 +352,4 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         return renderer(net_request_handler)
 
     except Exception as e:
-        raise e
+        raise

@@ -121,7 +121,15 @@ const Record = {
   template: `
 <div :class="[...['diff-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]">
   <component-section-rollup :header="h(RecordHeader,{status,filepath:path,old_path,new_path})" :condensed="false">
-    <diff :filepath="path" :blobIdLeft="old_oid" :blobIdRight="new_oid" :repoStatus="repoStatus" :repoActions="repoActions" />
+    <diff
+      :filepath="path"
+      :filepath_left="old_path"
+      :filepath_right="new_path"
+      :blobIdLeft="old_oid"
+      :blobIdRight="new_oid"
+      :repoStatus="repoStatus"
+      :repoActions="repoActions"
+    />
   </component-section-rollup>
 </div>
 `,

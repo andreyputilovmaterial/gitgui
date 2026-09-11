@@ -131,6 +131,7 @@ const View = {
               status,
               old_path,
               new_path,
+              path: new_path,
             });
           } else {
             const path = decoder.decode(parts[i++]);

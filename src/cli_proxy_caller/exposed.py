@@ -256,8 +256,9 @@ def get_job_stdout_reader(job_id,config):
     context.job_message_queue.put( JobMessage( job_id = None, task = JobTask( action = "gc", ) ) )
 
     if not reader:
-        # hmm, do I have an option of returning something else, other than 404? Not sure
-        raise HTTP404(f'cli_command_get_job: job does not provide stdout reader "{job_id}"')
+        # # hmm, do I have an option of returning something else, other than 404? Not sure
+        # raise HTTP404(f'cli_command_get_job: job does not provide stdout reader "{job_id}"')
+        return None
 
     return reader
 

@@ -502,7 +502,7 @@ const View = {
               partRemoved: contextLines.slice(CONFIG_CONTEXT_INCLUDE_BEFOREAFTER,countUnchangedInSequence-CONFIG_CONTEXT_INCLUDE_BEFOREAFTER),
               partEnd: contextLines.slice(countUnchangedInSequence-CONFIG_CONTEXT_INCLUDE_BEFOREAFTER,countUnchangedInSequence),
               condensedState: true,
-              globalIndex: globalIndex,
+              globalIndex: globalCounter+1,
             });
           }
           sequenceOfUnchangedStartedAt = currIndex;

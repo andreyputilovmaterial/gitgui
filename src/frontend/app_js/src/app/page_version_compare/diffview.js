@@ -422,6 +422,7 @@ const View = {
         const diffLinesPatches = props.repoActions.diff(leftLines,rightLines);
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];
+        const linesBuf = [];
         let sequenceOfUnchangedStartedAt = 0;
         let globalCounter = 0;
         for( const block of diffLinesAllBlocks ) {
@@ -472,8 +473,7 @@ const View = {
               const currIndex = globalCounter;
               const countUnchangedInSequence = currIndex - sequenceOfUnchangedStartedAt;
               if( countUnchangedInSequence > 2*CONFIG_CONTEXT_INCLUDE_BEFOREAFTER+CONFIG_CONTEXT_MIN_HIDE) {
-                const contextLines = lines.slice(sequenceOfUnchangedStartedAt,currIndex);
-                lines.splice(sequenceOfUnchangedStartedAt,countUnchangedInSequence);
+                const contextLines = linesBuf;
                 lines.push({
                   type: 'condensed-block',
                   partBegin: contextLines.slice(0,CONFIG_CONTEXT_INCLUDE_BEFOREAFTER),
@@ -482,10 +482,15 @@ const View = {
                   condensedState: true,
                   globalIndex: globalCounter+1,
                 });
+              } else {
+                lines.push(...linesBuf);
+                linesBuf.splice(0,linesBuf.length);
               }
+              lines.push(line);
               sequenceOfUnchangedStartedAt = currIndex;
+            } else {
+              linesBuf.push(line);
             }
-            lines.push(line);
             globalCounter++;
           }
         };

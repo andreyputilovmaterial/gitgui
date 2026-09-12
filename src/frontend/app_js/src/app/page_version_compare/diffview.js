@@ -422,8 +422,8 @@ const View = {
         const diffLinesPatches = props.repoActions.diff(leftLines,rightLines);
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];
-        let globalIndex = 0;
         let sequenceOfUnchangedStartedAt = 0;
+        let globalCounter = 0;
         for( const block of diffLinesAllBlocks ) {
           const lineNumbersWithinBlock = Math.max( block.lhs.items.length, block.rhs.items.length );
           for( let lineNumberWithinBlock=0; lineNumberWithinBlock<lineNumbersWithinBlock; ++lineNumberWithinBlock ) {
@@ -462,14 +462,14 @@ const View = {
                 status: rstatus,
               },
               type: 'line',
-              globalIndex: globalIndex,
+              globalIndex: globalCounter+1,
             };
             // detect "context" blocks to collapse, in between changed blocks
             const lchange = ( ['ins','del','mod'].includes(lstatus) ? true : ( ['blank','keep'].includes(lstatus) ? false : (()=>{throw new Error(`diff: can\'t detect line status: ${lstatus}`);})() ) );
             const rchange = ( ['ins','del','mod'].includes(rstatus) ? true : ( ['blank','keep'].includes(rstatus) ? false : (()=>{throw new Error(`diff: can\'t detect line status: ${rstatus}`);})() ) );
             const lineChanged = lchange || rchange;
             if( lineChanged ) {
-              const currIndex = lines.length;
+              const currIndex = globalCounter;
               const countUnchangedInSequence = currIndex - sequenceOfUnchangedStartedAt;
               if( countUnchangedInSequence > 2*CONFIG_CONTEXT_INCLUDE_BEFOREAFTER+CONFIG_CONTEXT_MIN_HIDE) {
                 const contextLines = lines.slice(sequenceOfUnchangedStartedAt,currIndex);
@@ -480,13 +480,13 @@ const View = {
                   partRemoved: contextLines.slice(CONFIG_CONTEXT_INCLUDE_BEFOREAFTER,countUnchangedInSequence-CONFIG_CONTEXT_INCLUDE_BEFOREAFTER),
                   partEnd: contextLines.slice(countUnchangedInSequence-CONFIG_CONTEXT_INCLUDE_BEFOREAFTER,countUnchangedInSequence),
                   condensedState: true,
-                  globalIndex: globalIndex,
+                  globalIndex: globalCounter+1,
                 });
               }
               sequenceOfUnchangedStartedAt = currIndex;
             }
             lines.push(line);
-            globalIndex++;
+            globalCounter++;
           }
         };
         const lineChanged = true;

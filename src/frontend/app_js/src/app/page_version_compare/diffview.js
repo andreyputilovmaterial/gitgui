@@ -491,7 +491,7 @@ const View = {
         };
         const lineChanged = true;
         if( lineChanged ) {
-          const currIndex = lines.length;
+          const currIndex = globalCounter;
           const countUnchangedInSequence = currIndex - sequenceOfUnchangedStartedAt;
           if( countUnchangedInSequence > 2*CONFIG_CONTEXT_INCLUDE_BEFOREAFTER+CONFIG_CONTEXT_MIN_HIDE) {
             const contextLines = lines.slice(sequenceOfUnchangedStartedAt,currIndex);

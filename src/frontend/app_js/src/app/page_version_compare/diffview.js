@@ -15,6 +15,10 @@ import './styles_diffview.css';
 const MEMORYSAVE_LINES_LIMIT = 1000;
 const MEMORYSAVE_CHARS_PER_LINE_LIMIT = 100;
 
+const CONFIG_CONTEXT_INCLUDE_BEFOREAFTER = 10;
+const CONFIG_CONTEXT_MIN_HIDE = 10;
+
+
 
 function* diffAllParts(lhs, rhs, patches) {
     let lastl = 0;
@@ -141,6 +145,126 @@ function identifyLineStatus(line) {
 }
 
 
+
+const LineNum = {
+  props: [ 'line', 'side', ],
+  template: `
+<p :class="['code',\`status-\${line[side].status}\`]">{{ line[side].lineNum }}</p>
+`,
+  setup() {
+    return {};
+  },
+}
+
+const LineTxt = {
+  props: [ 'line', 'side', ],
+  template: `
+<p :class="['code']"><span v-for="piece in line[side].content" :class="[\`status-\${piece.role}\`]">{{ piece.txt }}</span></p>
+`,
+  setup() {
+    return {};
+  },
+}
+
+const LineLinkShowTxt = {
+  props: [ 'line', 'side', 'setCondensedState', 'linesCount', ],
+  template: `
+<p :class="['code']"><a href="#!" @click.prevent="setCondensedState">... Show {{ linesCount }} more lines ...</a></p>
+`,
+  setup() {
+    return {};
+  },
+}
+
+const LineBlockNum = {
+  props: [ 'partBegin', 'partRemoved', 'partEnd', 'condensedState', 'setCondensedState', 'side', ],
+  template: `
+<div class="part-context">
+  <div class="part-context-begin">
+    <p-line-num v-for="line in partBegin" :key="line.globalIndex" :line="line" :side="side" />
+  </div>
+  <div class="part-context-condensed">
+    <template v-if="condensedState">
+      <p-line-num v-for="line in partRemoved.slice(0,1)" :key="line.globalIndex" :line="partRemoved[0]" :side="side" />
+    </template>
+    <template v-else>
+      <p-line-num v-for="line in partRemoved" :key="line.globalIndex" :line="line" :side="side" />
+    </template>
+  </div>
+  <div class="part-context-end">
+    <p-line-num v-for="line in partEnd" :key="line.globalIndex" :line="line" :side="side" />
+  </div>
+</div>
+`,
+  components: {
+    'p-line-num': LineNum,
+  },
+  setup() {
+    return {};
+  },
+}
+
+const LineBlockTxt = {
+  props: [ 'partBegin', 'partRemoved', 'partEnd', 'condensedState', 'setCondensedState', 'side', ],
+  template: `
+<div class="part-context">
+  <div class="part-context-begin">
+    <p-line-txt v-for="line in partBegin" :key="line.globalIndex" :line="line" :side="side" />
+  </div>
+  <div class="part-context-condensed">
+    <template v-if="condensedState">
+      <p-line-link-txt v-for="line in partRemoved.slice(0,1)" :key="line.globalIndex" :line="partRemoved[0]" :side="side" :setCondensedState="setCondensedState" :linesCount="partRemoved.length" />
+    </template>
+    <template v-else>
+      <p-line-txt v-for="line in partRemoved" :key="line.globalIndex" :line="line" :side="side" />
+    </template>
+  </div>
+  <div class="part-context-end">
+    <p-line-txt v-for="line in partEnd" :key="line.globalIndex" :line="line" :side="side" />
+  </div>
+</div>
+`,
+  components: {
+    'p-line-txt': LineTxt,
+    'p-line-link-txt': LineLinkShowTxt,
+  },
+  setup() {
+    return {};
+  },
+}
+
+const RecordNum = {
+  props: [ 'line', 'setCondensedState', 'side', ],
+  template: `
+<p-line-num v-if="line.type==='line'" :line=line :side="side" />
+<p-line-block-num v-else-if="line.type==='condensed-block'" :partBegin="line.partBegin" :partRemoved="line.partRemoved" :partEnd="line.partEnd" :side="side"  :condensedState="line.condensedState" :setCondensedState="setCondensedState" />
+<div v-else class="errpr">Unrecognized line type: {{type }}</div>
+`,
+  components: {
+    'p-line-num': LineNum,
+    'p-line-block-num': LineBlockNum,
+  },
+  setup() {
+    return {};
+  },
+}
+
+const RecordTxt = {
+  props: [ 'line', 'setCondensedState', 'side', ],
+  template: `
+<p-line-txt v-if="line.type==='line'" :line=line :side="side" />
+<p-line-block-txt v-else-if="line.type==='condensed-block'" :partBegin="line.partBegin" :partRemoved="line.partRemoved" :partEnd="line.partEnd" :side="side"  :condensedState="line.condensedState" :setCondensedState="setCondensedState" />
+<div v-else class="errpr">Unrecognized line type: {{type }}</div>
+`,
+  components: {
+    'p-line-txt': LineTxt,
+    'p-line-block-txt': LineBlockTxt,
+  },
+  setup() {
+    return {};
+  },
+}
+
 const View = {
   props: [
     'filepath',
@@ -163,26 +287,26 @@ const View = {
     </form>
   </template>
   <template v-else>
-    <div v-if="!linesLeft || !linesRight" class="note">Calculating diff...</div>
+    <div v-if="!lines" class="note">Calculating diff...</div>
     <div class="stats">Left file: <component-format-filesize :size="statisticsLeft?.binaryFileSize" />, right file: <component-format-filesize :size="statisticsRight?.binaryFileSize" /></div>
     <div class="two-sided-view">
       <div :class="{'pane': true, 'pane-left': true, 'diff-outputs': true, 'mdm-textconv-failed': Object.keys(statisticsLeft?.textconvHeadersRecognized || {}).includes('error'),}">
         <div class="linenumber-and-content-columns">
           <div class="linenum-col">
-            <p v-for="line in linesLeft" :class="['code',\`status-\${line.status}\`]">{{ line.lineNum }}</p>
+            <p-line-num v-for="line in lines" :key="line.globalIndex" :line="line" side="lhs" :setCondensedState="function(event){line.condensedState=false}" />
           </div>
           <div class="contents">
-            <p v-for="line in linesLeft" :class="['code']"><span v-for="piece in line.content" :class="[\`status-\${piece.role}\`]">{{ piece.txt }}</span></p>
+            <p-line-txt v-for="line in lines" :key="line.globalIndex" :line="line" side="lhs" :setCondensedState="function(event){line.condensedState=false}" />
           </div>
         </div>
       </div>
       <div :class="{'pane': true, 'pane-right': true, 'diff-outputs': true, 'mdm-textconv-failed': Object.keys(statisticsRight?.textconvHeadersRecognized || {}).includes('error'),}">
         <div class="linenumber-and-content-columns">
           <div class="linenum-col">
-            <p v-for="line in linesRight" :class="['code',\`status-\${line.status}\`]">{{ line.lineNum }}</p>
+            <p-line-num v-for="line in lines" :key="line.globalIndex" :line="line" side="rhs" :setCondensedState="function(event){line.condensedState=false}" />
           </div>
           <div class="contents">
-            <p v-for="line in linesRight" :class="['code']"><span v-for="piece in line.content" :class="[\`status-\${piece.role}\`]">{{ piece.txt }}</span></p>
+            <p-line-txt v-for="line in lines" :key="line.globalIndex" :line="line" side="rhs" :setCondensedState="function(event){line.condensedState=false}" />
           </div>
         </div>
       </div>
@@ -190,11 +314,14 @@ const View = {
   </template>
 </div>
 `,
+  components: {
+    'p-line-num': RecordNum,
+    'p-line-txt': RecordTxt,
+  },
   setup(props) {
 
     const error = ref('');
-    const linesLeft = ref(undefined);
-    const linesRight = ref(undefined);
+    const linesRef = ref(undefined);
     const statisticsLeft = ref({});
     const statisticsRight = ref({});
     const memorysave = ref(true);
@@ -295,6 +422,8 @@ const View = {
         const diffLinesPatches = props.repoActions.diff(leftLines,rightLines);
         const diffLinesAllBlocks = Array.from(diffAllParts(leftLines,rightLines,diffLinesPatches));
         const lines = [];
+        let globalIndex = 0;
+        let sequenceOfUnchangedStartedAt = 0;
         for( const block of diffLinesAllBlocks ) {
           const lineNumbersWithinBlock = Math.max( block.lhs.items.length, block.rhs.items.length );
           for( let lineNumberWithinBlock=0; lineNumberWithinBlock<lineNumbersWithinBlock; ++lineNumberWithinBlock ) {
@@ -319,23 +448,48 @@ const View = {
                 throw new Error(`diff: within line, iterate over parts: unrecognized part type: "${piece.type}"`);
               };
             }
+            const lstatus = identifyLineStatus(ltext);
+            const rstatus = identifyLineStatus(rtext);
             const line = {
               lhs: {
                 lineNum: 1 + block.lhs.at + Math.max(Math.min(lineNumberWithinBlock,block.lhs.items.length-1),0),
                 content: ltext,
-                status: identifyLineStatus(ltext),
+                status: lstatus,
               },
               rhs: {
                 lineNum: 1 + block.rhs.at + Math.max(Math.min(lineNumberWithinBlock,block.rhs.items.length-1),0),
                 content: rtext,
-                status: identifyLineStatus(rtext),
+                status: rstatus,
               },
+              type: 'line',
+              globalIndex: globalIndex,
             };
+            // detect "context" blocks to collapse, in between changed blocks
+            const lchange = ( ['ins','del','mod'].includes(lstatus) ? true : false );
+            const rchange = ( ['ins','del','mod'].includes(rstatus) ? true : false );
+            const lineChanged = lchange || rchange;
+            if( lineChanged ) {
+              const currIndex = lines.length;
+              const countUnchangedInSequence = currIndex - sequenceOfUnchangedStartedAt;
+              if( countUnchangedInSequence > 2*CONFIG_CONTEXT_INCLUDE_BEFOREAFTER+CONFIG_CONTEXT_MIN_HIDE) {
+                const contextLines = lines.slice(sequenceOfUnchangedStartedAt,currIndex);
+                lines.splice(sequenceOfUnchangedStartedAt,countUnchangedInSequence);
+                lines.push({
+                  type: 'condensed-block',
+                  partBegin: contextLines.slice(0,CONFIG_CONTEXT_INCLUDE_BEFOREAFTER),
+                  partRemoved: contextLines.slice(CONFIG_CONTEXT_INCLUDE_BEFOREAFTER,countUnchangedInSequence-CONFIG_CONTEXT_INCLUDE_BEFOREAFTER),
+                  partEnd: contextLines.slice(countUnchangedInSequence-CONFIG_CONTEXT_INCLUDE_BEFOREAFTER,countUnchangedInSequence),
+                  condensedState: true,
+                  globalIndex: globalIndex,
+                });
+              }
+              sequenceOfUnchangedStartedAt = currIndex;
+            }
             lines.push(line);
+            globalIndex++;
           }
-        }
-        linesLeft.value = lines.map(l=>l.lhs);
-        linesRight.value = lines.map(l=>l.rhs);
+        };
+        linesRef.value = lines;
       } catch(e) {
         error.value = e;
         props.repoActions.logError(e);
@@ -357,7 +511,7 @@ const View = {
         memorySaveOffPromiseContext.resolve(true);
     });
 
-    return { error, linesLeft, linesRight, hasValue, statisticsLeft, statisticsRight, memorysave };
+    return { error, lines: linesRef, hasValue, statisticsLeft, statisticsRight, memorysave };
   },
 }
 

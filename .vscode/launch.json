@@ -20,6 +20,21 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "this repo",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.launcher",
+            "args": [
+                "--program",
+                "gitgui",
+                "--work-tree-folder",
+                ".",
+                "--git-repo-folder",
+                ".",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "project-selector",
             "type": "debugpy",
             "request": "launch",

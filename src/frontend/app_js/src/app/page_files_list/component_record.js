@@ -80,11 +80,18 @@ const Record = {
         await jobData.promise;
         const buffer = await bufferPromise;
         const binaryData = new Uint8Array(buffer);
-        const contentAsText = await props.repoActions.textconv(binaryData,filename);
-
+        const content = await props.repoActions.textconv(binaryData,filename);
+      
         try {
           fileViewLinkWindowIsOpen.value = true;
-          await props.repoActions.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
+          await props.repoActions.createModal(h(PageFileView,{
+            ...props,
+            resourcepath: resourcepath,
+            size: binaryData.length,
+            contentAsText: content.text,
+            contentHeaders: content.headers,
+            headersRecognized: content.headersRecognized,
+          }));
         } finally {
           fileViewLinkWindowIsOpen.value = false;
         }

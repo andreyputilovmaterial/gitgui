@@ -166,7 +166,7 @@ const View = {
     <div v-if="!linesLeft || !linesRight" class="note">Calculating diff...</div>
     <div class="stats">Left file: <component-format-filesize :size="statisticsLeft?.binaryFileSize" />, right file: <component-format-filesize :size="statisticsRight?.binaryFileSize" /></div>
     <div class="two-sided-view">
-      <div class="pane pane-left diff-outputs">
+      <div :class="{'pane': true, 'pane-left': true, 'diff-outputs': true, 'mdm-textconv-failed': Object.keys(statisticsLeft?.textconvHeadersRecognized || {}).includes('error'),}">
         <div class="linenumber-and-content-columns">
           <div class="linenum-col">
             <p v-for="line in linesLeft" :class="['code',\`status-\${line.status}\`]">{{ line.lineNum }}</p>
@@ -176,7 +176,7 @@ const View = {
           </div>
         </div>
       </div>
-      <div class="pane pane-right diff-outputs">
+      <div :class="{'pane': true, 'pane-right': true, 'diff-outputs': true, 'mdm-textconv-failed': Object.keys(statisticsRight?.textconvHeadersRecognized || {}).includes('error'),}">
         <div class="linenumber-and-content-columns">
           <div class="linenum-col">
             <p v-for="line in linesRight" :class="['code',\`status-\${line.status}\`]">{{ line.lineNum }}</p>
@@ -239,7 +239,10 @@ const View = {
         statisticsLeft.value.binaryFileSize = '???';
         const binaryDataLeft = await getContentsFromBlob(props.blobIdLeft);
         statisticsLeft.value.binaryFileSize = binaryDataLeft.length;
-        const txtLeft = await props.repoActions.textconv(binaryDataLeft,props.filepath);
+        const contentLeft = await props.repoActions.textconv(binaryDataLeft,props.filepath);
+        const txtLeft = contentLeft.text;
+        statisticsLeft.value.textconvHeaders = contentLeft.headers;
+        statisticsLeft.value.textconvHeadersRecognized = contentLeft.headersRecognized;
         statisticsLeft.value.textFileSize = txtLeft.length;
         return txtLeft;
       } catch(e) {
@@ -254,7 +257,10 @@ const View = {
         statisticsRight.value.binaryFileSize = '???';
         const binaryDataRight = await getContentsFromBlob(props.blobIdRight);
         statisticsRight.value.binaryFileSize = binaryDataRight.length;
-        const txtRight = await props.repoActions.textconv(binaryDataRight,props.filepath);
+        const contentRight = await props.repoActions.textconv(binaryDataRight,props.filepath);
+        const txtRight = contentRight.text;
+        statisticsRight.value.textconvHeaders = contentRight.headers;
+        statisticsRight.value.textconvHeadersRecognized = contentRight.headersRecognized;
         statisticsRight.value.textFileSize = txtRight.length;
         return txtRight;
       } catch(e) {

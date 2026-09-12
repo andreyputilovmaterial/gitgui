@@ -74,5 +74,8 @@
   background: #ffcecb;
 }
 .mdm-git-gui-diffview .diff-outputs .linenum-col .status-mod {
-  background: #f5eec1;
+  background: #ffe959;
+}
+.mdm-git-gui-diffview .mdm-textconv-failed .linenum-col p, .mdm-git-gui-diffview .mdm-textconv-failed .contents p {
+  background: #e2e2e2;
 }

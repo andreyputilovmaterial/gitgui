@@ -2,6 +2,7 @@
 
 # import tempfile
 from pathlib import Path
+from io import BytesIO
 
 MarkItDown = None
 markitdown_import_success = None
@@ -29,21 +30,19 @@ except ImportError as e:
 #         except Exception as e:
 #             return f'TEXTCONV MarkItDown: failed when converting to text: "{e}"'
 
-def textconv(file,filename):
+def textconv(inpFile,filename):
     if not markitdown_import_success:
         raise Exception( f'TEXTCONV MarkItDown: Markitdown module is not available - will not be able to wide range of files ({markitdown_import_error})' )
-    try:
-        md = MarkItDown()
-        result = md.convert_stream(
-            file,
-            stream_info=StreamInfo(
-                # mimetype="application/something",
-                extension=Path(filename).suffix,
-            ),
-        )
-        return result.text_content
-    except Exception as e:
-        return f'TEXTCONV MarkItDown: failed when converting to text: "{e}"'
-
+    md = MarkItDown()
+    file = BytesIO(inpFile.read())
+    file.seek(0)
+    result = md.convert_stream(
+        file,
+        stream_info=StreamInfo(
+            # mimetype="application/something",
+            extension=Path(filename).suffix,
+        ),
+    )
+    return result.text_content
 
 

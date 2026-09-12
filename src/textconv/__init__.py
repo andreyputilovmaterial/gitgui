@@ -63,7 +63,7 @@ class StreamingProxy:
                 'TEXTCONV: StreamingProxy: read() must be called within context'
             )
 
-        if size>MAX_FILE_SIZE_LIMIT_BYTES:
+        if size>MAX_FILE_SIZE_LIMIT_BYTES or size<0:
             size = MAX_FILE_SIZE_LIMIT_BYTES+1 # not 100% accurate as of limit, but I believe having extra SAMPLE_SIZE_BYTES should not be an issue
 
         # First replay bytes from the pre-read sample.
@@ -133,7 +133,7 @@ class StreamingProxy:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print( make_header(f'size: {int(self.size)}'), file=self.buffer_for_headers, end='\n' )
+        print( make_header(f'bytes_consumed: {int(self.size)}'), file=self.buffer_for_headers, end='\n' )
         print( make_header(f'hash: {self.hexdigest}'), file=self.buffer_for_headers, end='\n' )
         self._is_in_context = False
         return None

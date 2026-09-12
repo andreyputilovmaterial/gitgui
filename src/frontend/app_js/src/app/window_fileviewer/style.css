@@ -25,7 +25,12 @@
   display: block;
   background: #fff;
   padding: 14px;
+  color: #111;
   transition: all 600ms ease;
+}
+
+.mdm-textconv-failed .mdm-git-gui-filecontents {
+  color: #661111;
 }
 
 

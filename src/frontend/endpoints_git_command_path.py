@@ -97,11 +97,12 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         flag_is_interactive = flag_is_interactive.strip()
         flag_is_interactive = detect_binary_str_value(flag_is_interactive)
         # params_flattened: example: { stdout_chunk_size: 8, stderr_chunk_size: 4, }
-        # Read Content-Length header
-        length = int(net_request_handler.headers["Content-Length"])
-        # Read exactly that many bytes
-        body = net_request_handler.rfile.read(length)
-        # Convert bytes -> str -> Python object
+        # # Read Content-Length header
+        # length = int(net_request_handler.headers["Content-Length"])
+        # # Read exactly that many bytes
+        # body = net_request_handler.rfile.read(length)
+        # # Convert bytes -> str -> Python object
+        body = net_request_handler.request_body.read()
         payload = json.loads(body)
         command = prep_payload(payload)
         try:
@@ -172,7 +173,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 body = json.dumps(job_dict, cls=JSONEncoder),
                 headers = headers,
             )
-        elif method=='DELETE':
+        elif method=='TERM':
             call_cli_command_terminate_job(job_id,config)
             return WebResponse(
                 status_code = 204,
@@ -247,9 +248,9 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
 
     def handle_pipe_binary_data(net_request_handler):
         """Handle a request by piping its output to another component for processing.
-        For example, tar, or textconv, or other consumer.
-        Somewhat similar to what "piping" does in command line tools.
-        Response is HTTP 202 with job dict that contains job id."""
+For example, tar, or textconv, or other consumer.
+Somewhat similar to what "piping"/"redirecting output" does in command line tools.
+Response is HTTP 202 with job dict that contains new job id."""
 
         def parse_path(path_parts):
             # path_parts[0] == ''
@@ -290,11 +291,12 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         # job_dict = call_cli_command_get_job(job_id, config)
         # is_binary = job_dict.get('is_binary',None)
 
-        # Read Content-Length header
-        length = int(net_request_handler.headers["Content-Length"])
-        # Read exactly that many bytes
-        body = net_request_handler.rfile.read(length)
-        # Convert bytes -> str -> Python object
+        # # Read Content-Length header
+        # length = int(net_request_handler.headers["Content-Length"])
+        # # Read exactly that many bytes
+        # body = net_request_handler.rfile.read(length)
+        # # Convert bytes -> str -> Python object
+        body = net_request_handler.request_body.read()
         payload = json.loads(body)
         arg_command, args_rest = payload[0], payload[1:]
 

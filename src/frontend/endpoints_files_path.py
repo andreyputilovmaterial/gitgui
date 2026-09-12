@@ -14,18 +14,18 @@ def not_implemented(*args,**argv):
 
 
 
-def handle_request_files_endpoint(server_instance, config: dict,added_data=None):
-    path_with_query = server_instance.path
+def handle_request_files_endpoint(net_request_handler, config: dict,added_data=None):
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')
-    method = server_instance.command
+    method = net_request_handler.command
     if len(path)>=3 and path[0]=='':
         path = '/'.join([]+['']+path[2:])
         renderer = get_matching_endpoint(path,endpoints) or not_found
     else:
         renderer = not_found
     try:
-        return renderer(server_instance,config,added_data)
+        return renderer(net_request_handler,config,added_data)
     except FileNotFoundError:
         return not_found()
     except Exception as e:

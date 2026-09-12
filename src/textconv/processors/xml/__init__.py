@@ -1,7 +1,7 @@
 
 from bs4 import BeautifulSoup
 
-def textconv(data,filename):
+def textconv(file,filename):
   # txt = data.decode()
-  txt = data
+  txt = file.read()
   return BeautifulSoup(txt,"html.parser").prettify()

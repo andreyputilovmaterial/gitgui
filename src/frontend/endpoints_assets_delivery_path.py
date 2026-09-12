@@ -27,10 +27,10 @@ from .GENERATED.ASSETS import (
 
 
 
-def render_payload(server_instance, config: dict,added_data=None,is_binary=False):
+def render_payload(net_request_handler, config: dict,added_data=None,is_binary=False):
     WebResponse = config.get('iface').get('WebResponse')
     content_type = 'text/plain'
-    path_with_query = server_instance.path
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     if re.match(r'.*\.css\s*$',path_parsed,flags=re.I):
         content_type = 'text/css'
@@ -47,40 +47,40 @@ def render_payload(server_instance, config: dict,added_data=None,is_binary=False
 
 
 
-def render_assets_common_css(server_instance, config: dict,added_data=None):
+def render_assets_common_css(net_request_handler, config: dict,added_data=None):
     payload = common_css
-    return render_payload(server_instance,config,added_data=payload)
+    return render_payload(net_request_handler,config,added_data=payload)
 
-def render_assets_normalize_css(server_instance, config: dict,added_data=None):
+def render_assets_normalize_css(net_request_handler, config: dict,added_data=None):
     payload = normalize_css
-    return render_payload(server_instance,config,added_data=payload)
+    return render_payload(net_request_handler,config,added_data=payload)
 
-def render_assets_common_js(server_instance, config: dict,added_data=None):
+def render_assets_common_js(net_request_handler, config: dict,added_data=None):
     payload = common_js
-    return render_payload(server_instance,config,added_data=payload)
+    return render_payload(net_request_handler,config,added_data=payload)
 
-def render_assets_app_js(server_instance, config: dict,added_data=None):
+def render_assets_app_js(net_request_handler, config: dict,added_data=None):
     payload = app_js
-    return render_payload(server_instance,config,added_data=payload)
+    return render_payload(net_request_handler,config,added_data=payload)
 
-def render_assets_project_specific_styles_css(server_instance, config: dict,added_data=None):
+def render_assets_project_specific_styles_css(net_request_handler, config: dict,added_data=None):
     payload = project_specific_styles_css
-    return render_payload(server_instance,config,added_data=payload)
+    return render_payload(net_request_handler,config,added_data=payload)
 
-def render_assets_vendorlibs_vue_js(server_instance, config: dict,added_data=None):
+def render_assets_vendorlibs_vue_js(net_request_handler, config: dict,added_data=None):
     payload = vendorlibs_vue_js
-    return render_payload(server_instance,config,added_data=payload)
-def render_assets_vendorlibs_marked_js(server_instance, config: dict,added_data=None):
+    return render_payload(net_request_handler,config,added_data=payload)
+def render_assets_vendorlibs_marked_js(net_request_handler, config: dict,added_data=None):
     payload = vendorlibs_marked_js
-    return render_payload(server_instance,config,added_data=payload)
-def render_assets_vendorlibs_dompurify_js(server_instance, config: dict,added_data=None):
+    return render_payload(net_request_handler,config,added_data=payload)
+def render_assets_vendorlibs_dompurify_js(net_request_handler, config: dict,added_data=None):
     payload = vendorlibs_dompurify_js
-    return render_payload(server_instance,config,added_data=payload)
-def render_assets_vendorlibs_font_ibmplexsans(server_instance, config: dict,added_data=None):
+    return render_payload(net_request_handler,config,added_data=payload)
+def render_assets_vendorlibs_font_ibmplexsans(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
-    path_with_query = server_instance.path
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = '/'.join((path_parsed.split('/'))[5:])
     if path not in payload_dict:
@@ -92,16 +92,16 @@ def render_assets_vendorlibs_font_ibmplexsans(server_instance, config: dict,adde
         )
     payload = payload_dict.get(path)
     return render_payload(
-        server_instance,
+        net_request_handler,
         config,
         added_data = payload,
         is_binary = True,
     )
-def render_assets_vendorlibs_font_ibmplexmono(server_instance, config: dict,added_data=None):
+def render_assets_vendorlibs_font_ibmplexmono(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
-    path_with_query = server_instance.path
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = '/'.join((path_parsed.split('/'))[5:])
     if path not in payload_dict:
@@ -113,7 +113,7 @@ def render_assets_vendorlibs_font_ibmplexmono(server_instance, config: dict,adde
         )
     payload = payload_dict.get(path)
     return render_payload(
-        server_instance,
+        net_request_handler,
         config,
         added_data = payload,
         is_binary = True,
@@ -134,10 +134,10 @@ endpoints = {
 }
 
 
-def renderer_assets(server_instance, config: dict,added_data=None):
+def renderer_assets(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     def not_found(*args,**argv):
-        payload = f'Resource not found: {repr(server_instance.path)}'
+        payload = f'Resource not found: {repr(net_request_handler.path)}'
         return WebResponse(
             status_code = 404,
             content_type = 'text/plain',
@@ -145,17 +145,17 @@ def renderer_assets(server_instance, config: dict,added_data=None):
             headers = [],
             is_binary=False,
         )
-    path_with_query = server_instance.path
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')
-    method = server_instance.command
+    method = net_request_handler.command
     if len(path)>=3 and path[0]=='' and (method in ('GET','HEAD',)):
         path = '/'.join([]+['']+path[2:])
         renderer = get_matching_endpoint(path,endpoints) or not_found
     else:
         renderer = not_found
     try:
-        result = renderer(server_instance,config,added_data)
+        result = renderer(net_request_handler,config,added_data)
         if method in ('HEAD',):
             result.body = None
         return result

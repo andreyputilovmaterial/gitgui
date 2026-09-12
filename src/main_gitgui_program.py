@@ -19,7 +19,10 @@ from .cli_proxy_caller import (
     get_job_stdout_reader as cli_command_get_job_stdout_reader,
     terminate_job as cli_command_terminate_job,
 )
-from .textconv import textconv
+from .textconv import (
+    textconv_from_data,
+    textconv_from_stream,
+)
 from .output_postprocessors import register_output_postprocessor, output_postprocessors #, get_output_postprocessor
 from .output_postprocessors.tar import tar_output_processor
 from .GENERATED.VERSION import _VERSION as script_version
@@ -111,13 +114,14 @@ def main(*argcs,**kwargs):
             'WebResponse': WebResponse,
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,
-            'textconv': textconv,
+            'textconv_from_data': textconv_from_data,
+            'textconv_from_stream': textconv_from_stream,
             'output_postprocessors': output_postprocessors,
         },
     }
 
     register_output_postprocessor('tar',tar_output_processor)
-    register_output_postprocessor('textconv',textconv)
+    register_output_postprocessor('textconv',textconv_from_stream)
 
     if args.work_tree_folder:
         work_tree_folder = f'{args.work_tree_folder}' # make sure it's text

@@ -5,6 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "downloads",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.launcher",
+            "args": [
+                "--program",
+                "gitgui",
+                "--work-tree-folder",
+                "/Users/andrej/Downloads",
+                "--git-repo-folder",
+                "tests-real-sensitive-data/test-downloads-repo",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "project-selector",
             "type": "debugpy",
             "request": "launch",

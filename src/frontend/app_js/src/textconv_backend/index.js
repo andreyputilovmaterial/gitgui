@@ -1,10 +1,15 @@
 
+import { makeFetchResponseErrorMessage } from '../common_defs/helper_functions';
+
+const sanitizeFilenameFromRevisionHash = name => name.replace(/^\w+:/,'');
+
+
 const textconvFactory = repoActions =>
 
   async function textconv(data,filename) {
     const isStream = ( data instanceof ReadableStream )
     try {
-      const response = await fetch(`/textconv?filepath=${filename}`, {
+      const response = await fetch(`/textconv?filepath=${encodeURIComponent(sanitizeFilenameFromRevisionHash(filename))}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/octet-stream",
@@ -13,14 +18,7 @@ const textconvFactory = repoActions =>
         duplex: isStream ? 'half' : undefined,
       });
       if( !response.ok ) {
-        let error = `Failed requesting /textconv: HTTP ${response.status}`;
-        try {
-          error = await response.text();
-          error = `Failed requesting /textconv: HTTP ${response.status}: ${error}`;
-        } catch(e) {
-          // ok to ignore
-        }
-        throw new Error(error);
+        throw new Error(await makeFetchResponseErrorMessage(response));
       }
       return await response.text();
     } catch(e) {

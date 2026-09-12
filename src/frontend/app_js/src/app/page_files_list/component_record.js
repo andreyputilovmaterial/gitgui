@@ -26,7 +26,7 @@ const Record = {
 <div :class="[...['files-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]" :key="filepath" :data-recordsfilter-filepath="filepath">
   <div class="error">{{ error }}</div>
   <div v-if="showBulkRestoreCheckbox" class="mdmreport-controls-group bulk-restore-checkbox-outer"><input v-model="bulkRestoreVModel.checked" class="bulk-restore-checkbox mdmreport-control" type="checkbox" :value="filepath"></div>
-  <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-1" title="View file"><component-loader-spinner v-if="fileViewLinkBusy" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
+  <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-1" title="View file"><component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
   <span class="link-download-file mdm-ui-record-col-download-file mdm-ui-record-col-2" title="Download file"><component-loader-spinner v-if="fileDownloadLinkBusy" /><span class="label">Download file: </span><a @click.prevent="handleDownloadFile" href="#!" download>⇩</a></span>
   <span class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" title="File path"><span class="label">File path: </span>{{ filepath }}</span>
 </div>
@@ -37,11 +37,13 @@ const Record = {
 
     const error = ref('');
     const fileViewLinkBusy = ref(false);
+    const fileViewLinkWindowIsOpen = ref(false);
     const fileDownloadLinkBusy = ref(false);;
 
     const navigateFileViewPage = async () => {
       try {
         fileViewLinkBusy.value = true;
+        fileViewLinkWindowIsOpen.value = false;
         const resourcepath = `${props.hash}:${props.filepath}`;
         const filename = `${resourcepath}`.split('/').pop();
 
@@ -80,7 +82,12 @@ const Record = {
         const binaryData = new Uint8Array(buffer);
         const contentAsText = await props.repoActions.textconv(binaryData,filename);
 
-        await props.repoActions.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
+        try {
+          fileViewLinkWindowIsOpen.value = true;
+          await props.repoActions.createModal(h(PageFileView,{...props,resourcepath:resourcepath,contentAsText:contentAsText}));
+        } finally {
+          fileViewLinkWindowIsOpen.value = false;
+        }
 
         fileViewLinkBusy.value = false;
         error.value = '';
@@ -89,12 +96,14 @@ const Record = {
         if( e instanceof Error ) {
           props.repoActions.logError(e);
           props.repoActions.logError(`Failed to navigate to page: history-file-view/${props?.hash}`);
+          error.value = e;
           fileViewLinkBusy.value = false;
           throw e;
         }
         fileViewLinkBusy.value = false;
       } finally {
         fileViewLinkBusy.value = false;
+        fileViewLinkWindowIsOpen.value = false;
       }
     };
 
@@ -137,6 +146,7 @@ const Record = {
       } catch(e) {
         props.repoActions.logError(e);
         props.repoActions.logError(`Failed fetching file for hash "${props.hash}", path "${props.filepath}"`);
+        error.value = e;
         fileDownloadLinkBusy.value = false;
         throw e;
       } finally {
@@ -148,6 +158,7 @@ const Record = {
       navigateFileViewPage,
       handleDownloadFile,
       fileViewLinkBusy,
+      fileViewLinkWindowIsOpen,
       fileDownloadLinkBusy,
       error,
     };

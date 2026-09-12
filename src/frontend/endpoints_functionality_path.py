@@ -21,7 +21,7 @@ from .common_functions import JSONEncoder, get_matching_endpoint
 
 
 
-def not_found(server_instance,config:dict,added_data=None):
+def not_found(net_request_handler,config:dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload = {'status':'error','error':'not found'}
     return WebResponse(
@@ -33,7 +33,7 @@ def not_found(server_instance,config:dict,added_data=None):
 
 
 
-def handle_gitignore(server_instance, config: dict,added_data=None):
+def handle_gitignore(net_request_handler, config: dict,added_data=None):
     def read(fname):
         if not Path(fname).is_file():
             raise FileNotFoundError(f'{fname}": file not found"')
@@ -46,7 +46,7 @@ def handle_gitignore(server_instance, config: dict,added_data=None):
             return txt
     WebResponse = config.get('iface').get('WebResponse')
     fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'exclude'
-    method = server_instance.command
+    method = net_request_handler.command
     if method=='GET':
         payload = read(fname)
         return WebResponse(
@@ -56,11 +56,12 @@ def handle_gitignore(server_instance, config: dict,added_data=None):
             headers = [],
         )
     elif method=='PUT':
-        # Read Content-Length header
-        length = int(server_instance.headers["Content-Length"])
-        # Read exactly that many bytes
-        body = server_instance.rfile.read(length)
-        # Convert bytes -> str -> Python object
+        # # Read Content-Length header
+        # length = int(net_request_handler.headers["Content-Length"])
+        # # Read exactly that many bytes
+        # body = net_request_handler.rfile.read(length)
+        # # Convert bytes -> str -> Python object
+        body = net_request_handler.request_body.read()
         payload = json.loads(body)
         txt = payload
         txt = write(fname,txt), [], 200
@@ -90,7 +91,7 @@ def handle_gitignore(server_instance, config: dict,added_data=None):
             headers = [],
         )
 
-def handle_gitattributes(server_instance, config: dict,added_data=None):
+def handle_gitattributes(net_request_handler, config: dict,added_data=None):
     def read(fname):
         if not Path(fname).is_file():
             raise FileNotFoundError(f'{fname}": file not found"')
@@ -103,7 +104,7 @@ def handle_gitattributes(server_instance, config: dict,added_data=None):
             return txt
     WebResponse = config.get('iface').get('WebResponse')
     fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'attributes'
-    method = server_instance.command
+    method = net_request_handler.command
     if method=='GET':
         payload = read(fname)
         return WebResponse(
@@ -113,11 +114,12 @@ def handle_gitattributes(server_instance, config: dict,added_data=None):
             headers = [],
         )
     elif method=='PUT':
-        # Read Content-Length header
-        length = int(server_instance.headers["Content-Length"])
-        # Read exactly that many bytes
-        body = server_instance.rfile.read(length)
-        # Convert bytes -> str -> Python object
+        # # Read Content-Length header
+        # length = int(net_request_handler.headers["Content-Length"])
+        # # Read exactly that many bytes
+        # body = net_request_handler.rfile.read(length)
+        # # Convert bytes -> str -> Python object
+        body = net_request_handler.request_body.read()
         payload = json.loads(body)
         txt = payload
         write(fname,txt)
@@ -147,7 +149,7 @@ def handle_gitattributes(server_instance, config: dict,added_data=None):
             headers = [],
         )
 
-def handle_config(server_instance, config: dict,added_data=None):
+def handle_config(net_request_handler, config: dict,added_data=None):
     def clean_config(obj, path="root"):
         if isinstance(obj, Path):
             return str(obj)
@@ -190,9 +192,9 @@ def handle_config(server_instance, config: dict,added_data=None):
         headers = [],
     )
 
-def handle_isup(server_instance, config: dict,added_data=None):
+def handle_isup(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
-    method = server_instance.command
+    method = net_request_handler.command
     payload = ''
     if method=='HEAD':
         return WebResponse(
@@ -209,7 +211,7 @@ def handle_isup(server_instance, config: dict,added_data=None):
             headers = [],
         )
 
-def handle_is_git_repo(server_instance, config: dict,added_data=None):
+def handle_is_git_repo(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     def pend_git_repo_status():
         def sanitize_command(command):
@@ -234,7 +236,7 @@ def handle_is_git_repo(server_instance, config: dict,added_data=None):
             return True
         else:
             return result.returncode==0
-    method = server_instance.command
+    method = net_request_handler.command
     if method=='HEAD' or method=='GET':
         payload = ''
         if pend_git_repo_status():
@@ -259,10 +261,10 @@ def handle_is_git_repo(server_instance, config: dict,added_data=None):
             headers = [],
         )
 
-def handle_fspath(server_instance, config: dict,added_data=None):
+def handle_fspath(net_request_handler, config: dict,added_data=None):
     path_fs = Path(added_data).resolve()
     WebResponse = config.get('iface').get('WebResponse')
-    method = server_instance.command
+    method = net_request_handler.command
     if method=='HEAD':
         if not path_fs.exists():
             return WebResponse(
@@ -308,17 +310,17 @@ def handle_fspath(server_instance, config: dict,added_data=None):
 
 
 
-def handle_fspath_worktree(server_instance, config: dict,added_data=None):
+def handle_fspath_worktree(net_request_handler, config: dict,added_data=None):
     path_fs = config.get("dir_work_tree")
-    return handle_fspath(server_instance,config,added_data=path_fs)
+    return handle_fspath(net_request_handler,config,added_data=path_fs)
 
-def handle_fspath_gitrepodir(server_instance, config: dict,added_data=None):
+def handle_fspath_gitrepodir(net_request_handler, config: dict,added_data=None):
     path_fs = config.get("dir_git_repo")
-    return handle_fspath(server_instance,config,added_data=path_fs)
+    return handle_fspath(net_request_handler,config,added_data=path_fs)
 
-def handle_git_list_pack_files(server_instance, config: dict,added_data=None):
+def handle_git_list_pack_files(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
-    method = server_instance.command
+    method = net_request_handler.command
     path_git_repo = Path(config.get("dir_git_repo")).resolve()
     path_fs = path_git_repo / '.git' / 'objects' / 'pack'
     if method=='GET':
@@ -333,14 +335,14 @@ def handle_git_list_pack_files(server_instance, config: dict,added_data=None):
                 content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
         )
 
-def handle_dir_sizeof_files(server_instance, config: dict,added_data=None):
+def handle_dir_sizeof_files(net_request_handler, config: dict,added_data=None):
     def parse_path(path_parts):
         return path_parts[3]
     WebResponse = config.get('iface').get('WebResponse')
-    method = server_instance.command
+    method = net_request_handler.command
     path_git_repo = Path(config.get("dir_git_repo")).resolve()
     path_worktree = Path(config.get("dir_work_tree")).resolve()
-    path_with_query = server_instance.path
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path_parts = path_parsed.split('/')
     resource_id = None
@@ -391,8 +393,8 @@ endpoints = {
     '/isup.txt': handle_isup,
 }
 
-def handle_request_functionality_endpoint(server_instance, config: dict,added_data=None):
-    path_with_query = server_instance.path
+def handle_request_functionality_endpoint(net_request_handler, config: dict,added_data=None):
+    path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')
     if len(path)>=3 and path[0]=='':
@@ -401,8 +403,8 @@ def handle_request_functionality_endpoint(server_instance, config: dict,added_da
     else:
         renderer = not_found
     try:
-        return renderer(server_instance,config,added_data)
+        return renderer(net_request_handler,config,added_data)
     except FileNotFoundError:
-        return not_found(server_instance,config,added_data)
+        return not_found(net_request_handler,config,added_data)
     except Exception as e:
         raise e # for readability - to make it clear any exception normally passes up to webserver engine

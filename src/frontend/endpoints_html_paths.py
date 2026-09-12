@@ -48,8 +48,8 @@ def render_block_html_page_navigatation_block(pagename,config):
 '''
 
 
-def check_query_string_flag(server_instance,param_name):
-    parsed = urlparse(server_instance.path)
+def check_query_string_flag(net_request_handler,param_name):
+    parsed = urlparse(net_request_handler.path)
     params = parse_qs(parsed.query)
     flag = params.get(param_name, ["0"])[0]
     flag = flag.strip()
@@ -80,7 +80,7 @@ def make_default_assets_list(config):
     ]
 
 
-def render_page_home(server_instance, config: dict,added_data=None):
+def render_page_home(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     year = config.get("credentials:year")
 
@@ -99,7 +99,7 @@ def render_page_home(server_instance, config: dict,added_data=None):
                 # ('js-link',('/assets/vendorlibs/vue.js',),),
                 ('js-link-module',('/assets/app.js',),),
             ],
-        body_css_classes= ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
+        body_css_classes= ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -115,7 +115,7 @@ def render_page_home(server_instance, config: dict,added_data=None):
 
 
 
-def render_page_version(server_instance, config: dict,added_data=None):
+def render_page_version(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -133,7 +133,7 @@ def render_page_version(server_instance, config: dict,added_data=None):
             make_default_assets_list(config) + \
             [
             ],
-        body_css_classes= ['gitgui','gitgui-page-version','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
+        body_css_classes= ['gitgui','gitgui-page-version','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -149,7 +149,7 @@ def render_page_version(server_instance, config: dict,added_data=None):
 
 
 
-def render_page_about(server_instance, config: dict,added_data=None):
+def render_page_about(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -168,7 +168,7 @@ def render_page_about(server_instance, config: dict,added_data=None):
             make_default_assets_list(config) + \
             [
             ],
-        body_css_classes= ['gitgui','gitgui-page-about','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
+        body_css_classes= ['gitgui','gitgui-page-about','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -198,7 +198,7 @@ def render_page_about(server_instance, config: dict,added_data=None):
 
 
 
-def render_page_help(server_instance, config: dict,added_data=None):
+def render_page_help(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -290,7 +290,7 @@ try {
         ('js-link',('/assets/vendorlibs/marked.js',),),
         ('js-link',('/assets/vendorlibs/dompurify.js',),),
             ],
-        body_css_classes= ['gitgui','gitgui-page-help','gitui-embed' if check_query_string_flag(server_instance,'embed') else '',],
+        body_css_classes= ['gitgui','gitgui-page-help','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -306,7 +306,7 @@ try {
         headers = [],
     )
 
-def render_page_test(server_instance, config: dict,added_data=None):
+def render_page_test(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     page_body = '''
 <!doctype html>

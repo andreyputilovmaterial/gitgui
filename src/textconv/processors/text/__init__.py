@@ -37,7 +37,7 @@ def detect_bom(data):
         encoding = 'utf-8'
     return encoding, bom, bom_len
 
-def textconv(data: bytes, filename: str):
+def textconv(file, filename: str):
     """Convert text file bytes to a string, detecting encoding from a BOM.
 
     Checks the beginning of the byte data for a UTF-8, UTF-16, or UTF-32
@@ -58,6 +58,8 @@ def textconv(data: bytes, filename: str):
         UnicodeDecodeError: If the data cannot be decoded using the
             detected encoding or UTF-8 when no BOM is present.
     """
+    data = file.read()
+    
     encoding, bom, bom_len = detect_bom(data)
 
     try:

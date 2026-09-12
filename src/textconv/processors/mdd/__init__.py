@@ -67,24 +67,25 @@ class MDMDocument:
 
 
 
-def textconv(data,filename):
+def textconv(file,filename):
     text = None
     if not win32com_import_success:
         return f'TEXTCONV MDD: win32com not available - will not be able to show MDD files ({win32com_import_error})'
     with tempfile.TemporaryDirectory() as tmp_dir:
+        data = file.read()
         temp_filename = Path(tmp_dir) / Path(filename).name
-        print(f'MDD TEXTCONV: Preparing local MDD at "{temp_filename}"') # TODO: DEBUG:
+        print(f'MDD TEXTCONV: Preparing local MDD at "{temp_filename}"') # TODO: debug code
         with open(temp_filename,'wb') as f:
             f.write(data)
         try:
             with global_mdd_lock:
                 try:
-                    print(f'MDD TEXTCONV: Calling for method Open()') # TODO: DEBUG:
+                    print(f'MDD TEXTCONV: Calling for method Open()') # TODO: debug code
                     with MDMDocument(temp_filename,'open') as MDD:
                         text = MDD.document.Script
                 except Exception as e:
-                    print(f'MDD TEXTCONV: Failed with message "{e}"') # TODO: DEBUG:
-                    print(f'MDD TEXTCONV: Calling fallback for method Join()') # TODO: DEBUG:
+                    print(f'MDD TEXTCONV: Failed with message "{e}"') # TODO: debug code
+                    print(f'MDD TEXTCONV: Calling fallback for method Join()') # TODO: debug code
                     with MDMDocument(temp_filename,'join') as MDD:
                         text = MDD.document.Script
         except Exception as e:

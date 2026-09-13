@@ -8,6 +8,3 @@ csscompressor>=0.9
 markdown-it-py>=4
 rich>=15
 pywebview>=6
-qtpy
-pyqt6
-pyqtwebengine

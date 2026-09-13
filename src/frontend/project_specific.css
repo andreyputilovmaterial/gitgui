@@ -45,6 +45,9 @@ footer {
     display: flex;
     flex-direction: column;
 }
+h1 {
+  padding-bottom: 0;
+}
 
 
 

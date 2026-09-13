@@ -45,7 +45,8 @@
                 "--projects-file",
                 "tests-real-sensitive-data/projects.yaml",
             ],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "justMyCode": false,
         },
     ]
 }

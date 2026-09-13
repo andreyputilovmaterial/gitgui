@@ -44,3 +44,21 @@
   font-size: 16px;
   width: 92vw;
 }
+
+
+.mdm-ui-isonline-monitor .suggest-line a, .mdm-ui-isonline-monitor .suggest-line a:active, .mdm-ui-isonline-monitor .suggest-line a:hover, .mdm-ui-isonline-monitor .suggest-line a:link, .mdm-ui-isonline-monitor .suggest-line a:visited {
+  transition: all 300ms ease;
+  outline: none;
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  padding: 2px 16px 4px;
+  margin-left: 4px;
+  border: 1px solid currentColor;
+  border-radius: 0.25em;
+  line-height: inherit;
+  cursor: pointer;
+}
+.mdm-ui-isonline-monitor .suggest-line a:hover {
+  color: #111;
+}

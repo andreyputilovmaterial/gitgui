@@ -163,7 +163,7 @@ const Records = {
         //         proc.stdout.close()
         //     if proc.stderr:
         //         proc.stderr.close()
-        bulkRestoreSuccessMessage.value = `Successfully restored ${selectedFiles.length} files to "${dest}"`
+        bulkRestoreSuccessMessage.value = `Operation indicated success. Please check your ${selectedFiles.length} files in "${dest}"`
         bulkRestoreValidationMessage.value = '';
       } catch(e) {
         if(e instanceof Error)
@@ -174,7 +174,7 @@ const Records = {
       }
     };
 
-    const filesSorted = computed(()=> {
+    const filesSorted = computed(() => {
       if( filteringComponent.value?.paginateAndSort ) {
         return filteringComponent.value?.paginateAndSort(props.files);
       } else {

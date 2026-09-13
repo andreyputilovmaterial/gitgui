@@ -82,6 +82,7 @@ def main(*argcs,**kwargs):
         if result is None:
             print(f'Nothing selected')
             return
-        choice = next(iter([ c for c in choices if c.get('name') == result.response[0].response.name ]))
+        
+        choice = next(iter([ c for c in choices if c.get('name') == next(iter([ f for f in result.fields if f.name=='project' ])).response.name ]))
         print(f'Selected project: {choice.get("label"),choice.get("name")}')
         return call_gitgui_program(['--work-tree-folder',choice.get('work_tree_folder'),'--git-repo-folder',choice.get('git_repo_folder')],)

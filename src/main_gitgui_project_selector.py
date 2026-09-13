@@ -11,7 +11,7 @@ from .lib.webinput import (
     QuestionTypeSinglePunch,
     QuestionTypeRoot,
     Category,
-    input,
+    webinput,
 )
 
 
@@ -50,7 +50,7 @@ def show_modal_form_window(schema):
 
 def main(*argcs,**kwargs):
     time_start = datetime.now(timezone.utc)
-    script_name = 'gitgui script'
+    script_name = 'gitgui project selector'
 
     parser = argparse.ArgumentParser(
         description="gitgui"
@@ -63,6 +63,7 @@ def main(*argcs,**kwargs):
     )
     args = parser.parse_args(*argcs,**kwargs)
 
+    print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     config = {}
 
     projects_db_filename = None
@@ -71,12 +72,16 @@ def main(*argcs,**kwargs):
     else:
         raise FileNotFoundError(f'--projects-file argument not provided')
     if not projects_db_filename.is_file():
-        raise FileNotFoundError(f'{projects_db_filename}: not found')
+        raise FileNotFoundError(f'{projects_db_filename}: file not found (specified by --projects-file)')
 
     with open(projects_db_filename, "r") as file:
         projects_db = yaml.safe_load(file)
         choices = projects_db['projects']
         qre = prep_qre(choices)
-        result: QuestionTypeRoot = input(qre,{**config})
+        result: QuestionTypeRoot | None = webinput(qre,{**config})
+        if result is None:
+            print(f'Nothing selected')
+            return
         choice = next(iter([ c for c in choices if c.get('name') == result.response[0].response.name ]))
+        print(f'Selected project: {choice.get("label"),choice.get("name")}')
         return call_gitgui_program(['--work-tree-folder',choice.get('work_tree_folder'),'--git-repo-folder',choice.get('git_repo_folder')],)

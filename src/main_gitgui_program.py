@@ -80,6 +80,7 @@ def main(*argcs,**kwargs):
     )
     args = parser.parse_args(*argcs,**kwargs)
 
+    print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     config = {
         'time_start': time_start,
         'script_name': script_name,
@@ -154,7 +155,6 @@ def main(*argcs,**kwargs):
         f'{config["http_host"]}:{config["http_port"]}'
     )
 
-    print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     cfg_to_print_verify = {
         "working-tree-folder":config.get("dir_work_tree"),
         "git-repo-folder":config.get("dir_git_repo"),

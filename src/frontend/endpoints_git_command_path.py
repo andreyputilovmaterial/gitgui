@@ -39,12 +39,14 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         def startswith(seq, prefix):
             return seq[:len(prefix)] == prefix
         command = [*command]
-        # is_allowed = startswith(command,['git']) or startswith(command,['python','~/test.py'])
-        is_allowed = startswith(command,['git'])
+        is_allowed = startswith(command,['git']) or startswith(command,['python','~/test.py'])
+        # is_allowed = startswith(command,['git'])
         if not is_allowed:
             raise Exception(f'Not a git command')
         if startswith(command,['python','~/test.py']):
-            return ['python',Path.home() / 'test.py'] + command[2:]
+            # return ['python',Path.home() / 'test.py'] + command[2:]
+            return ['python','-c',r'import time,random,sys;k=int(random.random()*13+9);print(f"Will do {k} iterations");[(d:=random.random()*4+2,n:="".join(str(int(random.random()*10)) for _ in range(5)),print(f"Hello #{c+1}, {n} ({k-c-1} left)!"),random.random()>.5 and print(f"Uuhhhh #{c+1}, {n}!",file=sys.stderr),time.sleep(d)) for c in range(k)]']
+
         config_git_dir: str | Path | None = config.get("dir_git_repo")
         config_work_tree: str | Path | None = config.get("dir_work_tree")
         if config_git_dir is None: # to make linter happy

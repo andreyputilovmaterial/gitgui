@@ -227,7 +227,7 @@ def handler(context,task,job):
             if job.status != "running":
                 raise Exception(f'Can only call pipe_process.stdin.write() on context.jobs with status "running" (job_id: "{job.job_id}")')
             if not process or isinstance(process,int): # storing returncode when finished - just to reset to something, it is not actually used
-                raise Exception(f'Can only call subprocess.stdin.write() when pipe_process exists (job_id: "{job_id}")')
+                raise Exception(f'Can only call subprocess.stdin.write() when pipe_process exists (job_id: "{job.job_id}")')
 
             input_request_id, inp, read_convention = task.command
 

@@ -155,7 +155,14 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
         context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
 
         context.jobData.getData = async function* ({maxSize = 100*1000*1000,...options} = {}) {
-          const downloadUrl = context.jobData.getDownloadUrl('output'); // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
+          const downloadUrl = new URL(context.jobData.getDownloadUrl('output')); // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
+          for (const [key, value] of Object.entries(options)) {
+            downloadUrl.searchParams.set(key, value);
+          }
+          if(is_binary)
+            downloadUrl.searchParams.set("is_binary", !!is_binary?'1':'0');
+          if(is_interactive)
+            downloadUrl.searchParams.set("is_interactive", !!is_interactive?'1':'0');
           const fileDataResponse = await fetch(
             downloadUrl,
             {

@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const timestamp = new Date();
         const cliRawCommandReturnObject = cliCommandRaw(command,{is_interactive:false,attachExistingJob,...options,is_binary,});
         const promise = options.is_interactive ? cliRawCommandReturnObject.promise : cliRawCommandReturnObject;
-        let jobData = reactive( options.is_interactive ? cliRawCommandReturnObject : {} );
+        let jobData = reactive( options.is_interactive ? {stdout:null,stderr:null,exit_code:null,...cliRawCommandReturnObject} : {stdout:null,stderr:null,exit_code:null,} );
         if( options.is_interactive )
           cliRawCommandReturnObject.subscribeUpdates( jobDataNew => Object.assign(jobData,jobDataNew) );
         else

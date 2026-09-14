@@ -223,7 +223,8 @@ const View = {
         validationMessage.value = '';
         isBusy.value = true;
         gitGCOutputs.value = {};
-        const gitGCCommandJobObject = await props.repoActions.executeGitAsyncCommand(['git','gc']);
+        const gitGCCommandJobObject = await props.repoActions.executeGitAsyncCommand(['git','gc'],{stderr_chunk_size:12,});
+        // const gitGCCommandJobObject = await props.repoActions.executeGitAsyncCommand(['python','~/test.py'],{stderr_chunk_size:12,});
         await gitGCCommandJobObject.promiseDownloadLinkReady;
         gitGCOutputs.value.stdout = ''
         watch(
@@ -241,7 +242,7 @@ const View = {
           },
           { immediate: true }
         );
-        for await ( const chunk of gitGCCommandJobObject.getData() ) {
+        for await ( const chunk of gitGCCommandJobObject.getData({stdout_chunk_size:12,stderr_chunk_size:12,}) ) {
           gitGCOutputs.value.stdout += chunk;
         }
         await gitGCCommandJobObject.promise;

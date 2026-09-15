@@ -204,6 +204,7 @@ const View = {
     onMounted(async () => {
       await Promise.all([
         getFilesList(`${namespaceCurrent.value}:${pathCurrent.value}`),
+        props.repoActions.getStatus(),
       ])
     });
 

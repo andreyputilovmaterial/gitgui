@@ -1,5 +1,5 @@
 
-import { ref, h } from 'vue';
+import { ref, h, computed } from 'vue';
 
 import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
 
@@ -27,7 +27,7 @@ const Record = {
     'repoActions',
   ],
   template: `
-<div :class="[...['files-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]" :key="filepath" :data-recordsfilter-filepath="filepath">
+<div :class="[...['files-record','mdm-ui-record'],...(!!fileStatus ? ['files-record-mod'] : []),...(componentRecordsFiltData?.cssClasses||[])]" :key="filepath" :data-recordsfilter-filepath="filepath">
   <div class="error">{{ error }}</div>
   <span class="git-status-indicator mdm-ui-record-col-gitstatusindicator mdm-ui-record-col-1" title="Status"> </span>
     <span v-if="type==='file'" class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-2" title="View file"><component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
@@ -47,6 +47,8 @@ const Record = {
     const error = ref('');
     const fileViewLinkBusy = ref(false);
     const fileViewLinkWindowIsOpen = ref(false);
+
+    const fileStatus = computed(()=>(props.type==='directory')?props.repoActions.checkFolderStatus(props.filepath):props.repoActions.checkFileStatus(props.filepath));
 
     const navigateFileViewPage = async () => {
       try {
@@ -133,6 +135,7 @@ const Record = {
       fileViewLinkBusy,
       fileViewLinkWindowIsOpen,
       navigateInside,
+      fileStatus,
       error,
     };
   },

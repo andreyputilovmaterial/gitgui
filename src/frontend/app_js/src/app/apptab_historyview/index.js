@@ -52,7 +52,8 @@ const View = {
       await Promise.all([
         props.repoActions.updateHistory(),
         props.repoActions.getHEAD(),
-        props.repoActions.checkIfSomethingIsInStagingArea(),
+        props.repoActions.checkIfSomethingInIndex(),
+        props.repoActions.getStatus(),
         navigateHomePage(),
       ])
     });

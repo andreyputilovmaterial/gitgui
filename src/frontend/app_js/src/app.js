@@ -9,7 +9,9 @@ import './app_form_control_adjustments.css';
 // global tools
 import { genId, prettyprintBytes, makeFetchResponseErrorMessage, } from './common_defs/helper_functions';
 import cliCommandRaw from './common_defs/cli';
+import parseGitStatus from './common_defs/parse_git_status';
 import ConcurrencyManager from './common_defs/concurrency/semaphore.js';
+import ReplayEvent from './common_defs/concurrency/subscribe.js';
 
 // "lib"
 import { diff } from './lib/myers-diff/src/index';
@@ -139,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
       const appBackendWarnings = ref([]);
+      const gitCommandEvent = new ReplayEvent();
 
 
 
@@ -260,6 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cliRawCommandReturnObject.subscribeUpdates( jobDataNew => Object.assign(jobData,jobDataNew) );
         else
           promise.then(jobData => jobData.subscribeUpdates( jobDataNew => Object.assign(jobData,jobDataNew) ));
+        promise.then(()=>gitCommandEvent.emit(jobData));
         const command_str = !attachExistingJob ? formatArgsString(command) : null;
         const inputCommandRecord = !attachExistingJob ? reactive({
           timestamp: timestamp,
@@ -486,14 +490,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       repoActions.value.updateHistory = updateHistory;
 
-      async function checkIfSomethingIsInStagingArea() {
+      async function checkIfSomethingInIndex() {
         function handleResponse(response) {
           if( response.exit_code === 0 )
             return false;
           else if( response.exit_code === 1 )
             return true;
           else
-            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: "${response.stdout}" ( exit_code == ${response.exit_code}, stderr == "${response.stderr}" )`);
+            throw new Error(`checkIfSomethingInIndex: failed to parse response: "${response.stdout}" ( exit_code == ${response.exit_code}, stderr == "${response.stderr}" )`);
         }
         try {
           if( !repoStatus.value.repoExists )
@@ -516,13 +520,26 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             repoStatus.value.isSomethingInStagingArea = handleResponse(response);
           } catch(e) {
-            throw new Error(`checkIfSomethingIsInStagingArea: failed to parse response: (${response.exit_code}) "${response.stdout}": ${e}`,{cause:e});
+            throw new Error(`checkIfSomethingInIndex: failed to parse response: (${response.exit_code}) "${response.stdout}": ${e}`,{cause:e});
           }
         } catch (e) {
            repoActions.value.logError(e);
         }
       }
-      repoActions.value.checkIfSomethingIsInStagingArea = checkIfSomethingIsInStagingArea;
+      repoActions.value.checkIfSomethingInIndex = checkIfSomethingInIndex;
+      gitCommandEvent.subscribe(event=>{
+        const gitAppArgument = (()=>{
+          const command = event.command;
+          if( !command || (command.length<=1) || (command[0]!=='git') )
+            return null;
+          for(const arg of command.slice(1))
+            if( /^(?:clone|init|add|mv|restore|rm|bisect|diff|grep|log|show|status|backfill|branch|commit|merge|rebase|reset|switch|tag|fetch|pull|push)$/.test(arg) )
+              return arg;
+          return null;
+        })();
+        if( ['add','commit','rebase','merge','cherry-pick','branch','switch','checkout'].includes(gitAppArgument) )
+          checkIfSomethingInIndex();
+      });
 
       async function getHEAD() {
         function handleResponse(response) {
@@ -552,6 +569,72 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       repoActions.value.getHEAD = getHEAD;
+      gitCommandEvent.subscribe(event=>{
+        const gitAppArgument = (()=>{
+          const command = event.command;
+          if( !command || (command.length<=1) || (command[0]!=='git') )
+            return null;
+          for(const arg of command.slice(1))
+            if( /^(?:clone|init|add|mv|restore|rm|bisect|diff|grep|log|show|status|backfill|branch|commit|merge|rebase|reset|switch|tag|fetch|pull|push)$/.test(arg) )
+              return arg;
+          return null;
+        })();
+        if( ['add','commit','rebase','merge','cherry-pick','branch','switch','checkout'].includes(gitAppArgument) )
+          getHEAD();
+      });
+
+      async function getStatus() {
+        try {
+          // git status --porcelain=v2 -z
+          const gitStatusCommandJobObject = await executeGitBinaryCommand(['git','status','--porcelain=v2','-z'],{is_binary:true,is_interactive:true,});
+          await gitStatusCommandJobObject.promiseDownloadLinkReady;
+          const filename = 'git status';
+          const binaryData = await gitStatusCommandJobObject.downloadFullStdout(filename);
+          await gitStatusCommandJobObject.promise;
+          if( (gitStatusCommandJobObject.exit_code!==0) || (!!gitStatusCommandJobObject.stderr && (gitStatusCommandJobObject.stderr.trim().length>0)) ) {
+            throw new Error(`exit_code: ${gitStatusCommandJobObject.exit_code}, stderr: ${gitStatusCommandJobObject.stderr}`);
+          }
+          repoStatus.value.status = parseGitStatus(binaryData);
+        } catch(e) {
+          repoActions.value.logError(e);
+          repoActions.value.logError('failed when getting repo status with git status --porcelain=v2 -z');
+          throw e;
+        }
+      }
+      repoActions.value.getStatus = getStatus;
+      gitCommandEvent.subscribe(event=>{
+        const gitAppArgument = (()=>{
+          const command = event.command;
+          if( !command || (command.length<=1) || (command[0]!=='git') )
+            return null;
+          for(const arg of command.slice(1))
+            if( /^(?:clone|init|add|mv|restore|rm|bisect|diff|grep|log|show|status|backfill|branch|commit|merge|rebase|reset|switch|tag|fetch|pull|push)$/.test(arg) )
+              return arg;
+          return null;
+        })();
+        if( ['add','commit','rebase','merge','cherry-pick','branch','switch','checkout'].includes(gitAppArgument) )
+          getStatus();
+      });
+      function checkFileStatus(filepath) {
+        for(const record of repoStatus.value.status) {
+          if( record.path===filepath )
+            return record;
+        }
+        return null;
+      }
+      repoActions.value.checkFileStatus = checkFileStatus;
+      function checkFolderStatus(filepath) {
+        const filepathClean = `${filepath}`.replace(/[\/]$/ig,'')+'/';
+        const partialMatchesForDirectory = [];
+        for(const record of repoStatus.value.status) {
+          if( record.path.startsWith(filepathClean) )
+            partialMatchesForDirectory.push(record);
+        }
+        if( partialMatchesForDirectory.length>0 )
+          return partialMatchesForDirectory;
+        return null;
+      }
+      repoActions.value.checkFolderStatus = checkFolderStatus;
 
       async function setIsOnlineTimer() {
         const fn = async function () {
@@ -583,13 +666,15 @@ document.addEventListener("DOMContentLoaded", () => {
       onMounted(async () => {
         await Promise.all([
           executeGitCommand(['git', 'status']),
-          updateGitRepoExistence(),
-          configCheckUpdates(),
-          gitignoreRead(),
           setIsOnlineTimer(),
+          configCheckUpdates(),
+          updateGitRepoExistence(),
+          gitignoreRead(),
           (()=>{
-            gitRepoReady.then(checkIfSomethingIsInStagingArea);
+            gitRepoReady.then(checkIfSomethingInIndex);
             gitRepoReady.then(getHEAD);
+            gitRepoReady.then(getStatus);
+            gitRepoReady.then(gitignoreRead);
             return null; // to make linter happy, that return value becomes part of promise, and it is not "void"
           })(),
           (()=>{

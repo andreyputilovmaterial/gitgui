@@ -35,6 +35,7 @@ const View = {
     onMounted(async () => {
       await Promise.all([
         navigateHomePage(),
+        props.repoActions.getStatus(),
       ])
     });
 

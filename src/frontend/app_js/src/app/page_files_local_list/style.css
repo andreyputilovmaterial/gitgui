@@ -25,6 +25,10 @@
   background: #f3f3f3;
 }
 
+.mdm-git-gui-fileslistview .files-record.files-record-mod {
+  background: #ffce63;
+}
+
 .mdm-git-gui-fileslistview .mdm-ui-records {
     grid-template-columns:
       max-content

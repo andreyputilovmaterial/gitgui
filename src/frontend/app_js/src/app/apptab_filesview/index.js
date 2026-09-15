@@ -33,7 +33,8 @@ const View = {
 
     onMounted(async () => {
       await Promise.all([
-        props.repoActions.checkIfSomethingIsInStagingArea(),
+        props.repoActions.checkIfSomethingInIndex(),
+        // props.repoActions.getStatus(),
         navigateHomePage(),
       ])
     });

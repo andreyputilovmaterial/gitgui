@@ -138,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
             resolve();
         });
       });
+      const appBackendWarnings = ref([]);
 
 
 
@@ -406,7 +407,11 @@ document.addEventListener("DOMContentLoaded", () => {
             || ( !!configPathsFirstCaptured.value.git_paths_hash && !(configPathsFirstCaptured.value.git_paths_hash==response.git_paths_hash) )
 
           )
-            configPathsMismatch.value = true
+            configPathsMismatch.value = true;
+          const newWarnings = (response?.warnings||[]).filter(message=>!appBackendWarnings.value.includes(message));
+          appBackendWarnings.value.push(...newWarnings);
+          for(const msg of newWarnings)
+            logError(msg);
         }
         try {
           const response = await fetchWrapper('GET', '/functionality/config',{})

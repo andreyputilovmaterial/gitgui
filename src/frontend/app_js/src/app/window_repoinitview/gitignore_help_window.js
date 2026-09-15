@@ -7,7 +7,7 @@ import './gitignore_help_window.css';
 const HelpWindow = {
   props: [
     'resolve', 'reject',
-    'repoStatus', 'repoCallbacks',
+    'repoStatus', 'repoActions',
   ],
   template: `
 <form  @submit.prevent="handleSubmit" class="gitgui-modal-form">

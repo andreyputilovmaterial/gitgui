@@ -8,7 +8,10 @@
   grid-template-columns:
   max-content
   max-content
-    5fr;
+    5fr
+  max-content
+  max-content
+  max-content;
 }
 
 .mdm-git-gui-fileslistview .root-page-description {
@@ -85,4 +88,8 @@
   font-size: 24px; */
   padding-top:3px;
   padding-bottom: 4px;
+}
+
+.mdm-git-gui-fileslistview .files-record .size, .mdm-git-gui-fileslistview .files-record .modifiedat, .mdm-git-gui-fileslistview .files-record .createdat {
+  color: #555;
 }

@@ -48,7 +48,6 @@ const NavbarButtons = {
     'pathCurrentParts',
     'navigate',
     'navigateBack',
-    'history',
   ],
   template: `
 <div class="mdm-git-gui-fileslist-navbuttons">
@@ -82,7 +81,7 @@ const View = {
   <div class="error">{{ error }}</div>
   <template v-if="!filesList && !error">Querying data, please wait...</template>
   <template v-else-if="!!filesList">
-    <files-records :files="filesList" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
+    <files-records :files="filesList" :namespace="namespaceCurrent" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
   </template>
 </div>
 `,
@@ -95,31 +94,44 @@ const View = {
 
     const filesList = ref(null);
     const error = ref('');
-    const pathCurrent = ref(props.path);
-    const history = reactive([]);
-    const pathCurrentParts = computed(()=>[...pathCurrent.value.split(/\/\\/ig)]);
+    const pathCurrent = ref(null);
+    const namespaceCurrent = ref(null);
+    (()=>{
+      const matches = props.path.match(/^(\w+):(.*)$/);
+      if( !matches ) {
+        const error = new Error('files view: path does not follow format of namespace:path/within/namespace');
+        props.repoActions.logError(error);
+        error.value = error;
+        Promise.resolve().then(()=>{ throw error; });
+        return { error };
+      }
+      namespaceCurrent.value = matches[1];
+      pathCurrent.value = matches[2].replace(/\/\\/ig,'/');
+    })();
+    const history = reactive([pathCurrent.value]);
+    const pathCurrentParts = computed(()=>[...pathCurrent.value.split(/\//ig)]);
     const navigate = newPath => {
       try {
-        if( newPath.join('/')===pathCurrentParts.value.join('/') )
+        if( newPath===pathCurrent.value )
           return;
         history.push(newPath);
         pathCurrent.value = newPath;
       } catch(e) {
-        props.repoCallbacks.logError(e);
-        props.repoCallbacks.logError(`failed navigating to path: ${newPath}`);
+        props.repoActions.logError(e);
+        props.repoActions.logError(`failed navigating to path: ${newPath}`);
         error.value = e;
         throw e; 
       }
     };
     const navigateBack = () => {
       try {
-        if( history.length===0 )
+        if( history.length<=1 )
           throw new Error('failed to navigate back in history: no more steps, there isn\'t anywhere to go back further');
         const newPath = history.pop();
         pathCurrent.value = newPath;
       } catch(e) {
-        props.repoCallbacks.logError(e);
-        props.repoCallbacks.logError(`failed navigating to path: ${newPath}`);
+        props.repoActions.logError(e);
+        props.repoActions.logError(`failed navigating to path: ${newPath}`);
         error.value = e;
         throw e; 
       }
@@ -138,22 +150,37 @@ const View = {
         if( !response.ok ) {
             throw new Error(await makeFetchResponseErrorMessage(response) );
         }
-        filesList.value = (await response.json()).map(record => ({filepath:record}));
+        let result;
+        try {
+          result = await response.json();
+        } catch(e) {
+            throw new Error(await makeFetchResponseErrorMessage(response) );
+        }
+        filesList.value = result.map(record => ({
+          filepath: record.name,
+          fullFilepath: record.full_path,
+          type: record.type,
+          size: record.size,
+          modifiedAt: record.modified_at ? new Date(record.modified_at) : null,
+          metadataChangedAt: record.metadata_changed_at ? new Date(record.metadata_changed_at) : null,
+          createdAt: record.created_at ? new Date(record.created_at) : null,
+        }));
       } catch(e) {
         props.repoActions.logError(e);
         props.repoActions.logError(`Failed fetching file list for path "${props.path}"`);
+        error.value = e;
         throw e;
       }
     };
 
     onMounted(async () => {
       await Promise.all([
-        getFilesList(pathCurrent.value),
+        getFilesList(`${namespaceCurrent.value}:${pathCurrent.value}`),
       ])
     });
 
     return {
-      filesList, error, pathCurrent, history, navigate, navigateBack, pathCurrentParts,
+      filesList, error, pathCurrent, namespaceCurrent, history, navigate, navigateBack, pathCurrentParts,
     };
   },
 };

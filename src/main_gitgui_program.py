@@ -28,7 +28,7 @@ from .output_postprocessors.tar import tar_output_processor
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
-from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner
+from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner, assess_python_ver
 
 from .endpoints import endpoints
 
@@ -106,6 +106,9 @@ def main(*argcs,**kwargs):
             'num_cli_command_exec_workers': CONFIG_CLI_COMMAND_EXEC_WORKERS,
         },
 
+        'info': {},
+        'warnings': [],
+
         'iface': {
             'cli_command_initiate': cli_command_initiate,
             'cli_initiate_from_function': cli_initiate_from_function,
@@ -120,6 +123,11 @@ def main(*argcs,**kwargs):
             'output_postprocessors': output_postprocessors,
         },
     }
+
+    verify_python_ver = assess_python_ver()
+    config['info'].update(verify_python_ver)
+    if verify_python_ver.get('is_not_supported'):
+        config['warnings'].append(f'Warning: python {verify_python_ver.get("python_version")} is quite old and is beyond its EOL and is not receiving security updates. Please consider updating.')
 
     register_output_postprocessor('tar',tar_output_processor)
     register_output_postprocessor('textconv',textconv_from_stream)

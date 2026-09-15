@@ -28,7 +28,7 @@ const View = {
 
     const navigateHomePage = async () => {
       createPage.value = pagesSite.value.createPage;
-      createPage.value(h(PageFilesView,{path:'@',repoStatus:props.repoStatus,repoActions:{...props.repoActions,createPage:createPage.value}}));
+      createPage.value(h(PageFilesView,{path:'worktree:',repoStatus:props.repoStatus,repoActions:{...props.repoActions,createPage:createPage.value}}));
     };
 
     onMounted(async () => {

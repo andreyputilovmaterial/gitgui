@@ -6,8 +6,7 @@ import './style.css';
 
 function resolvePath(path) {
   const resolvers = [
-    path => path.replace(/^@\//ig,''),
-    path => path.replace(/^@$/ig,''),
+    path => path.replace(/^worktree:/ig,''),
   ];
   if( !(typeof path==='string') )
     throw new Error(`Can't show path: not of string type: ${path}`);

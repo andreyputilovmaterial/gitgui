@@ -9,6 +9,7 @@ import './style.css';
 const Records = {
   props: [
     'files',
+    'namespace',
     'path',
     'repoStatus',
     'repoActions',
@@ -17,6 +18,11 @@ const Records = {
 <component-filter-records-form
 :columns="{
   'filepath':'File name',
+  'type':'File/directory',
+  'size':{ label: 'File file', type:'number' },
+  'modifiedAt':{ label: 'Modified at', type:'datetime' },
+  'metadataChangedAt':{ label: 'Metadata updated at', type:'datetime' },
+  'createdAt':{ label: 'Created at', type:'datetime' },
 }"
   :keyField="'filepath'"
   :records="files"
@@ -28,6 +34,13 @@ const Records = {
         v-for="h in filesSorted"
         :key="h.filepath"
         :filepath="h.filepath"
+        :namespace="namespace"
+        :fullFilepath="h.fullFilepath"
+        :type="h.type"
+        :size="h.size"
+        :modifiedAt="h.modifiedAt"
+        :metadataChangedAt="h.metadataChangedAt"
+        :createdAt="h.createdAt"
         :componentRecordsFiltData="h.componentRecordsFiltData"
         :repoStatus="repoStatus"
         :repoActions="repoActions"

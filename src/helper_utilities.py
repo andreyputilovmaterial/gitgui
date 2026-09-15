@@ -1,10 +1,10 @@
 
 from bs4 import BeautifulSoup
-import sys # for checking pinliner
+import sys # for checking pinliner, and for verifying python ver
 import re
 import hashlib
 from pathlib import Path
-
+from datetime import date
 import yaml
 
 
@@ -77,3 +77,25 @@ def wrap_div(classname, txt) -> str:
     div["class"] = sanitize_classname(classname).split()
 
     return str(div)
+
+
+
+
+def assess_python_ver():
+    PYTHON_EOL = {
+        (3, 9):  date(2025, 10, 31),
+        (3, 10): date(2026, 10, 31),
+        (3, 11): date(2027, 10, 31),
+        (3, 12): date(2028, 10, 31),
+        (3, 13): date(2029, 10, 31),
+        (3, 14): date(2030, 10, 31),
+    }
+    version = sys.version_info[:2]
+    result = {
+        'python_version': f'{version[0]}.{version[1]}',
+    }
+    eol = PYTHON_EOL.get(version)
+    if eol is not None:
+        if date.today() >= eol:
+            result['is_not_supported'] = True
+    return result

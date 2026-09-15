@@ -237,7 +237,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         headers.append(( 'Connection',          'keep-alive',  ))
         headers.append(( 'Transfer-Encoding',   'chunked',     ))
         # data = binary_data_reader()
-        response = WebResponse(
+        return WebResponse(
             is_stream = True,
             status_code = 200,
             content_type = 'application/octet-stream' if is_binary else 'text/plain',
@@ -246,7 +246,6 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
             is_binary = is_binary,
             options = options,
         )
-        return response
 
     def handle_pipe_binary_data(net_request_handler):
         """Handle a request by piping its output to another component for processing.

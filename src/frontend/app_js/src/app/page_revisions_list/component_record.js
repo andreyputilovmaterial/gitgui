@@ -3,7 +3,7 @@ import { ref, h } from 'vue';
 
 import FormCompareVersionsControls from './component_ver_compare_radioboxes.js';
 
-import PageFilesList from '@/app/page_files_list/index.js';
+import PageFilesList from '@/app/page_files_within_revision_list/index.js';
 
 import './style.css';
 

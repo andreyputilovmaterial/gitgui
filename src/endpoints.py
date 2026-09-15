@@ -32,5 +32,5 @@ endpoints = {
 
     re.compile(r'/functionality\b(.*)'): handle_request_functionality_endpoint,
 
-    re.compile(r'/files\b(.*)'): handle_request_files_endpoint,
+    re.compile(r'/browse\b(.*)'): handle_request_files_endpoint,
 }

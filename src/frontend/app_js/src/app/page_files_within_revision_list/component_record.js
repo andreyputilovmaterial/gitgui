@@ -1,7 +1,7 @@
 
 import { ref, h } from 'vue';
 
-import { makeFetchResponseErrorMessage } from '../../common_defs/helper_functions.js';
+import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
 
 import PageFileView from '@/app/window_fileviewer/index.js';
 

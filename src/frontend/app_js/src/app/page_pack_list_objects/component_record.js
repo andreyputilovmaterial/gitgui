@@ -3,7 +3,7 @@ import { h, computed } from 'vue';
 
 import './style.css';
 
-import PageFilesList from '@/app/page_files_list/index.js';
+import PageFilesList from '@/app/page_files_within_revision_list/index.js';
 
 
 

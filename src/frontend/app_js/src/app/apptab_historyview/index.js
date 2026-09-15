@@ -1,8 +1,8 @@
 
 
-import { ref, reactive, watch, onMounted, toRaw, h } from 'vue';
+import { ref, watch, onMounted, toRaw, h } from 'vue';
 
-import PagesSite from '../../common_components/pages/index';
+import PagesSite from '@/common_components/pages/index';
 
 import PageHistoryOverview from '@/app/page_revisions_list/index';
 

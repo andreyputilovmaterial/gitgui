@@ -1,32 +1,54 @@
 
 
 from urllib.parse import urlparse, parse_qs # to detect path within endpoints
+from pathlib import Path
+import json
+import re
 
 
-
-from .common_functions import get_matching_endpoint
-
+from .common_functions import JSONEncoder
 
 
-def not_implemented(*args,**argv):
-    raise NotImplementedError('not implemented')
 
 
 
 
 def handle_request_files_endpoint(net_request_handler, config: dict,added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')
     method = net_request_handler.command
-    if len(path)>=3 and path[0]=='':
-        path = '/'.join([]+['']+path[2:])
-        renderer = get_matching_endpoint(path,endpoints) or not_found
+    file_path = '/'.join(path[2:])
+    work_tree_folder = config.get("dir_work_tree")
+    file_path = re.sub(r'^@/','',file_path)
+    file_path = re.sub(r'^@$','',file_path)
+    file_path = Path(work_tree_folder) / file_path
+    # file_path = file_path.relative_to(work_tree_folder)
+    if method=='GET':
+        if file_path.is_dir():
+            files = [ f.relative_to(work_tree_folder) for f in file_path.iterdir() ]
+            return WebResponse(
+                status_code = 200,
+                content_type = 'application/json',
+                body = json.dumps(files, cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
+        else:
+            return WebResponse(
+                status_code = 200,
+                content_type = 'application/json',
+                body = json.dumps(file_path.relative_to(work_tree_folder), cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
     else:
-        renderer = not_found
-    try:
-        return renderer(net_request_handler,config,added_data)
-    except FileNotFoundError:
-        return not_found()
-    except Exception as e:
-        raise e # for readability - to make it clear any exception normally passes up to webserver engine
+        return WebResponse(
+            status_code = 405,
+            content_type = 'application/json',
+            body = json.dumps({'status':'error','error':f'http method not supported'}, cls=JSONEncoder),
+            headers = [],
+            is_binary = False,
+        )
+    

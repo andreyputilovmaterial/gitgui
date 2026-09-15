@@ -32,6 +32,10 @@ export default defineConfig({
         target: 'http://localhost:5180',
         changeOrigin: true
       },
+      '/browse': {
+        target: 'http://localhost:5180',
+        changeOrigin: true
+      },
     }
   },
   resolve: {

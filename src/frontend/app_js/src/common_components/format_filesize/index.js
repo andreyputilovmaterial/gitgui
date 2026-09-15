@@ -1,9 +1,10 @@
 import { computed } from 'vue';
 
 function formatNumberOfBytes(n) {
-  if (Number.isNaN(Number(n))) {
+  if( (typeof n==='undefined') || (n===null) )
+    return '-';
+  if (Number.isNaN(Number(n)))
     return String(n);
-  }
 
   if (n < 1000) {
     return `${n} byte${n === 1 ? '' : 's'}`;

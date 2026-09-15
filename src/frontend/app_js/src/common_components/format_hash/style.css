@@ -3,3 +3,11 @@
 .mdmreport-role-hash .hash-leading {
   font-weight: 600;
 }
+
+.mdmreport-role-hash.mode-only .hash-leading {
+  font-weight: normal;
+}
+.mdmreport-role-hash.mode-only .hash-rest {
+  display: none;
+}
+

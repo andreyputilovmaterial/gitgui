@@ -20,13 +20,11 @@ function parseInput(input) {
 
 function match(fieldValue,matchValue) {
   const [low,high] = parseInput(matchValue);
-  if( !isFinite(fieldValue) )
-    return false;
   let isGood = true;
   if( hasValue(low) )
-    isGood = isGood && (fieldValue>=low);
+    isGood = isGood && isFinite(fieldValue) && (fieldValue>=low);
   if( hasValue(high) )
-    isGood = isGood && (fieldValue<=high);
+    isGood = isGood && isFinite(fieldValue) && (fieldValue<=high);
   return isGood;
 
 }

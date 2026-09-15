@@ -36,7 +36,7 @@ def prep_qre(choices):
                 categories = set(
                     Category(
                         name = record.get('name'),
-                        label = f"{record.get('label')}, work-tree folder: {record.get('work_tree_folder')}, git folder: {record.get('git_repo_folder')}",
+                        label = f"{record.get('label')}, work-tree folder: {Path(record.get('work_tree_folder')).resolve()}, git folder: {Path(record.get('git_repo_folder')).resolve()}",
                     ) for record in choices
                 )
             )

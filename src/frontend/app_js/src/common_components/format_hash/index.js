@@ -26,14 +26,19 @@ const View = {
   ],
 
   template: `
-    <span class="mdmreport-role-hash code"><span class="hash-leading">{{ hashParts[0] }}</span><span class="hash-rest">{{ hashParts[1] }}</span></span>
-  `,
+<span :class="['mdmreport-role-hash', 'code', \`mode-\${mode}\`]">
+  <span class="hash-leading">{{ hashParts[0] }}</span>
+  <span class="hash-rest">{{ hashParts[1] }}</span>
+</span>
+`,
 
   setup(props) {
 
     const detectMode = keyword => {
       if( ['auto',].includes(keyword) )
         return 'auto';
+      else if( ['only',].includes(keyword) )
+        return 'only';
       else if( ['yes','1','affirmative',].includes(keyword) )
         throw new Error(`render hash component: ambiguous option: highlight == "${keyword}", did you mean "auto" or "full black" by it`);
       else if( ['yes','full','1','affirmative','iwantitblack','iseethereddoor',].includes(keyword) )
@@ -46,19 +51,22 @@ const View = {
         return 'no';
     };
 
+    const mode = computed(()=>detectMode(props.highlight));
+
     const hashParts = computed(() => {
-      const mode = detectMode(props.highlight);
       if( !hasValue(props.hash) )
         return [ '', props.hash ]
-      else if( mode==='auto' )
+      else if( mode.value==='auto' )
         return splitHashPartsAuto(props.hash);
-      else if( mode==='yes' )
+      else if( mode.value==='only' )
+        return splitHashPartsAuto(props.hash);
+      else if( mode.value==='yes' )
         return [ props.hash, '' ];
       else
         return [ '', props.hash ];
     });
 
-    return { hashParts };
+    return { hashParts, mode, };
   },
 };
 

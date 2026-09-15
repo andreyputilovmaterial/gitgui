@@ -17,11 +17,44 @@ const StatisticsPane = {
   <div class="footnote">Statistics:</div>
   <div class="error">{{ error }}</div>
   <div class="inner mdm-ui-records">
-    <div class="overall-gitrepo-folder-size mdm-ui-record"><span class="label">Overall folder size of git folder: </span><span class="value"><component-format-filesize :size="gitGitrepoFolderSize" /></span></div>
-    <div class="overall-worktree-folder-size mdm-ui-record"><span class="label">Overall folder size of work tree folder: </span><span class="value"><component-format-filesize :size="gitWorktreeFolderSize" /></span></div>
-    <div class="overall-git-objects-folder-size mdm-ui-record"><span class="label">Overall folder size of git pack objects: </span><span class="value"><component-format-filesize :size="gitPacksFolderSize" /></span></div>
-    <div class="computed-compressed mdm-ui-record"><span class="label">Computed cumulative "source" size of objects listed here: </span><span class="value"><component-format-filesize :size="cumulativeComputedSource" /></span></div>
-    <div class="computed-source mdm-ui-record"><span class="label">Computed cumulative "compressed" size of objects listed here: </span><span class="value"><component-format-filesize :size="cumulativeComputedCompressed" /></span></div>
+    <div class="overall-gitrepo-folder-size mdm-ui-record">
+      <span class="label">Overall folder size of git folder: </span><span class="value"><component-format-filesize :size="gitGitrepoFolderSize" /></span>
+    </div>
+    <div class="overall-worktree-folder-size mdm-ui-record">
+      <span class="label">Overall folder size of work tree folder: </span><span class="value"><component-format-filesize :size="gitWorktreeFolderSize" /></span>
+    </div>
+    <div class="overall-git-objects-folder-size mdm-ui-record">
+      <span class="label">Overall folder size of git pack objects: </span><span class="value"><component-format-filesize :size="gitPacksFolderSize" /></span>
+    </div>
+    <div class="computed-compressed mdm-ui-record">
+      <span class="label">
+        Computed cumulative "source" size of objects listed here: </span>
+      <span class="value">
+        <template v-if="isFinite(cumulativeComputedSource)">
+          <component-format-filesize :size="cumulativeComputedSource" />
+          <span v-for="f in cumulativeComputedSourceErrors" class="error"> (hash <component-format-hash :hash="f.hash" highlight="only" />: not a number (<component-format-filesize :size="f.sizeCompressed" />))</span>
+        </template>
+        <template v-else>
+          <component-format-filesize :size="cumulativeComputedSourceOnlyAvailableData" />
+          + {{ cumulativeComputedSourceErrors.length }} objects without available size information
+        </template>
+      </span>
+    </div>
+    <div class="computed-source mdm-ui-record">
+      <span class="label">
+        Computed cumulative "compressed" size of objects listed here: 
+      </span>
+      <span class="value">
+        <template v-if="isFinite(cumulativeComputedCompressed)">
+          <component-format-filesize :size="cumulativeComputedCompressed" />
+          <span v-for="f in cumulativeComputedCompressedErrors" class="error"> (hash <component-format-hash :hash="f.hash" highlight="only" />: not a number (<component-format-filesize :size="f.sizeCompressed" />))</span>
+        </template>
+        <template v-else>
+          <component-format-filesize :size="cumulativeComputedCompressedOnlyAvailableData" />
+          + {{ cumulativeComputedCompressedErrors.length }} objects without available size information
+        </template>
+      </span>
+    </div>
   </div>
 </div>
 `,
@@ -45,11 +78,63 @@ const StatisticsPane = {
       }
     });
 
+    const cumulativeComputedSourceOnlyAvailableData = computed(() => {
+      // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
+      try {
+        if( !props.packObjects ) return NaN;
+        return props.packObjects.reduce((acc,e)=>acc+(isFinite(Number(e.sizeSource)) ? Number(e.sizeSource) : 0),0);
+      } catch(e) {
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
+    });
+
+    const cumulativeComputedSourceErrors = computed(() => {
+      // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
+      try {
+        if( !props.packObjects ) return [];
+        return props.packObjects.filter(e=>!isFinite(Number(e.sizeSource)));
+      } catch(e) {
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
+    });
+
     const cumulativeComputedCompressed = computed(() => {
       // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
       try {
         if( !props.packObjects ) return NaN;
         return props.packObjects.reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
+      } catch(e) {
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
+    });
+
+    const cumulativeComputedCompressedOnlyAvailableData = computed(() => {
+      // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
+      try {
+        if( !props.packObjects ) return NaN;
+        return props.packObjects.reduce((acc,e)=>acc+( isFinite(Number(e.sizeCompressed)) ? Number(e.sizeCompressed) : 0 ),0);
+      } catch(e) {
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
+    });
+
+    const cumulativeComputedCompressedErrors = computed(() => {
+      // this is actually a repetition, I am now doing the same in index.js, and could have had it passed, but doing such simple math again should not be a problem
+      try {
+        if( !props.packObjects ) return [];
+        return props.packObjects.filter(e=>!isFinite(Number(e.sizeSource)));
       } catch(e) {
         props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         props.repoActions.logError('Git Pack View: Failed retrieving data');
@@ -98,7 +183,18 @@ const StatisticsPane = {
       ])
     });
 
-    return { error, gitPacksFolderSize, gitGitrepoFolderSize, gitWorktreeFolderSize, cumulativeComputedSource, cumulativeComputedCompressed };
+    return {
+      error,
+      gitPacksFolderSize,
+      gitGitrepoFolderSize,
+      gitWorktreeFolderSize,
+      cumulativeComputedSource,
+      cumulativeComputedSourceOnlyAvailableData,
+      cumulativeComputedSourceErrors,
+      cumulativeComputedCompressed,
+      cumulativeComputedCompressedOnlyAvailableData,
+      cumulativeComputedCompressedErrors,
+    };
 
   },
 };

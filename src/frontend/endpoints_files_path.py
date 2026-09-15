@@ -77,7 +77,14 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
 
     if method=='GET':
         if file_path.is_dir():
-            files = [ FileInfo(f) for f in file_path.iterdir() ]
+            def sorter(file_info):
+                dir_first_key = 0 if file_info.type=='directory' else 1 if file_info.type=='file' else 999
+                str_path = str(file_info.name)
+                return ( dir_first_key, str_path.lower(), str_path )
+            files = sorted(
+                [ FileInfo(f) for f in file_path.iterdir() ],
+                key = sorter,
+            )
             return WebResponse(
                 status_code = 200,
                 content_type = 'application/json',

@@ -1,0 +1,31 @@
+
+
+.mdm-git-gui-fileslist-navbuttons {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.mdm-git-gui-fileslist-navbuttons .navbtn {
+    line-height: 16px;
+    min-width: 21px;
+    min-height: 21px;
+    padding: 2px 1px 3px;
+    text-align: center;
+    border-radius: 5px;
+}
+.mdm-git-gui-fileslist-navbuttons a.navbtn, .mdm-git-gui-fileslist-navbuttons a.navbtn:active, .mdm-git-gui-fileslist-navbuttons a.navbtn:link, .mdm-git-gui-fileslist-navbuttons a.navbtn:visited {
+    outline: none;
+    text-decoration: none;
+    color: #888;
+    transition: all 450ms ease;
+    font-weight: 600;
+    cursor: pointer;
+}
+.mdm-git-gui-fileslist-navbuttons a.navbtn.active, .mdm-git-gui-fileslist-navbuttons a.navbtn.active:link, .mdm-git-gui-fileslist-navbuttons a.navbtn.active:active, .mdm-git-gui-fileslist-navbuttons a.navbtn.active:visited {
+    color: #385;
+}
+.mdm-git-gui-fileslist-navbuttons a.navbtn.active:hover, .mdm-git-gui-fileslist-navbuttons a.navbtn.active:link:hover {
+    color: #000;
+}

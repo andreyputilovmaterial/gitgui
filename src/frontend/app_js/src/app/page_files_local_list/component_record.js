@@ -22,6 +22,7 @@ const Record = {
     'metadataChangedAt',
     'createdAt',
     'componentRecordsFiltData',
+    'navigate',
     'repoStatus',
     'repoActions',
   ],
@@ -29,9 +30,12 @@ const Record = {
 <div :class="[...['files-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]" :key="filepath" :data-recordsfilter-filepath="filepath">
   <div class="error">{{ error }}</div>
   <span class="git-status-indicator mdm-ui-record-col-gitstatusindicator mdm-ui-record-col-1" title="Status"> </span>
-  <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-2" title="View file"><component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
-  <span class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" title="File path"><span class="label">File path: </span>{{ filepath }}</span>
-  <span class="size mdm-ui-record-col-size mdm-ui-record-col-4" title="File size"><component-format-filesize :size="size" /></span>
+    <span v-if="type==='file'" class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-2" title="View file"><component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
+    <span v-else class="mdm-ui-record-col-view-file mdm-ui-record-col-2"></span>
+    <span v-if="type==='file'" class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" title="File path"><span class="label">File path: </span>{{ filepath }}</span>
+    <a v-else class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" href="#!" @click.prevent="navigateInside" title="File path"><span class="label">File path: </span>{{ filepath }}</a>
+    <span v-if="type==='file'" class="size mdm-ui-record-col-size mdm-ui-record-col-4" title="File size"><component-format-filesize :size="size" /></span>
+    <span v-else class="mdm-ui-record-col-size mdm-ui-record-col-4"></span>
   <span class="modifiedat mdm-ui-record-col-modifiedat mdm-ui-record-col-5" title="Modified at"><component-format-datetime :dt="modifiedAt" /></span>
   <span class="createdat mdm-ui-record-col-createdat mdm-ui-record-col-6" title="Created at"><component-format-datetime :dt="createdAt" /></span>
 </div>
@@ -99,10 +103,36 @@ const Record = {
       }
     };
 
+    const navigateInside = event => {
+      try {
+        error.value = '';
+        if( props.type!=='directory' )
+          return false;
+        const newPath = `${props.filepath}`;
+        console.log(`[DEBUG]: navigate to ${newPath}`);
+        props.navigate(newPath);
+        // fileNavigateBusy.value = false;
+        return false;
+      } catch(e) {
+        if( e instanceof Error ) {
+          props.repoActions.logError(e);
+          props.repoActions.logError(`Failed to navigate to directory: ${props?.filepath}`);
+          error.value = e;
+          // fileNavigateBusy.value = false;
+          throw e;
+        }
+        // fileNavigateBusy.value = false;
+      } finally {
+        // fileNavigateBusy.value = false;
+        // fileNavigateWindowIsOpen.value = false;
+      }
+    };
+
     return {
       navigateFileViewPage,
       fileViewLinkBusy,
       fileViewLinkWindowIsOpen,
+      navigateInside,
       error,
     };
   },

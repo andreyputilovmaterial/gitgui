@@ -11,6 +11,7 @@ const Records = {
     'files',
     'namespace',
     'path',
+    'navigate',
     'repoStatus',
     'repoActions',
   ],
@@ -19,7 +20,7 @@ const Records = {
 :columns="{
   'filepath':'File name',
   'type':'File/directory',
-  'size':{ label: 'File file', type:'number' },
+  'size':{ label: 'File size', type:'number' },
   'modifiedAt':{ label: 'Modified at', type:'datetime' },
   'metadataChangedAt':{ label: 'Metadata updated at', type:'datetime' },
   'createdAt':{ label: 'Created at', type:'datetime' },
@@ -42,9 +43,9 @@ const Records = {
         :metadataChangedAt="h.metadataChangedAt"
         :createdAt="h.createdAt"
         :componentRecordsFiltData="h.componentRecordsFiltData"
+        :navigate="navigate"
         :repoStatus="repoStatus"
         :repoActions="repoActions"
-        :path="path"
     />
   </div>
 </component-filter-records-form>

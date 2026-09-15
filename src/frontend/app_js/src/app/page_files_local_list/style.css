@@ -70,7 +70,7 @@
   color: #000;
   text-decoration: none;
   outline: none;
-  transition: all 600px ease;
+  transition: all 600ms ease;
 }
 .mdm-git-gui-fileslistview .files-record .link-view-file > a:hover,
 .mdm-git-gui-fileslistview .files-record .link-download-file > a:hover {
@@ -89,7 +89,23 @@
   padding-top:3px;
   padding-bottom: 4px;
 }
+.mdm-git-gui-fileslistview .files-record .git-status-indicator {
+  width: 21px;
+  height: 21px;
+}
 
 .mdm-git-gui-fileslistview .files-record .size, .mdm-git-gui-fileslistview .files-record .modifiedat, .mdm-git-gui-fileslistview .files-record .createdat {
   color: #555;
+}
+
+.mdm-git-gui-fileslistview .files-record a.filepath, .mdm-git-gui-fileslistview .files-record a.filepath:active, .mdm-git-gui-fileslistview .files-record a.filepath:link, .mdm-git-gui-fileslistview .files-record a.filepath:visited {
+  outline: none;
+  text-decoration: none;
+  display: inline-block;
+  color: inherit;
+  transition: all 350ms ease;
+  cursor: pointer;
+}
+.mdm-git-gui-fileslistview .files-record a.filepath:hover {
+  text-decoration: underline;
 }

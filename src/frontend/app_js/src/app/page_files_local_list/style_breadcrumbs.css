@@ -5,15 +5,14 @@
     position: relative;
     flex-direction: row;
     flex-wrap: wrap;
+    margin: 0 -4px 0;
 }
 .mdm-git-gui-fileslist-breadcrumbs a, .mdm-git-gui-fileslist-breadcrumbs a:active, .mdm-git-gui-fileslist-breadcrumbs a:link, .mdm-git-gui-fileslist-breadcrumbs a:visited, .mdm-git-gui-fileslist-breadcrumbs a:hover {
     text-decoration: none;
     color: inherit;
     cursor: pointer;
     outline: none;
-    padding: none;
     display: inline-block;
-    margin: none;
     border: none;
     transition: all 400ms ease;
 }
@@ -21,7 +20,8 @@
 .mdm-git-gui-fileslist-breadcrumbs .item, .mdm-git-gui-fileslist-breadcrumbs a.item {
     color: #111;
     display: inline-block;
-    padding: 3px 0 4px;
+    padding: 3px 4px 4px;
+    cursor: pointer;
 }
 .mdm-git-gui-fileslist-breadcrumbs .item:hover, .mdm-git-gui-fileslist-breadcrumbs a.item:hover {
       color: #7067ff;
@@ -31,5 +31,5 @@
     font-weight: 500;
     display: inline-block;
     margin: 0;
-    padding: 3px 4px 4px;
+    padding: 3px 0 4px;
 }

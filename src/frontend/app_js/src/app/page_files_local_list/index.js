@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed, reactive, watch } from 'vue';
 
 
 
@@ -10,6 +10,7 @@ import { makeFetchResponseErrorMessage, } from '@/common_defs/helper_functions';
 
 import './style.css';
 import './style_breadcrumbs.css';
+import './style_navbuttons.css';
 
 
 
@@ -22,22 +23,33 @@ const Breadcrumbs = {
   ],
   template: `
 <div class="mdm-git-gui-fileslist-breadcrumbs">
-  <template v-for="(piece,index) in pathCurrentParts">
+  <template v-for="(piece,index) in pathParts">
     <span v-if="index>0" class="delimiter">/</span>
-    <a href="#!" @click.prevent="clickHandlers[index]" class="item">{{ piece }}</a>
+    <a href="#!" @click.prevent="piece.clickHandler" class="item">{{ piece.pathNode }}</a>
   </template>
 </div>
 `,
   setup(props) {
-    const clickHandlers = computed(()=>props.pathCurrentParts.map((_,i)=>{
-      const pathThis = props.pathCurrentParts.slice(0,i).join('/');
+    const pathParts = computed(() => [
+      {
+        pathNode: '⌂',
+        clickHandler: event => props.navigate('') && false,
+      },
+      ...props.pathCurrentParts.map((pathNode,i)=>{
+      const pathThis = props.pathCurrentParts.slice(0,i+1).join('/');
       const pathFull = props.pathCurrentParts.join('/');
-      if( pathThis===pathFull )
-        return event => false;
-      else
-        return event => navigate(pathThis) && false;
-    }));
-    return { clickHandlers };
+      const clickHandler = event => {
+        if( pathThis===pathFull )
+          return false;
+        return props.navigate(pathThis) && false
+      };
+      return {
+        pathNode,
+        clickHandler,
+      };
+    })
+    ]);
+    return { pathParts, };
   },
 };
 
@@ -47,21 +59,36 @@ const NavbarButtons = {
     'path',
     'pathCurrentParts',
     'navigate',
+    'history',
     'navigateBack',
+    'repoStatus',
+    'repoActions',
   ],
   template: `
 <div class="mdm-git-gui-fileslist-navbuttons">
-  <a href="#!" @click.prevent="canGoBack ? navigateBack : nothing">Back<template v-if="canGoBack"> (active)</template><template v-else> (inactive)</template></a>, 
-  <a href="#!" @click.prevent="canLevelUp ? navigateUp : nothing">Up<template v-if="canLevelUp"> (active)</template><template v-else> (inactive)</template></a> 
+  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canGoBack,}">←</a>
+  <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}">⇧</a> 
 </div>
 `,
   setup(props) {
     const nothing = ref(()=>false);
     const isRoot = computed(()=> props.pathCurrentParts.length>0 ? false : true );
     const canLevelUp = computed(()=>isRoot.value ? false : true );
-    const canGoBack = computed(()=> history.length>0 ? true : false );
+    const canGoBack = computed(()=> props.history.length>1 ? true : false );
     const navigateUp = event => props.navigate( props.pathCurrentParts.slice(0,props.pathCurrentParts.length-1).join('/') ) && false;
-    return { isRoot, canLevelUp, canGoBack, nothing, navigateUp, };
+    const handlerNavigateBack = event => {
+      if( canGoBack.value )
+        return props.navigateBack() && false;
+      else
+        return false;
+    };
+    const handlerNavigateUp = event => {
+      if( canLevelUp.value )
+        return navigateUp() && false;
+      else
+        return false;
+    };
+    return { isRoot, canLevelUp, canGoBack, nothing, handlerNavigateBack, handlerNavigateUp, };
   },
 };
 
@@ -76,12 +103,12 @@ const View = {
   template: `
 <div class="mdm-git-gui-fileslistview">
   <p class="root-page-description">View files in <component-format-local-file-path :path="pathCurrent" /></p>
-  <breadcrumbs :path="pathCurrentParts" />
-  <navbar-buttons :pathCurrentParts="pathCurrentParts" :path="pathCurrent" :navigate="navigate" :navigateBack="navigateBack" />
+  <breadcrumbs :pathCurrentParts="pathCurrentParts" :navigate="navigate" />
+  <navbar-buttons :pathCurrentParts="pathCurrentParts" :path="pathCurrent" :navigate="navigate" :navigateBack="navigateBack" :history="history" :repoStatus="repoStatus" :repoActions="repoActions" />
   <div class="error">{{ error }}</div>
   <template v-if="!filesList && !error">Querying data, please wait...</template>
   <template v-else-if="!!filesList">
-    <files-records :files="filesList" :namespace="namespaceCurrent" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
+    <files-records :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
   </template>
 </div>
 `,
@@ -109,7 +136,7 @@ const View = {
       pathCurrent.value = matches[2].replace(/\/\\/ig,'/');
     })();
     const history = reactive([pathCurrent.value]);
-    const pathCurrentParts = computed(()=>[...pathCurrent.value.split(/\//ig)]);
+    const pathCurrentParts = computed(()=>pathCurrent.value===''?[]:[...pathCurrent.value.split(/\//ig)]);
     const navigate = newPath => {
       try {
         if( newPath===pathCurrent.value )
@@ -127,8 +154,9 @@ const View = {
       try {
         if( history.length<=1 )
           throw new Error('failed to navigate back in history: no more steps, there isn\'t anywhere to go back further');
-        const newPath = history.pop();
-        pathCurrent.value = newPath;
+        const _ = history.pop();
+        const prevVal = history[history.length-1];
+        pathCurrent.value = prevVal;
       } catch(e) {
         props.repoActions.logError(e);
         props.repoActions.logError(`failed navigating to path: ${newPath}`);
@@ -178,6 +206,11 @@ const View = {
         getFilesList(`${namespaceCurrent.value}:${pathCurrent.value}`),
       ])
     });
+
+    watch(
+      pathCurrent,
+      () => getFilesList(`${namespaceCurrent.value}:${pathCurrent.value}`),
+    )
 
     return {
       filesList, error, pathCurrent, namespaceCurrent, history, navigate, navigateBack, pathCurrentParts,

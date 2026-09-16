@@ -1,6 +1,6 @@
 
 
-from urllib.parse import urlparse, parse_qs # to detect path within endpoints
+from urllib.parse import urlparse, parse_qs, unquote # to detect path within endpoints
 from pathlib import Path
 import json
 import re
@@ -36,7 +36,7 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
     WebResponse = config.get('iface').get('WebResponse')
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    path = path_parsed.split('/')
+    path = [ unquote(p) for p in path_parsed.split('/') ]
     method = net_request_handler.command
     file_path = '/'.join(path[2:])
     namespace_root, file_path = resolve_namespace(file_path,config)

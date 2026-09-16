@@ -166,10 +166,20 @@ const View = {
     };
 
     const getFilesList = async (path) => {
+      function norm(path) {
+        const parts = path.split(/[\/\\]/ig);
+        if( parts.includes('.') || parts.includes('..') )
+          throw new Error(`path with "." or ".." cannot be accepted; please normalize/resolve the path on the backend first: ${path}`);
+        return parts.join('/');
+      }
       try {
         error.value = '';
+        const encodedPath = path
+          .split("/")
+          .map(encodeURIComponent)
+          .join("/");
         const response = await fetch(
-          `/browse/${path}`,
+          `/browse/${encodedPath}`,
           {
             method: 'GET',
             headers: { "Content-Type": "application/json" },
@@ -185,8 +195,8 @@ const View = {
             throw new Error(await makeFetchResponseErrorMessage(response) );
         }
         filesList.value = result.map(record => ({
-          filepath: record.name,
-          fullFilepath: record.full_path,
+          filepath: norm(record.name),
+          fullFilepath: norm(record.full_path),
           type: record.type,
           size: record.size,
           modifiedAt: record.modified_at ? new Date(record.modified_at) : null,

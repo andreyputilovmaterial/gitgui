@@ -1,6 +1,6 @@
 
 
-from urllib.parse import urlparse #, parse_qs # to detect path within endpoints
+from urllib.parse import urlparse, unquote #, parse_qs # to detect path within endpoints
 import json # for responding, obviously
 from pathlib import Path # for resolving paths to resources
 import os # accessing physical files - gitignore, gitattributes, work-tree path, git repo path...
@@ -23,7 +23,9 @@ from .common_functions import JSONEncoder, get_matching_endpoint
 
 def not_found(net_request_handler,config:dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
-    payload = {'status':'error','error':'not found'}
+    path_with_query = net_request_handler.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    payload = {'status':'error','error':f'Can\'t handle functionality endpoint, path or resource not found: {path_parsed}'}
     return WebResponse(
         status_code = 404,
         content_type = 'application/json',
@@ -344,9 +346,8 @@ def handle_dir_sizeof_files(net_request_handler, config: dict,added_data=None):
     path_worktree = Path(config.get("dir_work_tree")).resolve()
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    path_parts = path_parsed.split('/')
+    path_parts = [ unquote(p) for p in path_parsed.split('/') ]
     resource_id = None
-    path_fs = None
     try:
         resource_id = parse_path(path_parts)
     except:
@@ -354,18 +355,24 @@ def handle_dir_sizeof_files(net_request_handler, config: dict,added_data=None):
     if not resource_id:
         return WebResponse(
             status_code = 404,
-                content_type = 'application/json', body = json.dumps(None, cls=JSONEncoder), headers = [],
+                content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: mno resource_id parsed',}, cls=JSONEncoder), headers = [],
         )
-    if resource_id=='git_repo':
-        path_fs = path_git_repo
-    elif resource_id=='worktree':
-        path_fs = path_worktree
-    elif resource_id=='git_pack_objects':
-        path_fs = path_git_repo / '.git' / 'objects' / 'pack'
+    known_paths = {
+        'git_repo': lambda : path_git_repo,
+        'worktree': lambda : path_worktree,
+        'git_pack_objects': lambda : path_git_repo / '.git' / 'objects' / 'pack',
+    }
+    path_fs_fn = known_paths.get(resource_id,None)
+    if not path_fs_fn:
+        return WebResponse(
+            status_code = 404,
+                content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: resource not recognized: {resource_id}',}, cls=JSONEncoder), headers = [],
+        )
+    path_fs = path_fs_fn()
     if not path_fs:
         return WebResponse(
             status_code = 404,
-                content_type = 'application/json', body = json.dumps(None, cls=JSONEncoder), headers = [],
+                content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: resource not recognized: {resource_id}',}, cls=JSONEncoder), headers = [],
         )
     if method=='GET':
         size = sum(file.stat().st_size for file in path_fs.rglob("*") if file.is_file())
@@ -398,7 +405,7 @@ def handle_request_functionality_endpoint(net_request_handler, config: dict,adde
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')
     if len(path)>=3 and path[0]=='':
-        path = '/'.join([]+['']+path[2:])
+        path = '/'.join([ unquote(p) for p in ['']+path[2:] ])
         renderer = get_matching_endpoint(path,endpoints) or not_found
     else:
         renderer = not_found

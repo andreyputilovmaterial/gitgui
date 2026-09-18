@@ -102,7 +102,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
       context.numberOfPolls++;
       await checkIfNeedResetInterval();
       const response = await fetch(
-        `/command/${context.job_id}`,
+        `/command/${encodeURIComponent(context.job_id)}`,
         {
           method: 'GET',
           headers: {
@@ -152,7 +152,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
         context.jobData.pollStatusUpdate = pollStatusUpdate;
 
          // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
-        context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace('%FILENAME%',filename);
+        context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace('%FILENAME%',encodeURIComponent(filename));
 
         context.jobData.getData = async function* ({maxSize = 100*1000*1000,...options} = {}) {
           const downloadUrl = new URL(context.jobData.getDownloadUrl('output')); // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
@@ -263,7 +263,7 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
 
         context.jobData.terminateJob = async () => {
           const termRequestResponse = await fetch(
-            `/command/${context.job_id}`,
+            `/command/${encodeURIComponent(context.job_id)}`,
             {
               method: 'DELETE',
               headers: {

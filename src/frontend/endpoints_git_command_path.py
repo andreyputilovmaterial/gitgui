@@ -1,7 +1,7 @@
 
 
 
-from urllib.parse import urlparse, parse_qs # to detect path within endpoints
+from urllib.parse import urlparse, parse_qs, unquote, quote # to detect path within endpoints
 import json # for responding, obviously
 from pathlib import Path # for resolving paths to resources
 import re # to check url params against "1", "yes", "affirmative", etc...
@@ -26,7 +26,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
     #     return [ n for n in bytes[:65] ]
 
     def make_download_url(path_parts,job_id,filename):
-        return f'{path_parts[0]}/{path_parts[1]}/{job_id}/stdout/{filename}'
+        return f'{quote(path_parts[0])}/{quote(path_parts[1])}/{quote(job_id)}/{quote("stdout")}/{quote(filename)}'
 
     WebResponse = config.get('iface').get('WebResponse')
     call_cli_command_initiate = config.get('iface').get('cli_command_initiate')
@@ -89,7 +89,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         # method = net_request_handler.command
         path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
-        path_parts = path_parsed.split('/')
+        path_parts = [ unquote(p) for p in path_parsed.split('/') ]
         params = parse_qs(urlparse(path_with_query).query)
         params_flattened = { key: values[-1] for key, values in params.items() }
         flag_is_binary = params_flattened.get('is_binary', "0")
@@ -123,7 +123,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         headers = []
         need_add_downloadurl = ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
         if need_add_downloadurl:
-            filename = Path('%FILENAME%').name
+            filename = '%FILENAME%' # Path('%FILENAME%').name
             url_get_rawbytes = make_download_url(path_parts, job_id,
                                                  filename)  # f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
             job_dict['download_url'] = url_get_rawbytes
@@ -147,7 +147,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         method = net_request_handler.command
         path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
-        path_parts = path_parsed.split('/')
+        path_parts = [ unquote(p) for p in path_parsed.split('/') ]
         job_id = None
         try:
             job_id = parse_path(path_parts)
@@ -165,7 +165,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
             headers = []
             need_add_downloadurl = ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
             if need_add_downloadurl:
-                filename = Path('%FILENAME%').name
+                filename = '%FILENAME%' # Path('%FILENAME%').name
                 url_get_rawbytes = make_download_url(path_parts,job_id,filename) # f'{path_parts[0]}/{path_parts[1]}/{job_id}/rawbytes/{filename}'
                 job_dict['download_url'] = url_get_rawbytes
                 headers.append(('Location',f'{url_get_rawbytes}',))
@@ -206,7 +206,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         # method = net_request_handler.command
         path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
-        path_parts = path_parsed.split('/')
+        path_parts = [ unquote(p) for p in path_parsed.split('/') ]
         params = parse_qs(urlparse(path_with_query).query)
         params_flattened = { key: values[-1] for key, values in params.items() }
         job_id = None
@@ -222,7 +222,15 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 headers = [],
             )
         options = params_flattened
-        output_file_obj = call_cli_command_get_job_stdout_reader(job_id,config)()
+        job_stdout_reader = call_cli_command_get_job_stdout_reader(job_id,config)
+        if not job_stdout_reader:
+            return WebResponse(
+                status_code = 415,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'job does not provide reader, maybe it was launched in non-binary (text) mode? {job_id}'}, cls=JSONEncoder),
+                headers = [],
+            )
+        output_file_obj = job_stdout_reader()
         if not output_file_obj:
             return WebResponse(
                 status_code = 415,
@@ -231,7 +239,14 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 headers = [],
             )
         job_dict = call_cli_command_get_job(job_id, config)
-        is_binary = job_dict.get('is_binary',None)
+        # if not job_dict:
+        #     return WebResponse(
+        #         status_code = 415,
+        #         content_type = 'application/json',
+        #         body = json.dumps({'status':'error','error':f'job not found, is it still alive? {job_id}'}, cls=JSONEncoder),
+        #         headers = [],
+        #     )
+        is_binary = job_dict.get('is_binary',True) if job_dict else True
         headers = []
         headers.append(( 'Cache-control',       'no-cache',    ))
         headers.append(( 'Connection',          'keep-alive',  ))
@@ -265,7 +280,7 @@ Response is HTTP 202 with job dict that contains new job id."""
         # method = net_request_handler.command
         path_with_query = net_request_handler.path
         path_parsed = f'{urlparse(path_with_query).path}'
-        path_parts = path_parsed.split('/')
+        path_parts = [ unquote(p) for p in path_parsed.split('/') ]
         params = parse_qs(urlparse(path_with_query).query)
         params_flattened = { key: values[-1] for key, values in params.items() }
         job_id = None

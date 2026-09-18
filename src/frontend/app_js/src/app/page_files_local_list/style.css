@@ -1,6 +1,11 @@
 
 
 
+.mdm-git-gui-fileslistview {
+  container-type: inline-size;
+  position: relative;
+}
+
 .mdm-git-gui-fileslistview .files-record .link-view-file .label, .mdm-git-gui-fileslistview .files-record .link-download-file .label, .mdm-git-gui-fileslistview .files-record .filepath .label {
   display: none;
 }
@@ -13,6 +18,11 @@
   max-content
   max-content;
 }
+@container (max-width: 700px) {
+  .mdm-git-gui-fileslistview .files-records.mdm-ui-records > * {
+    grid-column: 1/-1;
+  }
+}
 
 .mdm-git-gui-fileslistview .root-page-description {
   display: none;
@@ -20,6 +30,10 @@
 
 .mdm-git-gui-fileslistview .files-record {
   transition: all 100ms ease;
+  color: #aaa;
+}
+.mdm-git-gui-fileslistview .files-record.files-record-tracked {
+  color: inherit;
 }
 .mdm-git-gui-fileslistview .files-record:hover {
   background: #f3f3f3;
@@ -28,7 +42,9 @@
 .mdm-git-gui-fileslistview .files-record.files-record-mod {
   background: #ffce63;
 }
-
+.mdm-git-gui-fileslistview .files-record.files-record-mergeconflict, .mdm-git-gui-fileslistview .files-record.files-record-mergeconflict.files-record-mod {
+  background: #f77996;
+}
 .mdm-git-gui-fileslistview .mdm-ui-records {
     grid-template-columns:
       max-content
@@ -112,4 +128,12 @@
 }
 .mdm-git-gui-fileslistview .files-record a.filepath:hover {
   text-decoration: underline;
+}
+
+
+
+@container (min-width: 450px) and (max-width: 750px) {
+  .mdm-git-gui-fileslistview.mdm-git-gui-fileslistview-compact > form > .mdm-ui-recordsfilter-form > .mdmreport-controls-group > *{
+    flex: 0 0 33.31%;
+  }
 }

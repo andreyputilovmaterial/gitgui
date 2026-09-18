@@ -1,4 +1,9 @@
 
+.mdm-git-gui-verifypack {
+  position: relative;
+  container-type: inline-size;
+}
+
 .mdm-git-gui-verifypack .mdmreport-controls {
   position: relative;
 }
@@ -32,7 +37,7 @@
   display: none;
 }
 
-/* @media (min-width: 500px) {
+/* @container (min-width: 600px) {
   .mdm-git-gui-pack-files.pack-file-records {
     grid-template-columns: max-content max-content max-content max-content 2fr max-content max-content max-content max-content max-content max-content max-content max-content max-content max-content;
   }
@@ -44,7 +49,7 @@
 
 
 
-@media (min-width: 500px) {
+@container (min-width: 600px) {
   .mdm-git-gui-pack-files.pack-file-records {
     display: grid;
     grid-template-columns: minmax(0, max-content) minmax(0, 1fr);

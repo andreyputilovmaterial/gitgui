@@ -34,14 +34,10 @@ const Window = {
     const formFields = reactive({ })
 
     const handleSubmit = async () => {
-
-      // console.log('[DEBUG-navlink-in-popup]: window-component: handle-submit: called');
        try {
          isBusy.value = true;
-         // console.log('[DEBUG-navlink-in-popup]: window-component: handle-submit: yes, will close');
          return props.resolve('Yes!')
        } catch (err) {
-         // console.log('[DEBUG-navlink-in-popup]: window-component: handle-submit: no, something happened');
          props.repoActions.logError(err);
          props.repoActions.logError('Failed submitting ajax page view form');
          console.error('Failed submitting ajax page view form',err);
@@ -55,32 +51,22 @@ const Window = {
 
   async function fetchContents() {
     try {
-      // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: called');
       if( !safetyUrlCheck(props.url) )
         throw new Error(`Requested to fetch non-local url: decline (${props.url})`);
-      // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: call fetch');
       const response = await fetch(props.url);
-      // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: response received');
       if (!response.ok) {
-        // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: response status is not ok');
         throw new Error(`HTTP ${response.status}`);
       }
       const html = await response.text();
-      // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: extacted bayload, setting as content.value');
-
-      // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: received: ',html);
       content.value = html;
 
       lastFetchCounter.value++;
     } catch(e) {
-      // console.log('[DEBUG-navlink-in-popup]: window-component: fetch-contents: error');
       content.value = ' ';
       error.value = e;
       throw e;
     }
   }
-
-  // console.log('[DEBUG-navlink-in-popup]: window-component: setup: will configure onMounted');
   onMounted(async () => {
     await Promise.all([
       fetchContents(),

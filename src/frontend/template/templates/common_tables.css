@@ -385,3 +385,20 @@ form.mdmreport-controls.mdmreport-form-busy:first-child:before {
     left: 0; top: 0; right: 0; bottom: 0;
     background: rgba(224,224,224,0.55);
 }
+
+.mdm-link-inline-btn, .mdm-link-inline-btn:active, .mdm-link-inline-btn:hover, .mdm-link-inline-btn:link, .mdm-link-inline-btn:visited {
+  transition: all 300ms ease;
+  outline: none;
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  padding: 2px 16px 4px;
+  margin-left: 0;
+  border: 1px solid currentColor;
+  border-radius: 0.25em;
+  line-height: inherit;
+  cursor: pointer;
+}
+.mdm-link-inline-btn:hover {
+  color: #111;
+}

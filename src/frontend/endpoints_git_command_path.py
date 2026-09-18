@@ -47,21 +47,21 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
             # return ['python',Path.home() / 'test.py'] + command[2:]
             return ['python','-c',r'import time,random,sys;k=int(random.random()*13+9);print(f"Will do {k} iterations");[(d:=random.random()*4+2,n:="".join(str(int(random.random()*10)) for _ in range(5)),print(f"Hello #{c+1}, {n} ({k-c-1} left)!"),random.random()>.5 and print(f"Uuhhhh #{c+1}, {n}!",file=sys.stderr),time.sleep(d)) for c in range(k)]']
 
-        config_git_dir: str | Path | None = config.get("dir_git_repo")
-        config_work_tree: str | Path | None = config.get("dir_work_tree")
+        config_git_dir: str | Path | None = config.get("git_directory")
+        config_working_tree: str | Path | None = config.get("working_tree")
         if config_git_dir is None: # to make linter happy
-            raise ValueError(f'execute git command: config.dir_git_repo is required')
-        if config_work_tree is None: # to make linter happy
-            raise ValueError(f'execute git command: config.dir_work_tree is required')
-        git_dir = Path(config_git_dir).resolve() / '.git'
-        work_tree = Path(config_work_tree).resolve()
+            raise ValueError(f'execute git command: config.git_directory is required')
+        if config_working_tree is None: # to make linter happy
+            raise ValueError(f'execute git command: config.working_tree is required')
+        git_dir = Path(config_git_dir).resolve()
+        working_tree = Path(config_working_tree).resolve()
         command = [] \
             + [ command[0] ] \
             + [
                 '--git-dir'
                 ,git_dir,
                 '--work-tree',
-                work_tree,
+                working_tree,
             ] \
             + [
                 '--no-pager',

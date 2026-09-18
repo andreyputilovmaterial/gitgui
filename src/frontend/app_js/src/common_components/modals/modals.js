@@ -116,11 +116,9 @@ export const ModalsSite = {
         const zindex = max>0 ? max+1 : 1010;
         return zindex;
       };
-      console.log('[DEBUG]: modal: called createModal()');
       const {promiseResolve,promiseReject,promise} = promiseVars;
       const id = generateUUID();
       const zindex = generateZindex(modals);
-      console.log('[DEBUG]: modal: assigned id is ',id);
 
       const del = function() {
         modals.value = modals.value.filter(m=>m.id!=id)
@@ -133,7 +131,6 @@ export const ModalsSite = {
         resolve:promiseResolve,reject:promiseReject,
         zindex: zindex,
       }
-      console.log('[DEBUG]: modal: modal object is ',newModal);
       modals.value.push(newModal);
     }
 

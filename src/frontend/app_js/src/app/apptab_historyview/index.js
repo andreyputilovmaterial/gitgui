@@ -1,6 +1,6 @@
 
 
-import { ref, watch, onMounted, toRaw, h } from 'vue';
+import { ref, watch, onMounted, h } from 'vue';
 
 import PagesSite from '@/common_components/pages/index';
 
@@ -12,6 +12,7 @@ const View = {
   props: [
     'repoStatus',
     'repoActions',
+    'viewMode',
   ],
   template: `
 <div class="mdm-git-gui-historyview">
@@ -45,7 +46,11 @@ const View = {
     const navigateHomePage = async () => {
       await Promise.all([promiseContextHistoryReady.promise,]);
       createPage.value = pagesSite.value.createPage;
-      createPage.value(h(PageHistoryOverview,{repoStatus:props.repoStatus,repoActions:{...props.repoActions,createPage:createPage.value}}));
+      createPage.value(h(PageHistoryOverview,{
+        repoStatus: props.repoStatus,
+        repoActions: {...props.repoActions,createPage:createPage.value},
+        viewMode: props.viewMode,
+      }));
     };
 
     onMounted(async () => {
@@ -60,10 +65,9 @@ const View = {
 
     watch(() => props?.repoStatus?.history, () => {
       promiseContextHistoryReady.resolve(props?.repoStatus?.history);
-      console.log('[DEBUG-history]: new history:',toRaw(props?.repoStatus?.history));
     });
 
-    return { pagesSite, createPage }
+    return { pagesSite, createPage };
   }
 };
 

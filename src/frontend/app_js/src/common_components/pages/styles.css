@@ -9,6 +9,8 @@
   flex-wrap: nowrap;
   /*width: 100px;*/
   overflow: hidden;
+  position: relative;
+  container-type: inline-size;
 }
 .mdm-ui-pages-site .mdm-ui-pages > * {
   flex: 0 0 100%;
@@ -57,17 +59,17 @@
 .mdm-ui-pages-site .mdm-git-ui-page-wrapper  iframe {
   margin: -4px -15px 0 -15px;
 }
-@media all and (min-width: 1300px) {
+@container (min-width: 1300px) {
     .mdm-ui-pages-site .mdm-git-ui-page-wrapper {
         width: 1230px;
     }
 }
-@media all and (min-width: 1650px) {
+@container (min-width: 1650px) {
   .mdm-ui-pages-site .mdm-git-ui-page-wrapper {
         width: 1530px;
     }
 }
-@media all and (min-width: 1800px) {
+@container (min-width: 1800px) {
   .mdm-ui-pages-site .mdm-git-ui-page-wrapper {
         width: 1730px;
     }

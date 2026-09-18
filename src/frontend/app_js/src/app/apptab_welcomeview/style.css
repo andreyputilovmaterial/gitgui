@@ -1,0 +1,76 @@
+
+
+.mdm-git-gui-welcomeview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.mdm-git-gui-welcomeview, .mdm-git-gui-welcomeview-dummystub, .mdm-git-gui-welcomeview-uptodate, .mdm-git-gui-welcomeview-uncommittedchanges {
+    position: relative;
+}
+
+.mdm-git-gui-welcomeview > * {
+    min-height: 1em;
+    padding-bottom: 15px;
+    min-width: 0;
+}
+
+.mdm-git-gui-welcomeview-pane-status {
+    grid-column: 1/-1;
+    min-height: 100px;
+    max-height: 600px;
+}
+
+.mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action, .mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action:link, .mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action:active, .mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action:hover, .mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action:link {
+    outline: none;
+    color: #6c78ff;
+}
+.mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action.mdm-link-inline-btn {
+    color: inherit;
+}
+.mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action:hover, .mdm-git-gui-welcomeview-uncommittedchanges .mdm-git-gui-action.mdm-link-inline-btn:hover {
+    color: #385;
+}
+.mdm-git-gui-popupview-list-changed-files .gitgui-button-close:hover {
+    color: #385;
+}
+
+
+.mdm-git-gui-popupview-list-changed-files h2 {
+  font-weight: 500;
+  font-size: 16px;
+  margin: 0;
+  padding: 0 0 7px;
+}
+
+.mdm-git-gui-git-status-record .mdm-ui-record-col-filepath label, .mdm-git-gui-git-status-record .mdm-ui-record-col-filepath .label {
+    display: none;
+}
+
+.mdm-git-gui-git-status-records {
+    grid-template-columns: max-content max-content 1fr;
+}
+.mdm-git-gui-git-status-record {
+    transition: all 300ms ease;
+}
+.mdm-git-gui-git-status-record:hover {
+    background: #f2f2f2;
+}
+.mdm-git-gui-git-status-record .mdm-ui-record-col-status-index {
+    padding-left: 0;
+    padding-right: 0;
+}
+.mdm-git-gui-git-status-record .mdm-ui-record-col-status-worktree {
+    padding-left: 0;
+}
+
+
+.mdm-git-gui-popupview-message-window textarea {
+  min-height: 85px;
+  height: 140px;
+}
+
+.mdm-git-gui-popupview-message-window .section {
+    margin-bottom: 14px;
+}

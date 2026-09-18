@@ -2,7 +2,7 @@
 
 import { ref, computed } from 'vue';
 
-import Record from './component_record.js';
+import RecordCompact from './component_record_compact.js';
 
 import './style.css';
 
@@ -21,19 +21,16 @@ const Records = {
 v-else
 :columns="{
   'filepath':'File name',
-  'type':'File/directory',
-  'size':{ label: 'File size', type:'number' },
   'modifiedAt':{ label: 'Modified at', type:'datetime' },
-  'metadataChangedAt':{ label: 'Metadata updated at', type:'datetime' },
-  'createdAt':{ label: 'Created at', type:'datetime' },
+  'size':{ label: 'File size', type:'number' },
 }"
   :keyField="'filepath'"
   :records="files"
   :needSort="true"
   ref="filteringComponent"
 >
-  <div class="files-records mdm-ui-records">
-    <files-record
+  <div class="files-records mdm-ui-records files-records-compact">
+    <files-record-compact
         v-for="h in filesSorted"
         :key="h.filepath"
         :filepath="h.filepath"
@@ -53,7 +50,7 @@ v-else
 </component-filter-records-form>
 `,
   components: {
-    'files-record': Record,
+    'files-record-compact': RecordCompact,
   },
   setup(props) {
 

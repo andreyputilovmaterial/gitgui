@@ -9,15 +9,7 @@ import './style.css';
 
 
 
-const Hash = {
-  props: [ 'hash', ],
-  template: `
-<component-format-hash :hash="hash" :highlight="'auto'" />
-`,
-  setup() {
-    return {};
-  },
-};
+
 const HashLocal = {
   props: [],
   template: `
@@ -37,15 +29,6 @@ const HashStaged = {
   },
 };
 
-const Author = {
-  props: [ 'author', ],
-  template: `
-{{ author }}
-`,
-  setup() {
-    return {};
-  },
-};
 
 const Date = {
   props: [ 'timestamp', ],
@@ -80,43 +63,36 @@ const Record = {
   ],
   template: `
 <div
-  :class="['mdm-git-gui-history-record','history-record','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...(componentRecordsFiltData?.cssClasses||[])]"
+  :class="['mdm-git-gui-history-record','history-record','history-record-compact','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...(componentRecordsFiltData?.cssClasses||[])]"
   :key="hash"
   :data-recordsfilter-hash="hash"
   :data-recordsfilter-author="author"
   :data-recordsfilter-timestamp="timestamp"
   :data-recordsfilter-message="message"
 >
-  <div v-if="!isWorktree" class="form-controls mdm-ui-record-col-formcontrols mdm-ui-record-col-1"><form-compare-vers-controls :formVerCompareFields="formVerCompareFields" :hash="hash" /></div><div v-else class="form-controls" />
+  <span :class="['viewfiles','mdm-ui-record-col-viewfiles','mdm-ui-record-col-1',...(isWorktree||isIndex?['no-link']:[])]" title="View files">
+    <a v-if="!isWorktree&&!isIndex" href="#!" @click.prevent="navigateFilesListPage" class="view-files-button">{}</a>
+  </span>
   <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash">
-    <span class="label">Hash: </span>
     <hash-worktree v-if="isWorktree" />
     <hash-index v-else-if="isIndex" />
-    <hash v-else :hash="hash" />
-    <a v-if="!isWorktree&&!isIndex" href="#!" @click.prevent="navigateFilesListPage" class="view-files-button"> (files)</a>
   </span>
-  <span class="author mdm-ui-record-col-author mdm-ui-record-col-3" title="Author - username">
-    <span class="label">Author - Username: </span>
-    <author :author="author" />
-  </span>
-  <span class="timestamp mdm-ui-record-col-timestamp mdm-ui-record-col-4" title="Date/time when saved/commited">
-    <span class="label">Saved/Commited on: </span>
-    <date :timestamp="timestamp" />
-  </span>
-  <span class="message mdm-ui-record-col-message mdm-ui-record-col-5" title="Version description">
+  <span class="message mdm-ui-record-col-message mdm-ui-record-col-3" title="Version description">
     <div v-if="isHEAD" class="note">Current HEAD<span class="footnote"> (new history will continue from here)</span></div>
     <div v-if="isWorktree" class="note">Your local files in the working tree<span class="footnote"><br />Please stage your changes first if you want to select them for comparison because Git does not include untracked files in diffs.</span></div>
     <div v-if="isIndex" class="note">Temporary staging area for changes you added with \`<code>git add</code>\`; these changes will be captured in your next commit.<span class="footnote"></span></div>
     <span class="label">Version description: </span>
     <message :message="message" />
   </span>
+  <span class="timestamp mdm-ui-record-col-timestamp mdm-ui-record-col-4" title="Date/time when saved/commited">
+    <span class="label">Saved/Commited on: </span>
+    <date :timestamp="timestamp" />
+  </span>
 </div>
 `,
   components: {
-    'hash': Hash,
     'hash-worktree': HashLocal,
     'hash-index': HashStaged,
-    'author': Author,
     'date': Date,
     'message': Message,
     'form-compare-vers-controls': FormCompareVersionsControls,

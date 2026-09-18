@@ -68,13 +68,13 @@ def main(*argcs,**kwargs):
     )
     parser.add_argument(
         #'-1',
-        '--work-tree-folder',
+        '--working-tree',
         type=str,
         required=True
     )
     parser.add_argument(
         #'-1',
-        '--git-repo-folder',
+        '--git-directory-location',
         type=str,
         required=True
     )
@@ -91,8 +91,9 @@ def main(*argcs,**kwargs):
 
         'help_pages': help_md,
 
-        'dir_work_tree': None,
-        'dir_git_repo': None,
+        'working_tree': None,
+        'git_directory_location': None,
+        'git_directory': None,
         'git_paths_hash': None,
 
         'http_host': None,
@@ -132,23 +133,25 @@ def main(*argcs,**kwargs):
     register_output_postprocessor('tar',tar_output_processor)
     register_output_postprocessor('textconv',textconv_from_stream)
 
-    if args.work_tree_folder:
-        work_tree_folder = f'{args.work_tree_folder}' # make sure it's text
-        work_tree_folder = Path(work_tree_folder).resolve()
-        config['dir_work_tree'] = f'{work_tree_folder}'
+    if args.working_tree:
+        working_tree = f'{args.working_tree}' # make sure it's text
+        working_tree = Path(working_tree).resolve()
+        config['working_tree'] = f'{working_tree}'
     else:
         # print(f'{STDOUT_COLOR_RED}working-tree-folder not specified{STDOUT_COLOR_RESET}')
-        raise Exception('working-tree-folder not specified')
+        raise Exception('working-tree not specified')
 
-    if args.git_repo_folder:
-        git_repo_folder = f'{args.git_repo_folder}' # make sure it's text
-        git_repo_folder = Path(git_repo_folder).resolve()
-        config['dir_git_repo'] = f'{git_repo_folder}'
+    if args.git_directory_location:
+        git_directory_location = f'{args.git_directory_location}' # make sure it's text
+        git_directory_location = Path(git_directory_location).resolve()
+        git_directory = git_directory_location / '.git'
+        config['git_directory'] = f'{git_directory}'
+        config['git_directory_location'] = f'{git_directory_location}'
     else:
         # print(f'{STDOUT_COLOR_RED}git-repo-folder not specified{STDOUT_COLOR_RESET}')
-        raise Exception('git-repo-folder not specified')
+        raise Exception('git-directory-location not specified')
 
-    config['git_paths_hash'] = make_hash(work_tree_folder,git_repo_folder)
+    config['git_paths_hash'] = make_hash(working_tree,git_directory)
 
     print('\npreparing git cli command loop...\n')
     for _ in range (0,CONFIG_CLI_COMMAND_EXEC_WORKERS):
@@ -164,8 +167,8 @@ def main(*argcs,**kwargs):
     )
 
     cfg_to_print_verify = {
-        "working-tree-folder":config.get("dir_work_tree"),
-        "git-repo-folder":config.get("dir_git_repo"),
+        "working-tree-folder":config.get("working_tree"),
+        "git-repo-folder":config.get("git_directory"),
         "http address":config.get("http_address"),
     }
     print(f'CONFIG:\n{prettyprint_config(cfg_to_print_verify)}')

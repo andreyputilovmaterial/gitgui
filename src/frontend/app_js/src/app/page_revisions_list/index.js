@@ -1,12 +1,13 @@
 
 
-import { ref, reactive, h } from 'vue';
+import { ref, reactive, h, computed, } from 'vue';
 
 import './style.css';
 
 import PageVersionCompare from '@/app/page_version_compare/index.js';
 
 import HistoryRecords from './component_records.js';
+import HistoryRecordsCompact from './component_records_compact.js';
 
 
 
@@ -15,12 +16,13 @@ const View = {
   props: [
     'repoStatus',
     'repoActions',
+    'viewMode',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
 <div class="mdm-git-gui-historyoverview mdm-git-gui-page-history-overview">
-  <p class="description">History of revisions. Each is a snapshot of your files at that point in time.</p>
-  <form @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+  <p v-if="!isCompactView" class="description">History of revisions. Each is a snapshot of your files at that point in time.</p>
+  <form v-if="!isCompactView" @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <div class="error">{{ error }}</div>
     <div class="error">{{ validationMessage }}</div>
     <template v-if="!repoStatus?.history && !error">
@@ -28,13 +30,26 @@ const View = {
     </template>
     <template v-else-if="!!repoStatus?.history">
       <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
-      <history-records :history="repoStatus?.history" :formVerCompareFields="formVerCompareFields" :repoStatus="repoStatus" :repoActions="repoActions" />
+      <history-records
+        :history="repoStatus?.history"
+        :formVerCompareFields="formVerCompareFields"
+        :repoStatus="repoStatus"
+        :repoActions="repoActions"
+      />
     </template>
   </form>
+  <history-records-compact
+    v-else
+    :history="repoStatus?.history"
+    :formVerCompareFields="formVerCompareFields"
+    :repoStatus="repoStatus"
+    :repoActions="repoActions"
+  />
 </div>
 `,
   components: {
     'history-records': HistoryRecords,
+    'history-records-compact': HistoryRecordsCompact,
   },
   setup(props) {
 
@@ -45,6 +60,7 @@ const View = {
     });
     const validationMessage = ref('');
     const error = ref('');
+    const isCompactView = computed(()=>props.viewMode==='compact');
 
     const navigateVersionComparePage = async () => {
       await props.repoActions.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
@@ -81,6 +97,7 @@ const View = {
     return {
       isBusy,
       error,
+      isCompactView,
       formVerCompareFields: formFields,
       validationMessage,
       handleCompare,

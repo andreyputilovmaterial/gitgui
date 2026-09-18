@@ -13,7 +13,7 @@ from .common_functions import JSONEncoder
 
 
 known_namespaces = {
-    'worktree': lambda config: config.get("dir_work_tree"),
+    'worktree': lambda config: config.get("working_tree"),
 }
 
 

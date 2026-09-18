@@ -6,7 +6,7 @@
   grid-template-columns: 1fr;
   gap: 0;
 }
-@media (min-width: 500px) {
+@container (min-width: 500px) {
   .mdm-ui-records {
     grid-template-columns:
       max-content
@@ -35,7 +35,7 @@
   padding: 7px 0; /* warning: that's a tradeoff - that's a general class for all such lists, and I should not apply unexpected styles here; but anyway I'll do the padding to set some default; however, I should generally avoid adding rules to children here */
 }
 
-@media (min-width: 500px) {
+@container (min-width: 500px) {
   .mdm-ui-record > * {
     padding: 7px 14px;
   }

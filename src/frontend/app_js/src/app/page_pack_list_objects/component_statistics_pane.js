@@ -18,13 +18,13 @@ const StatisticsPane = {
   <div class="error">{{ error }}</div>
   <div class="inner mdm-ui-records">
     <div class="overall-gitrepo-folder-size mdm-ui-record">
-      <span class="label">Overall folder size of git folder: </span><span class="value"><component-format-filesize :size="gitGitrepoFolderSize" /></span>
+      <span class="label">Overall git directory size: </span><span class="value"><component-format-filesize :size="directoryGitDirSize" /></span>
     </div>
     <div class="overall-worktree-folder-size mdm-ui-record">
-      <span class="label">Overall folder size of work tree folder: </span><span class="value"><component-format-filesize :size="gitWorktreeFolderSize" /></span>
+      <span class="label" title="Not only tracked files in working tree, but size of the whole folder">Overall working tree directory size: </span><span class="value"><component-format-filesize :size="directoryWorkingTreeSize" /></span>
     </div>
     <div class="overall-git-objects-folder-size mdm-ui-record">
-      <span class="label">Overall folder size of git pack objects: </span><span class="value"><component-format-filesize :size="gitPacksFolderSize" /></span>
+      <span class="label">Overall folder size of git pack objects: </span><span class="value"><component-format-filesize :size="directoryWithGitPackFilesSize" /></span>
     </div>
     <div class="computed-compressed mdm-ui-record">
       <span class="label">
@@ -60,9 +60,9 @@ const StatisticsPane = {
 `,
   setup(props) {
 
-    const gitPacksFolderSize = ref('Fetching data, please wait...');
-    const gitGitrepoFolderSize = ref('Fetching data, please wait...');
-    const gitWorktreeFolderSize = ref('Fetching data, please wait...');
+    const directoryWithGitPackFilesSize = ref('Fetching data, please wait...');
+    const directoryGitDirSize = ref('Fetching data, please wait...');
+    const directoryWorkingTreeSize = ref('Fetching data, please wait...');
     const error = ref('');
 
     const cumulativeComputedSource = computed(() => {
@@ -145,7 +145,7 @@ const StatisticsPane = {
 
     const fetchGitPacksFolderSize = async () => {
       try {
-        gitPacksFolderSize.value = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/git_pack_objects', undefined );
+        directoryWithGitPackFilesSize.value = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/git_pack_objects', undefined );
       } catch(e) {
         props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         props.repoActions.logError('Git Pack View: Failed retrieving data');
@@ -155,7 +155,7 @@ const StatisticsPane = {
     };
     const fetchGitRepoFolderSize = async () => {
       try {
-        gitGitrepoFolderSize.value = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/git_repo', undefined );
+        directoryGitDirSize.value = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/git_directory', undefined );
       } catch(e) {
         props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         props.repoActions.logError('Git Pack View: Failed retrieving data');
@@ -165,8 +165,8 @@ const StatisticsPane = {
     };
     const fetchWorktreeFolderSize = async () => {
       try {
-        const size = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/worktree', undefined );
-        gitWorktreeFolderSize.value = size;
+        const size = await props.repoActions.fetchWrapper( 'GET', '/functionality/dir-sizeof/working_tree', undefined );
+        directoryWorkingTreeSize.value = size;
       } catch(e) {
         props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
         props.repoActions.logError('Git Pack View: Failed retrieving data');
@@ -185,9 +185,9 @@ const StatisticsPane = {
 
     return {
       error,
-      gitPacksFolderSize,
-      gitGitrepoFolderSize,
-      gitWorktreeFolderSize,
+      directoryWithGitPackFilesSize,
+      directoryGitDirSize,
+      directoryWorkingTreeSize,
       cumulativeComputedSource,
       cumulativeComputedSourceOnlyAvailableData,
       cumulativeComputedSourceErrors,

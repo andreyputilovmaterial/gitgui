@@ -1,11 +1,15 @@
 
 
+
 const View = {
   props: [
-    'repoStatus', 'repoActions',
+    'repoStatus',
+    'repoActions',
   ],
   template: `
-  Hello, main status view...
+<div class="tygydyk">
+  <p>Hey how's it going?</p>
+</div>
 `,
   setup() {
     return {};

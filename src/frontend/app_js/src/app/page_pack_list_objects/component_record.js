@@ -13,7 +13,7 @@ function cap(level, low, high) {
 
 function calcWarningLevel(size,statistics) {
   const levelAbsoluteScale = cap( (Math.log(Number(size))/Math.log(1000000000))**5.88, 0, 1 );
-  const levelRelativeScale = Number(size) / Number(statistics.cumulativeComputedCompressed);
+  const levelRelativeScale = Number(size) / Number(statistics.cumulativeComputedCompressedOnlyAvailableData);
   const weightRelative = cap( (Math.log(Number(size))/Math.log(1000000000))**1.69, 0, 1 );
   return levelRelativeScale * weightRelative + levelAbsoluteScale * (1-weightRelative);
 }

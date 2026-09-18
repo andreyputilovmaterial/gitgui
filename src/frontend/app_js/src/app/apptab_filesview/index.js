@@ -12,10 +12,13 @@ const View = {
   props: [
     'repoStatus',
     'repoActions',
+    'viewMode',
   ],
   template: `
 <div class="mdm-git-gui-filesview">
-  <pages-site ref="pagesSite"/>
+  <p>Files in working tree.<br />
+Changed files are in orange. Merge conflicts are in pink. Untracked/ignored files are greyed out.</p>
+  <pages-site ref="pagesSite" />
 </div>
 `,
   components: {
@@ -28,7 +31,12 @@ const View = {
 
     const navigateHomePage = async () => {
       createPage.value = pagesSite.value.createPage;
-      createPage.value(h(PageFilesView,{path:'worktree:',repoStatus:props.repoStatus,repoActions:{...props.repoActions,createPage:createPage.value}}));
+      createPage.value(h(PageFilesView,{
+        path: 'worktree:',
+        repoStatus: props.repoStatus,
+        repoActions: {...props.repoActions,createPage:createPage.value},
+        viewMode: props.viewMode,
+      }));
     };
 
     onMounted(async () => {

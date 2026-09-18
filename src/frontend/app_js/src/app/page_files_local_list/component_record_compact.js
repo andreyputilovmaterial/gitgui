@@ -29,7 +29,7 @@ const Record = {
   template: `
 <div
   :class="[
-    ...['files-record','mdm-ui-record'],
+    ...['files-record','files-record-compact','mdm-ui-record'],
     ...(!!fileModifiedWorkingTree||!!fileModifiedIndex ? ['files-record-mod'] : []),
     ...(!!fileMergeConflict ? ['files-record-mergeconflict'] : []),
     ...(!!fileTracked ? ['files-record-tracked'] : []),
@@ -59,7 +59,6 @@ const Record = {
     <span v-if="type==='file'" class="size mdm-ui-record-col-size mdm-ui-record-col-4" :title=" fileTracked ? 'File size' : 'File size (Untracked file/directory - ignored per rules in .gitignore)' "><component-format-filesize :size="size" /></span>
     <span v-else class="mdm-ui-record-col-size mdm-ui-record-col-4"></span>
   <span class="modifiedat mdm-ui-record-col-modifiedat mdm-ui-record-col-5" :title=" fileTracked ? 'Modified at' : 'Modified at (Untracked file/directory - ignored per rules in .gitignore)' "><component-format-datetime :dt="modifiedAt" /></span>
-  <span class="createdat mdm-ui-record-col-createdat mdm-ui-record-col-6" :title=" fileTracked ? 'Created at' : 'Created at (Untracked file/directory - ignored per rules in .gitignore)' "><component-format-datetime :dt="createdAt" /></span>
 </div>
 `,
   components: {

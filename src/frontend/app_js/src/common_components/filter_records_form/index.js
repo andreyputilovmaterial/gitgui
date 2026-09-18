@@ -163,10 +163,14 @@ const FormWrapper = {
         else
           return b[formFields.value.sortingColumn].localeCompare(a[formFields.value.sortingColumn]);
       } else if( type==='number' ) {
-        if( formFields.value.sortingAscending )
-          return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];
-        else
-          return b[formFields.value.sortingColumn] - a[formFields.value.sortingColumn];
+        const aSize = a[formFields.value.sortingColumn];
+        const aSizeOrNull = isFinite(aSize) ? aSize : 0;
+        const bSize = b[formFields.value.sortingColumn];
+        const bSizeOrNull = isFinite(bSize) ? bSize : 0;
+        if( formFields.value.sortingAscending ) {
+          return aSizeOrNull - bSizeOrNull;
+        } else
+          return bSizeOrNull - aSizeOrNull;
       } else if( type==='datetime' ) {
         if( formFields.value.sortingAscending )
           return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];

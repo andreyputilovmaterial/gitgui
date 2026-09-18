@@ -12,9 +12,9 @@
             "args": [
                 "--program",
                 "gitgui",
-                "--work-tree-folder",
+                "--working-tree",
                 "/Users/andrej/Downloads",
-                "--git-repo-folder",
+                "--git-directory-location",
                 "tests-real-sensitive-data/test-downloads-repo",
             ],
             "console": "integratedTerminal"
@@ -27,9 +27,9 @@
             "args": [
                 "--program",
                 "gitgui",
-                "--work-tree-folder",
+                "--working-tree",
                 ".",
-                "--git-repo-folder",
+                "--git-directory-location",
                 ".",
             ],
             "console": "integratedTerminal"

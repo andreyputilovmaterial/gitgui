@@ -35,19 +35,19 @@ import './common_components/css_grid/styles.css';
 // all "system" components - modals, pages, environment for showing errors...
 import { _logErrorProxyContext } from './common_components/_log_error_proxy';
 import { ModalsSite, createModal } from './common_components/modals/modals';
-import ManipulateNavLinksDummyWrapper from '@/app/background_navlinks_attachmodals/manipulate_links';
+import ManipulateNavLinksDummyWrapper from './app/background_navlinks_attachmodals/manipulate_links';
 
 // direct children shown in starting view in app - window panes
 import AppOnlineIndicator from './app/background_onlineindicator_overlay/index.js';
-import ErrorView from '@/app/apppane_errorview/index';
-import TerminalSessionView from '@/app/apppane_terminalview/index';
+import ErrorView from './app/apppane_errorview/index';
+import TerminalSessionView from './app/apppane_terminalview/index';
 // direct children shown in starting view in app - tabs in main view
-import RepoInitView from '@/app/window_repoinitview/init_repo';
-import PageWelcome from '@/app/apptab_mainview_welcome/index';
-import PageFiles from '@/app/apptab_filesview/index';
-import PageHistory from '@/app/apptab_historyview/index';
-import PageGitignore from '@/app/window_repoinitview/section_gitignore';
-import PagePackcompression from '@/app/apptab_packcompression/index';
+import RepoInitView from './app/window_repoinitview/init_repo';
+import PageWelcome from './app/apptab_welcomeview/index';
+import PageFiles from './app/apptab_filesview/index';
+import PageHistory from './app/apptab_historyview/index';
+import PageGitignore from './app/window_repoinitview/section_gitignore';
+import PagePackcompression from './app/apptab_packcompression/index';
 
 
 
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <component-tabbed-pane id="history" title="History">
             <page-history :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
-          <component-tabbed-pane id="gitignore" title="gitignore (tracked files)">
+          <component-tabbed-pane id="gitignore" title="Gitignore (tracked files)">
             <page-gitignore :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
           <component-tabbed-pane id="packstatus" title="Disk usage">
@@ -127,21 +127,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const repoStatus = ref({});
       const repoActions = ref({});
       const config = ref({});
-      const configPathsFirstCaptured = ref({dir_work_tree:null,dir_git_repo:null,git_paths_hash:null});
+      const configPathsFirstCaptured = ref({working_tree:null,git_directory:null,git_paths_hash:null});
       const configPathsMismatch = ref(false);
       const errors = ref([]);
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
       const repoInitRequiresAttention = ref(false);
       const commands = ref([]);
+      const appBackendWarnings = ref([]);
+      const gitCommandEvent = new ReplayEvent();
+      const configUpdatesEvent = new ReplayEvent();
       const gitRepoReady = new Promise(resolve=>{
         watch(()=>repoStatus.value.repoExists,async ()=>{
           if( repoStatus.value.repoExists )
             resolve();
         });
       });
-      const appBackendWarnings = ref([]);
-      const gitCommandEvent = new ReplayEvent();
+      const appReady = new Promise(resolve=>{
+        watch(commands,async ()=>{
+          if( commands.value.length>0 )
+            resolve();
+        });
+      });
+      const configReady = new Promise(resolve=>{
+        watch(config,async ()=>{
+          if( Object.keys(config.value).length>0 )
+            resolve();
+        });
+      });
 
 
 
@@ -398,24 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
         function handleResponse(response) {
           config.value = response
           repoStatus.value.config = response;
-          // const configPathsFirstCaptured = ref({dir_work_tree:null,dir_git_repo:null,git_paths_hash:null});
-          if(!configPathsFirstCaptured.value.dir_work_tree)
-            configPathsFirstCaptured.value.dir_work_tree = response.dir_work_tree
-          if(!configPathsFirstCaptured.value.dir_git_repo)
-            configPathsFirstCaptured.value.dir_git_repo = response.dir_git_repo
-          if(!configPathsFirstCaptured.value.git_paths_hash)
-            configPathsFirstCaptured.value.git_paths_hash = response.git_paths_hash
-          if(
-               ( !!configPathsFirstCaptured.value.dir_work_tree && !(configPathsFirstCaptured.value.dir_work_tree==response.dir_work_tree) )
-            || ( !!configPathsFirstCaptured.value.dir_git_repo && !(configPathsFirstCaptured.value.dir_git_repo==response.dir_git_repo) )
-            || ( !!configPathsFirstCaptured.value.git_paths_hash && !(configPathsFirstCaptured.value.git_paths_hash==response.git_paths_hash) )
-
-          )
-            configPathsMismatch.value = true;
-          const newWarnings = (response?.warnings||[]).filter(message=>!appBackendWarnings.value.includes(message));
-          appBackendWarnings.value.push(...newWarnings);
-          for(const msg of newWarnings)
-            logError(msg);
+          Promise.resolve().then(()=>configUpdatesEvent.emit(repoStatus.value.config));
         }
         try {
           const response = await fetchWrapper('GET', '/functionality/config',{})
@@ -431,7 +427,6 @@ document.addEventListener("DOMContentLoaded", () => {
         function handleResponse(response) {
           // repoStatus.value = {...repoStatus.value,'repoExists':response}
           repoStatus.value.repoExists = response
-          console.log('[DEBUG-vue-vars]',toRaw(repoStatus.value))
           if(!response) {
             repoInitRequiresAttention.value = true
           }
@@ -584,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       async function getStatus() {
+        const updStatusOnUntracked = records => records.map(a=> a.type==='untracked' ? ({...a,worktree:'A',index:'.'}) : a);
         try {
           // git status --porcelain=v2 -z
           const gitStatusCommandJobObject = await executeGitBinaryCommand(['git','status','--porcelain=v2','-z'],{is_binary:true,is_interactive:true,});
@@ -594,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if( (gitStatusCommandJobObject.exit_code!==0) || (!!gitStatusCommandJobObject.stderr && (gitStatusCommandJobObject.stderr.trim().length>0)) ) {
             throw new Error(`exit_code: ${gitStatusCommandJobObject.exit_code}, stderr: ${gitStatusCommandJobObject.stderr}`);
           }
-          repoStatus.value.status = parseGitStatus(binaryData);
+          repoStatus.value.status = updStatusOnUntracked(parseGitStatus(binaryData));
         } catch(e) {
           repoActions.value.logError(e);
           repoActions.value.logError('failed when getting repo status with git status --porcelain=v2 -z');
@@ -616,25 +612,238 @@ document.addEventListener("DOMContentLoaded", () => {
           getStatus();
       });
       function checkFileStatus(filepath) {
+        const isNonEmpty = a => {
+          if( (typeof a==='undefined')||(a===null) )
+            return false;
+          else if( typeof a==='number' )
+            return true;
+          else if(typeof a==='string')
+            return a!=='';
+          else
+            return !!a;
+        };
+        const asString = a => isNonEmpty(a) ? `${a}` : '';
         for(const record of repoStatus.value.status) {
-          if( record.path===filepath )
+          if( record.path===filepath ) {
             return record;
+          }
+        }
+        for(const record of repoStatus.value.status) { // repeat checking untracked files, that are recorded as parent path, not exact file
+          const recordPathClean = asString(record.path).replace(/[\/]$/ig,'')+'/'; // make sure it ends with a "/", it's it's really a subpath, not just partial match in file name
+          if( filepath.startsWith(recordPathClean) ) {
+            return record;
+          }
         }
         return null;
       }
       repoActions.value.checkFileStatus = checkFileStatus;
       function checkFolderStatus(filepath) {
-        const filepathClean = `${filepath}`.replace(/[\/]$/ig,'')+'/';
+        const isNonEmpty = a => {
+          if( (typeof a==='undefined')||(a===null) )
+            return false;
+          else if( typeof a==='number' )
+            return true;
+          else if(typeof a==='string')
+            return a!=='';
+          else
+            return !!a;
+        };
+        const asString = a => isNonEmpty(a) ? `${a}` : '';
+        function combineRecords(fieldType,vvs) {
+          const asChar = a => { const r = asString(a); if(r==='') return ' '; else return r[0]; };
+          const allEqual = arr => arr.every(v => v === arr[0]);
+          const combinePaths = arr => {
+            const paths = arr.map(a => asString(a).split(/[\\/]+/).filter(Boolean));
+            const prefix = paths.reduce((prefix, path) =>
+              prefix.filter((v, i) => v === path[i])
+            );
+            return (asString(arr[0]).match(/^[\\/]/) ? '/' : '') + prefix.join('/');
+          };;
+          const combinePermissionMasks = arr => {
+            // hmmm, bitwise and is simpler and better?
+            let result = '';
+            const len = Math.max(...arr.map(a=>asString(a).length));
+            for(let i=0;i<len;++i) {
+              const toNumber = s => {
+                if([' ','.',undefined,null].includes(s))
+                  return -1;
+                return Number(s); // if !isFinite, we still return NaN
+              };
+              const chars = values.map(v=>asChar(asString(v)[i]));
+              const combinedInt = Math.max(...chars.map(toNumber));
+              const char = !isFinite(combinedInt) ? 'N' : (combinedInt>9) ? '9' : (combinedInt<0?' ':((combinedInt>=0)&&(combinedInt<=9)&&(combinedInt===(combinedInt|0))?asChar(combinedInt):'?'));
+              result += char;
+            };
+            return result;
+          };
+          const combineModifiedFlag = arr => {
+            let result = '.';
+            let level = 0;
+            for(const iter of arr) {
+              const l = ( iter==='U' ? 2 : ( iter==='.' ? 0 : 1 ) ); // 0 = unchanged, 1 = modified, 2 = merge conflict, higher pri
+              if( l>level ) {
+                level = l;
+                result = level===1 ? 'M' : iter;
+              }
+            }
+            return result;
+          };
+          const values = vvs.filter(a=>(typeof a!=='undefined'));
+          if( values.length===0 )
+            return undefined;
+          if( allEqual(values) )
+            return values[0];
+          if( ['index','worktree','submodule.c','submodule.m','submodule.u'].includes(fieldType) )
+            return combineModifiedFlag(values);
+          else if( ['xy'].includes(fieldType) )
+            return combineModifiedFlag(values.map(a=>`${asChar(asString(a)[0])}${asChar(asString(a)[1])}`));
+          else if( ['headMode','indexMode','worktreeMode',].includes(fieldType) )
+            return combinePermissionMasks(values);
+          else if( ['path',].includes(fieldType) )
+            return combinePaths(values);
+          return NaN;
+        }
+        const filepathClean = asString(filepath).replace(/[\/]$/ig,'')+'/';
         const partialMatchesForDirectory = [];
         for(const record of repoStatus.value.status) {
           if( record.path.startsWith(filepathClean) )
             partialMatchesForDirectory.push(record);
+          else if( filepathClean.startsWith(asString(record.path).replace(/[\/]$/ig,'')+'/') )
+            partialMatchesForDirectory.push(record);
         }
         if( partialMatchesForDirectory.length>0 )
-          return partialMatchesForDirectory;
+          return {
+            "type": combineRecords('type',partialMatchesForDirectory.map(record=>record?.type)), // "ordinary"
+            "index": combineRecords('index',partialMatchesForDirectory.map(record=>record?.index)), // "."
+            "worktree": combineRecords('worktree',partialMatchesForDirectory.map(record=>record?.worktree||(record.type==='untracked'?'M':undefined)||record?.worktree)), // "M"
+            "xy": combineRecords('xy',partialMatchesForDirectory.map(record=>record?.xy)), // ".M"
+            "submodule": {
+              "kind": combineRecords('submodule.kind',partialMatchesForDirectory.map(record=>record?.submodule?.kind)), // "normal"
+              "isSubmodule": combineRecords('submodule.isSubmodule',partialMatchesForDirectory.map(record=>record?.submodule?.isSubmodule)), // false
+              "c": combineRecords('submodule.c',partialMatchesForDirectory.map(record=>record?.submodule?.c)), // "."
+              "m": combineRecords('submodule.m',partialMatchesForDirectory.map(record=>record?.submodule?.m)), // "."
+              "u": combineRecords('submodule.u',partialMatchesForDirectory.map(record=>record?.submodule?.u)), // "."
+            },
+            "headMode": combineRecords('headMode',partialMatchesForDirectory.map(record=>record?.headMode)), // "100644"
+            "indexMode": combineRecords('indexMode',partialMatchesForDirectory.map(record=>record?.indexMode)), // "100644"
+            "worktreeMode": combineRecords('worktreeMode',partialMatchesForDirectory.map(record=>record?.worktreeMode)), // "100644"
+            "headObject": combineRecords('headObject',partialMatchesForDirectory.map(record=>record?.headObject)), // "854d736acb73334c0e987c15e04d838b8d882a1f"
+            "indexObject": combineRecords('indexObject',partialMatchesForDirectory.map(record=>record?.indexObject)), // "854d736acb73334c0e987c15e04d838b8d882a1f"
+            "path": combineRecords('path',partialMatchesForDirectory.map(record=>record?.path)), // ".vscode/launch.json"
+          };
         return null;
       }
       repoActions.value.checkFolderStatus = checkFolderStatus;
+
+      async function getTrackedFiles() {
+        function parseGitLsTrackedFiles(data) {
+          const utf8Decoder = new TextDecoder("utf-8");
+          function decodeUtf8(bytes) {
+            return utf8Decoder.decode(bytes);
+          }
+          const result = [];
+          let pos = 0;
+          while (pos < data.length) {
+            // Empty record (e.g. trailing NUL).
+            if (data[pos] === 0) {
+              pos++;
+              continue;
+            }
+            const recordStart = pos;
+            // Find the first NUL.
+            while (pos < data.length && data[pos] !== 0) {
+              pos++;
+            }
+            const record = data.subarray(recordStart, pos);
+            if (record.length === 0) {
+              pos++;
+              continue;
+            }
+            result.push(decodeUtf8(record));
+            // Skip NUL.
+            if (pos < data.length) {
+              pos++;
+            }
+          }
+          return result;
+        }
+        try {
+          // git status --porcelain=v2 -z
+          const gitStatusCommandJobObject = await executeGitBinaryCommand(['git','ls-files','-z'],{is_binary:true,is_interactive:true,});
+          await gitStatusCommandJobObject.promiseDownloadLinkReady;
+          const filename = 'git status';
+          const binaryData = await gitStatusCommandJobObject.downloadFullStdout(filename);
+          await gitStatusCommandJobObject.promise;
+          if( (gitStatusCommandJobObject.exit_code!==0) || (!!gitStatusCommandJobObject.stderr && (gitStatusCommandJobObject.stderr.trim().length>0)) ) {
+            throw new Error(`exit_code: ${gitStatusCommandJobObject.exit_code}, stderr: ${gitStatusCommandJobObject.stderr}`);
+          }
+          repoStatus.value.trackedFiles = parseGitLsTrackedFiles(binaryData);
+        } catch(e) {
+          repoActions.value.logError(e);
+          repoActions.value.logError('failed when getting repo status with git status --porcelain=v2 -z');
+          throw e;
+        }
+      }
+      repoActions.value.getTrackedFiles = getTrackedFiles;
+      gitCommandEvent.subscribe(event=>{
+        const gitAppArgument = (()=>{
+          const command = event.command;
+          if( !command || (command.length<=1) || (command[0]!=='git') )
+            return null;
+          for(const arg of command.slice(1))
+            if( /^(?:clone|init|add|mv|restore|rm|bisect|diff|grep|log|show|status|backfill|branch|commit|merge|rebase|reset|switch|tag|fetch|pull|push)$/.test(arg) )
+              return arg;
+          return null;
+        })();
+        if( ['add','commit','rebase','merge','cherry-pick','branch','switch','checkout'].includes(gitAppArgument) )
+          getTrackedFiles();
+      });
+      function checkFileTracked(filepath) {
+        const isNonEmpty = a => {
+          if( (typeof a==='undefined')||(a===null) )
+            return false;
+          else if( typeof a==='number' )
+            return true;
+          else if(typeof a==='string')
+            return a!=='';
+          else
+            return !!a;
+        };
+        const asString = a => isNonEmpty(a) ? `${a}` : '';
+        const norm = s => asString(s).replace(/[/\//]/ig,'/');
+        const pathClean = norm(filepath);
+        for( const trackedPath of ( [...repoStatus.value.trackedFiles,...( Array.isArray(repoStatus.value.status) ? repoStatus.value.status.filter(f=>f.type==='untracked').map(f=>f.path) : [] )] ) ) {
+          if( trackedPath===pathClean )
+            return true;
+          else if( pathClean.startsWith( trackedPath.replace(/[\/\\]$/ig,'')+'/' ) )
+            return true;
+        }
+        return false;
+      }
+      repoActions.value.checkFileTracked = checkFileTracked;
+      function checkFolderTracked(filepath) {
+        const isNonEmpty = a => {
+          if( (typeof a==='undefined')||(a===null) )
+            return false;
+          else if( typeof a==='number' )
+            return true;
+          else if(typeof a==='string')
+            return a!=='';
+          else
+            return !!a;
+        };
+        const asString = a => isNonEmpty(a) ? `${a}` : '';
+        const norm = s => asString(s).replace(/[/\//]/ig,'/');
+        const filepathClean = norm(filepath).replace(/[\/\\]$/ig,'')+'/';
+        for(const record of ( [...repoStatus.value.trackedFiles,...( Array.isArray(repoStatus.value.status) ? repoStatus.value.status.filter(f=>f.type==='untracked').map(f=>f.path) : [] )] ) ) {
+          if( record.startsWith(filepathClean) )
+            return true;
+          else if( filepathClean.startsWith(record.replace(/[\/\\]$/ig,'')+'/') )
+            return true;
+        }
+        return false;
+      }
+      repoActions.value.checkFolderTracked = checkFolderTracked;
 
       async function setIsOnlineTimer() {
         const fn = async function () {
@@ -663,10 +872,79 @@ document.addEventListener("DOMContentLoaded", () => {
 
       repoActions.value.diff = diff;
 
+      const maintenanceAndDebug = async () => {
+        const tasks = [
+          () => {
+            window.isReactive = isReactive;
+            window.vueVersion = version;
+          },
+          () => {
+            setIsOnlineTimer();
+          },
+          () => {
+            configUpdatesEvent.subscribe( config => {
+              try {
+                // const configPathsFirstCaptured = ref({working_tree:null,git_directory:null,git_paths_hash:null});
+                if(!configPathsFirstCaptured.value.working_tree)
+                  configPathsFirstCaptured.value.working_tree = config.working_tree
+                if(!configPathsFirstCaptured.value.git_directory)
+                  configPathsFirstCaptured.value.git_directory = config.git_directory
+                if(!configPathsFirstCaptured.value.git_paths_hash)
+                  configPathsFirstCaptured.value.git_paths_hash = config.git_paths_hash
+                if(
+                     ( !!configPathsFirstCaptured.value.working_tree && !(configPathsFirstCaptured.value.working_tree==config.working_tree) )
+                  || ( !!configPathsFirstCaptured.value.git_directory && !(configPathsFirstCaptured.value.git_directory==config.git_directory) )
+                  || ( !!configPathsFirstCaptured.value.git_paths_hash && !(configPathsFirstCaptured.value.git_paths_hash==config.git_paths_hash) )
+
+                )
+                  configPathsMismatch.value = true;
+              } catch(e) {
+                logError(e);
+                logError(`Failed when monitoring if config paths chanegd: ${e}`);
+                configPathsMismatch.value = true;
+                Promise.resolve().then(()=>{ throw e; });
+              }
+            });
+          },
+          () => {
+            configUpdatesEvent.subscribe( config => {
+              const newWarnings = (config?.warnings||[]).filter(message=>!appBackendWarnings.value.includes(message));
+              appBackendWarnings.value.push(...newWarnings);
+              for(const msg of newWarnings)
+                logError(msg);
+            });
+          },
+          // async () => {
+          //   throw new Error('Check failed maintenance task!');
+          // },
+          () => {
+            const doesBrowserSupportCssMediaRules = (()=>{
+              try {
+                return !!window.CSS && !!window.CSS.supports && window.CSS.supports('container-type: inline-size');
+              } catch(e) {
+                return false;
+              }
+              return false;
+            })();
+            if( !doesBrowserSupportCssMediaRules ) {
+              logError(`Warning: your browser does not support css media rules. App might be rendered incorrectly. Please use newer browser, released after 2022.`);
+            }
+          },
+        ];
+        for( const task of tasks) {
+          try {
+            await task();
+          } catch(e) {
+            logError(e);
+            Promise.resolve().then(()=>{ throw e; });
+          }
+        }
+        return null; // so that can be called in batch from Promise.all and is not causing linter warning, cause it's result might be used...
+      };
+
       onMounted(async () => {
         await Promise.all([
-          executeGitCommand(['git', 'status']),
-          setIsOnlineTimer(),
+          executeGitCommand(['git', 'status']), // for the beautiful message in terminal view, so it prints git status
           configCheckUpdates(),
           updateGitRepoExistence(),
           gitignoreRead(),
@@ -674,15 +952,11 @@ document.addEventListener("DOMContentLoaded", () => {
             gitRepoReady.then(checkIfSomethingInIndex);
             gitRepoReady.then(getHEAD);
             gitRepoReady.then(getStatus);
+            gitRepoReady.then(getTrackedFiles);
             gitRepoReady.then(gitignoreRead);
             return null; // to make linter happy, that return value becomes part of promise, and it is not "void"
           })(),
-          (()=>{
-            // console.log(`[DEBUG]: vue version is ${version}`);
-            window.isReactive = isReactive;
-            window.vueVersion = version;
-            return null; // to make linter happy, that return value becomes part of promise, and it is not "void"
-          })(),
+          maintenanceAndDebug(),
         ])
       });
 

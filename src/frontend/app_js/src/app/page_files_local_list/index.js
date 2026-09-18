@@ -5,6 +5,7 @@ import { ref, onMounted, computed, reactive, watch } from 'vue';
 
 
 import FilesRecords from './component_records.js';
+import FilesRecordsCompact from './component_records_compact.js';
 import { makeFetchResponseErrorMessage, } from '@/common_defs/helper_functions';
 
 
@@ -25,7 +26,7 @@ const Breadcrumbs = {
 <div class="mdm-git-gui-fileslist-breadcrumbs">
   <template v-for="(piece,index) in pathParts">
     <span v-if="index>0" class="delimiter">/</span>
-    <a href="#!" @click.prevent="piece.clickHandler" class="item">{{ piece.pathNode }}</a>
+    <a href="#!" @click.prevent="piece.clickHandler" class="item" :title="index===0 ? 'Home' : undefined">{{ piece.pathNode }}</a>
   </template>
 </div>
 `,
@@ -66,8 +67,8 @@ const NavbarButtons = {
   ],
   template: `
 <div class="mdm-git-gui-fileslist-navbuttons">
-  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canGoBack,}">←</a>
-  <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}">⇧</a> 
+  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canGoBack,}" title="Back">←</a>
+  <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}" title="Up one level">⇧</a> 
 </div>
 `,
   setup(props) {
@@ -98,17 +99,24 @@ const View = {
     'path',
     'repoStatus',
     'repoActions',
+    'viewMode',
     'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
-<div class="mdm-git-gui-fileslistview">
+<div :class="['mdm-git-gui-fileslistview',...(isCompactView?['mdm-git-gui-fileslistview-compact']:[])]">
   <p class="root-page-description">View files in <component-format-local-file-path :path="pathCurrent" /></p>
-  <breadcrumbs :pathCurrentParts="pathCurrentParts" :navigate="navigate" />
-  <navbar-buttons :pathCurrentParts="pathCurrentParts" :path="pathCurrent" :navigate="navigate" :navigateBack="navigateBack" :history="history" :repoStatus="repoStatus" :repoActions="repoActions" />
-  <div class="error">{{ error }}</div>
-  <template v-if="!filesList && !error">Querying data, please wait...</template>
-  <template v-else-if="!!filesList">
-    <files-records :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
+  <template v-if="!repoStatus.status">
+    Querying data, please wait...
+  </template>
+  <template v-else>
+    <breadcrumbs :pathCurrentParts="pathCurrentParts" :navigate="navigate" />
+    <navbar-buttons :pathCurrentParts="pathCurrentParts" :path="pathCurrent" :navigate="navigate" :navigateBack="navigateBack" :history="history" :repoStatus="repoStatus" :repoActions="repoActions" />
+    <div class="error">{{ error }}</div>
+    <template v-if="!filesList && !error">Querying data, please wait...</template>
+    <template v-else-if="!!filesList">
+      <files-records-compact v-if="isCompactView" :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
+      <files-records v-else :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
+    </template>
   </template>
 </div>
 `,
@@ -116,6 +124,7 @@ const View = {
     'breadcrumbs': Breadcrumbs,
     'navbar-buttons': NavbarButtons,
     'files-records': FilesRecords,
+    'files-records-compact': FilesRecordsCompact,
   },
   setup(props) {
 
@@ -123,6 +132,7 @@ const View = {
     const error = ref('');
     const pathCurrent = ref(null);
     const namespaceCurrent = ref(null);
+    const isCompactView = computed(()=>props.viewMode==='compact');
     (()=>{
       const matches = props.path.match(/^(\w+):(.*)$/);
       if( !matches ) {
@@ -224,7 +234,15 @@ const View = {
     )
 
     return {
-      filesList, error, pathCurrent, namespaceCurrent, history, navigate, navigateBack, pathCurrentParts,
+      filesList,
+      error,
+      pathCurrent,
+      namespaceCurrent,
+      history,
+      navigate,
+      navigateBack,
+      pathCurrentParts,
+      isCompactView,
     };
   },
 };

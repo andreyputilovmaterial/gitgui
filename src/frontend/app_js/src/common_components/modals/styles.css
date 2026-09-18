@@ -14,14 +14,17 @@
   bottom: 0;
   z-index: 101;
   transition: all 600ms ease;
+  container-type: inline-size;
 }
 .mdm-ui-modals-site.mdm-ui-modals-site-active .mdm-ui-modals-global-background {
   display: block;
   background: rgba(192,192,192,.2);
+  container-type: inline-size;
 }
 .mdm-ui-modals-site.mdm-ui-modals-site-active .mdm-ui-modals-modalform-background {
   display: block;
   background: rgba(192,192,192,.5);
+  container-type: inline-size;
 }
 .mdm-ui-modals-site .mdm-git-ui-modal-wrapper {
   display: block;
@@ -35,6 +38,7 @@
   width: 92%;
   transform: translateX(-50%);
   padding: 15px;
+  container-type: inline-size;
 }
 .mdm-ui-modals-site .mdm-git-ui-modal-wrapper  iframe {
   margin: -4px -15px 0 -15px;

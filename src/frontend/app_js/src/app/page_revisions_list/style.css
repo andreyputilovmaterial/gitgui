@@ -1,11 +1,15 @@
 
+.mdm-git-gui-page-history-overview {
+  position: relative;
+  container-type: inline-size;
+}
 
 .mdm-git-gui-page-history-overview .history-record {
   border: 1px solid transparent;
 }
-.mdm-git-gui-page-history-overview .history-record.history-record-HEAD {
-  /* border-color: #339944; */
-}
+/* .mdm-git-gui-page-history-overview .history-record.history-record-HEAD {
+  / * border-color: #339944; * /
+} */
 
 .mdm-git-gui-page-history-overview .history-record .hash .label {
   display: none;
@@ -13,7 +17,7 @@
 .mdm-git-gui-page-history-overview .history-record .author .label {
   display: inline;
 }
-@media all and (min-width: 900px) {
+@container (min-width: 900px) {
   .mdm-git-gui-page-history-overview .history-record .author .label {
     display: none;
   }
@@ -21,10 +25,10 @@
 .mdm-git-gui-page-history-overview .history-record .timestamp .label {
   display: none;
 }
-.mdm-git-gui-page-history-overview .history-record .message {
-  /* font-weight: 500;
-  color: #115522; */
-}
+/* .mdm-git-gui-page-history-overview .history-record .message {
+  / * font-weight: 500;
+  color: #115522; * /
+} */
 .mdm-git-gui-page-history-overview .history-record .message .label {
   display: none;
 }
@@ -57,7 +61,7 @@
 .mdm-git-gui-page-history-overview .history-record.mdm-ui-record > * {
   padding: 4px 14px;
 }
-@media (min-width: 500px) {
+@container (min-width: 500px) {
   .mdm-git-gui-page-history-overview .history-record.mdm-ui-record > * {
     /* grid-column: 1 / -1; */
   }
@@ -66,12 +70,12 @@
     padding-right: 14px;
   }
 }
-@media (max-width: 899px) {
+@container (max-width: 899px) {
   .mdm-git-gui-page-history-overview .history-record.mdm-ui-record > * {
     grid-column: 1 / -1;
   }
 }
-@media (min-width: 900px) {
+@container (min-width: 900px) {
   .mdm-git-gui-page-history-overview .history-records.mdm-ui-records {
     grid-template-columns:
       max-content
@@ -107,7 +111,7 @@
 .mdm-git-gui-page-history-overview .history-record > .mdm-ui-record-col-message .note .footnote {
   color: #999;
 }
-@media (min-width: 1650px) {
+@container (min-width: 1650px) {
   .mdm-git-gui-page-history-overview .history-record > .mdm-ui-record-col-message {
     grid-column: 5;
     /* margin-top: 0; /\* reset - it no loner jumps *\/
@@ -132,3 +136,28 @@
   cursor: pointer;
   outline: none;
 }
+
+
+
+.mdm-git-gui-history-record.history-record-compact {
+  padding-left: 21px;
+}
+.mdm-git-gui-history-record.history-record-compact .viewfiles {
+  display: block;
+  position: absolute;
+  top: 14px;
+  left: -21px;
+  width: 21px;
+  height: 21px;
+  line-height: 14px;
+  padding: 3px 3.5px 4px;
+  padding-top: 3px;
+  padding-bottom: 4px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  border-radius: 3px;
+}
+.mdm-git-gui-history-record.history-record-compact .viewfiles.no-link {
+  border-color: transparent;
+}
+

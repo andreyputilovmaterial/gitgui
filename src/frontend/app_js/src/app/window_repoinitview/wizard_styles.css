@@ -3,7 +3,7 @@
   margin: 0.5em 0;
 }
 
-.mdm-git-gui-repoinit-wizard-confirm-paths-inner .config-work-tree-path, .mdm-git-gui-repoinit-wizard-confirm-paths-inner  .config-git-dir-path {
+.mdm-git-gui-repoinit-wizard-confirm-paths-inner .config-working-tree-path, .mdm-git-gui-repoinit-wizard-confirm-paths-inner  .config-git-dir-path {
   font-weight: 500;
   font-size: 115%;
   color: #000;

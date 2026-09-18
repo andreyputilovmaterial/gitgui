@@ -129,40 +129,16 @@ const View = {
       });
     });
 
-    const cumulativeComputedSource = computed(() => {
-      try {
-        if( !packObjects.value ) return NaN;
-        return packObjects.value.reduce((acc,e)=>acc+Number(e.sizeSource),0);
-      } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Git Pack View: Failed retrieving data');
-        error.value = e;
-        throw e;
-      }
-    });
-
-    const cumulativeComputedCompressed = computed(() => {
-      try {
-        if( !packObjects.value ) return NaN;
-        return packObjects.value.reduce((acc,e)=>acc+Number(e.sizeCompressed),0);
-      } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Git Pack View: Failed retrieving data');
-        error.value = e;
-        throw e;
-      }
-    });
-
     const configIsReady = ref(undefined);
     const configIsReadyPromise = new Promise(resolve => {
       const checkConfigIsReady = () => {
-        const value = !!props.repoStatus?.config?.dir_git_repo;
+        const value = !!props.repoStatus?.config?.git_directory;
         if(value){
           configIsReady.value = true;
           resolve();
         }
       }
-      watch(()=>props.repoStatus?.config?.dir_git_repo,checkConfigIsReady);
+      watch(()=>props.repoStatus?.config?.git_directory,checkConfigIsReady);
       checkConfigIsReady();
     });
 
@@ -261,7 +237,7 @@ const View = {
       try {
         const retrievedPackFiles = await props.repoActions.fetchWrapper( 'GET', '/functionality/git-ls-pack-files', undefined );
         packFiles.value = retrievedPackFiles;
-        // const packFileFullPath = ref(`${props.repoStatus?.config?.dir_git_repo.replace(/[\\/]+$/, '')}/${`${props.packFile}`.replace(/^[\\/]+/, '')}`);
+        // const packFileFullPath = ref(`${props.repoStatus?.config?.git_directory.replace(/[\\/]+$/, '')}/${`${props.packFile}`.replace(/^[\\/]+/, '')}`);
         // const outputs = ref(undefined);
         return retrievedPackFiles;
       } catch(e) {
@@ -401,7 +377,7 @@ const View = {
         await gitPackCompressionIsReadyPromise;
         const packFiles = await initGetPackFiles();
         await configIsReadyPromise;
-        const basePackFilePath = props.repoStatus?.config?.dir_git_repo;
+        const basePackFilePath = props.repoStatus?.config?.git_directory;
         const packPhysicalObjects = await initGetPackPhysicalObjects(basePackFilePath,packFiles);
         await historyIsReadyPromise;
         const revisionObjects = await initParseHistory();
@@ -446,10 +422,48 @@ const View = {
       historyIsReady.value
     );
 
-    const statistics = computed(()=>({
-      cumulativeComputedSource: cumulativeComputedSource.value,
-      cumulativeComputedCompressed: cumulativeComputedCompressed.value,
-    }));
+    const statistics = computed(()=>{
+      const result = {
+        cumulativeComputedSource: 0,
+        cumulativeComputedSourceOnlyAvailableData: 0,
+        cumulativeComputedSourceErrors: [],
+        cumulativeComputedCompressed: 0,
+        cumulativeComputedCompressedOnlyAvailableData: 0,
+        cumulativeComputedCompressedErrors: [],
+      };
+      try {
+        if( !packObjects.value ) return {
+          cumulativeComputedSource: NaN,
+          cumulativeComputedSourceOnlyAvailableData: NaN,
+          cumulativeComputedSourceErrors: [],
+          cumulativeComputedCompressed: NaN,
+          cumulativeComputedCompressedOnlyAvailableData: NaN,
+          cumulativeComputedCompressedErrors: [],
+        };
+        for( const record of packObjects.value ) {
+          const sizeSource = record.sizeSource;
+          const sizeCompressed = record.sizeCompressed;
+          result.cumulativeComputedSource += sizeSource;
+          if( isFinite(sizeSource) ) {
+            result.cumulativeComputedSourceOnlyAvailableData += sizeSource;
+          } else {
+            result.cumulativeComputedSourceErrors.push(record);
+          }
+          result.cumulativeComputedCompressed += sizeCompressed;
+          if( isFinite(sizeCompressed) ) {
+            result.cumulativeComputedCompressedOnlyAvailableData += sizeCompressed;
+          } else {
+            result.cumulativeComputedCompressedErrors.push(record);
+          }
+        }
+        return result;
+      } catch(e) {
+        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
+        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        error.value = e;
+        throw e;
+      }
+    });
 
     const filteringComponent = ref(null);
 

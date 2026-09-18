@@ -119,7 +119,6 @@ const PagesSite = {
         const zindex = max>0 ? max+1 : 10;
         return zindex;
       };
-      console.log('[DEBUG]: page: called createPage()');
       const promiseContext = {
         promiseResolve: () => {'promise not inited'},
         promiseReject: () => {'promise not inited'},
@@ -132,7 +131,6 @@ const PagesSite = {
       const {promiseResolve,promiseReject,promise} = promiseContext;
       const id = generateUUID();
       const zindex = generateZindex(pages);
-      console.log('[DEBUG]: page: assigned id is ',id);
 
       const del = function() {
         pages.value = pages.value.filter(m=>m.id!=id)
@@ -145,7 +143,6 @@ const PagesSite = {
         resolve:promiseResolve,reject:promiseReject,
         zindex: zindex,
       }
-      console.log('[DEBUG]: page: page object is ',newPage);
       pages.value.push(newPage);
     }
 

@@ -26,6 +26,24 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 
+def make_project_label(record):
+    try:
+        try:
+            label = record.get('label')
+        except Exception as e:
+            raise Exception(f'can\'t read project label') from e
+        try:
+            working_tree = Path(record.get('working_tree')).resolve()
+        except Exception as e:
+            raise Exception(f'can\'t read working_tree ({record.get("working_tree")}): {e}') from e
+        try:
+            git_directory_location = Path(record.get('git_directory_location')).resolve()
+        except Exception as e:
+            raise Exception(f'can\'t read git_directory_location ({record.get("git_directory_location")}): {e}') from e
+        return f"{label}, working tree: {working_tree}, git directory location: {git_directory_location}"
+    except Exception as e:
+        raise Exception(f'malformed config file: {e} (when reading {repr(record)})') from e
+
 def prep_qre(choices):
     return QuestionTypeRoot(
         label = 'Project selector',
@@ -36,7 +54,7 @@ def prep_qre(choices):
                 categories = set(
                     Category(
                         name = record.get('name'),
-                        label = f"{record.get('label')}, work-tree folder: {Path(record.get('work_tree_folder')).resolve()}, git folder: {Path(record.get('git_repo_folder')).resolve()}",
+                        label = make_project_label(record),
                     ) for record in choices
                 )
             )
@@ -85,4 +103,4 @@ def main(*argcs,**kwargs):
         
         choice = next(iter([ c for c in choices if c.get('name') == next(iter([ f for f in result.fields if f.name=='project' ])).response.name ]))
         print(f'Selected project: {choice.get("label"),choice.get("name")}')
-        return call_gitgui_program(['--work-tree-folder',choice.get('work_tree_folder'),'--git-repo-folder',choice.get('git_repo_folder')],)
+        return call_gitgui_program(['--working-tree',choice.get('working_tree'),'--git-directory-location',choice.get('git_directory_location')],)

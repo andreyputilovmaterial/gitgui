@@ -53,16 +53,16 @@ const WizardConfirmPaths = {
   template: `
 <div class="mdm-git-gui-repoinit-wizard-confirm-paths-inner">
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
-    <section :class="{'step-1-confirm-dir-work-tree':true,'step-confirmed':formFields.step1Acknowledged}">
-      <component-section-rollup header="Step 1: confirm work-tree path" :condensed="!!formFields.step1Acknowledged">
-        <p>Here you confirm the work-tree path.</p>
+    <section :class="{'step-1-confirm-dir-working-tree':true,'step-confirmed':formFields.step1Acknowledged}">
+      <component-section-rollup header="Step 1: confirm working-tree path" :condensed="!!formFields.step1Acknowledged">
+        <p>Here you confirm the working tree path.</p>
         <p>This is <span style="text-decoration: underline;">the tracked folder</span>: with files, scripts, data, etc...</p>
-        <div class="config-work-tree-path"><code>{{ config.dir_work_tree }}</code></div>
-        <path-status :status="formContext.dir_work_treeExists" />
+        <div class="config-working-tree-path"><code>{{ config.working_tree }}</code></div>
+        <path-status :status="formContext.pathWorkingTreeExists" />
         <div class="hidden">
           <input type="checkbox" v-model="formFields.step1Acknowledged" />
         </div>
-        <p style="color: #888;">If this is not the path you wanted, re-launch the python script with updated params in BAT file.</p>
+        <p style="color: #888;">If this is not the path you wanted, re-launch the python script with updated params in .BAT/.sh file.</p>
         <div class="click-next">
           <button type="button" :class="{'click-me-next':!formFields.step1Acknowledged}" @click="formFields.step1Acknowledged = true">Next</button>
         </div>
@@ -70,13 +70,13 @@ const WizardConfirmPaths = {
     </section>
     <section :class="{'step-2-confirm-dir-git-dir':true,'step-confirmed':formFields.step2Acknowledged}">
       <component-section-rollup header="Step 2: confirm git directory" :condensed="!formFields.step1Acknowledged || !!formFields.step2Acknowledged">
-        <p>Here you confirm the directory where git stores history.</p>
-        <div class="config-git-dir-path"><code>{{ config.dir_git_repo }}</code></div>
-        <path-status :status="formContext.dir_git_repoExists" />
+        <p>Here you confirm the git directory, where history is stored.</p>
+        <div class="config-git-dir-path"><code>{{ config.git_directory }}</code></div>
+        <path-status :status="formContext.pathGitDirectoryExists" />
         <div class="hidden">
           <input type="checkbox" v-model="formFields.step2Acknowledged" />
         </div>
-        <p style="color: #888;">If this is not the path you wanted, re-launch the python script with updated params in BAT file.</p>
+        <p style="color: #888;">If this is not the path you wanted, re-launch the python script with updated params in .BAT/.sh file.</p>
         <div class="click-next">
           <button type="button" :class="{'click-me-next':!(!formFields.step1Acknowledged || !!formFields.step2Acknowledged)}" @click="formFields.step2Acknowledged = true">Next</button>
         </div>
@@ -109,8 +109,8 @@ const WizardConfirmPaths = {
       step2Acknowledged: false,
     });
     const formContext = ref({
-      dir_work_treeExists: FSPathStatus.UNDEFINED,
-      dir_git_repoExists: FSPathStatus.UNDEFINED,
+      pathWorkingTreeExists: FSPathStatus.UNDEFINED,
+      pathGitDirectoryExists: FSPathStatus.UNDEFINED,
     });
     const validationMessage = ref('');
 
@@ -126,14 +126,14 @@ const WizardConfirmPaths = {
           return FSPathStatus.REQUESTERROR;
       }
       const fetchResultWorkTree = fetch(
-        '/functionality/dir-work-tree',
+        '/functionality/existence-working-tree',
         {
           method: 'HEAD',
           headers: { "Content-Type": "application/json" },
         },
       );
       const fetchResultGitRepoDir = fetch(
-        '/functionality/dir-git-repo-dir',
+        '/functionality/existence-git-directory',
         {
           method: 'HEAD',
           headers: { "Content-Type": "application/json" },
@@ -141,13 +141,13 @@ const WizardConfirmPaths = {
       );
       fetchResultWorkTree.then(
         result => {
-          formContext.value.dir_work_treeExists = parseResponseStatus(result);
+          formContext.value.pathWorkingTreeExists = parseResponseStatus(result);
         },
         props.repoActions.logError,
       );
       fetchResultGitRepoDir.then(
         result => {
-          formContext.value.dir_git_repoExists = parseResponseStatus(result);
+          formContext.value.pathGitDirectoryExists = parseResponseStatus(result);
         },
         props.repoActions.logError,
       );
@@ -164,13 +164,13 @@ const WizardConfirmPaths = {
            isBusy.value = false;
            return;
          }
-         if( (formContext.value.dir_work_treeExists!=FSPathStatus.OK) || (formContext.value.dir_git_repoExists!=FSPathStatus.OK) ) {
-           if( (formContext.value.dir_work_treeExists!=FSPathStatus.OK) && (formContext.value.dir_git_repoExists!=FSPathStatus.OK) )
-             validationMessage.value = 'Neither Work tree folder not git repo folder do not exist or are not accessible: please check and/or create the folders';
-           else if( formContext.value.dir_work_treeExists!=FSPathStatus.OK )
-             validationMessage.value = 'Work tree folder does not exist or is not accessible: please check and/or create the folder';
-           else if( formContext.value.dir_git_repoExists!=FSPathStatus.OK )
-             validationMessage.value = 'Git repo folder does not exist or is not accessible: please check and/or create the folder';
+         if( (formContext.value.pathWorkingTreeExists!=FSPathStatus.OK) || (formContext.value.pathGitDirectoryExists!=FSPathStatus.OK) ) {
+           if( (formContext.value.pathWorkingTreeExists!=FSPathStatus.OK) && (formContext.value.pathGitDirectoryExists!=FSPathStatus.OK) )
+             validationMessage.value = 'Neither Working tree location nor git directory location do not exist or are not accessible: please check and/or create the folders';
+           else if( formContext.value.pathWorkingTreeExists!=FSPathStatus.OK )
+             validationMessage.value = 'Working tree does not exist or is not accessible: please check and/or create the folder';
+           else if( formContext.value.pathGitDirectoryExists!=FSPathStatus.OK )
+             validationMessage.value = 'Git directory location does not exist or is not accessible: please check and/or create the folder';
            try {
              await props.repoActions.createModal(ModalConfirmContinueIfPathsNotVerified);
            } catch(e) {

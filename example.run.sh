@@ -2,7 +2,7 @@
 set -e
 
 WORKDIR="$1"
-GITDIR="$2"
+GITDIRLOC="$2"
 
 
 echo "Prep python"
@@ -46,4 +46,4 @@ echo "done"
 echo -
 echo -
 
-"$pythonexecutable" "./gitgui_bundle.py" --program gitgui --work-tree-folder "$WORKDIR" --git-repo-folder "$GITDIR"
+"$pythonexecutable" "./gitgui_bundle.py" --program gitgui --working-tree "$WORKDIR" --git-directory-location "$GITDIRLOC"

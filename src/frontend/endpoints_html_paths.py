@@ -11,11 +11,11 @@ from .icon import make_icon
 
 
 
-def render_block_banner_config_git_folders(config):
+def render_block_banner_config_git_directory(config):
     return f'''
 <div class="banner-global-folder-props">
-    <p class="mdmreport-prop-row">Git work tree folder: <code>{html.escape(""+config.get("dir_work_tree"))}</code></p>
-    <p class="mdmreport-prop-row">Git repo folder: <code>{html.escape(""+config.get("dir_git_repo"))}</code></p>
+    <p class="mdmreport-prop-row">Working tree: <code>{html.escape(""+config.get("working_tree"))}</code></p>
+    <p class="mdmreport-prop-row">Git directory: <code>{html.escape(""+config.get("git_directory"))}</code></p>
 </div>
 '''
 
@@ -35,7 +35,7 @@ def render_block_header_nav():
 
 
 def render_block_html_page_navigatation_block(pagename,config):
-    banner_gitguiapp_folders_config = render_block_banner_config_git_folders(config)
+    banner_gitguiapp_folders_config = render_block_banner_config_git_directory(config)
     nav = render_block_header_nav()
     return f'''
 <div class="gitgui-html-page-header-outer">
@@ -69,8 +69,8 @@ def make_default_assets_list(config):
         ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
         ('meta',('git-gui:script-name',config.get("script_name"),)),
         ('meta',('git-gui:script-version',config.get("credentials:version"),)),
-        ('meta',('git-gui:git-work-tree-folder',config.get("dir_work_tree"),)),
-        ('meta',('git-gui:git-repo-folder',config.get("dir_git_repo"),)),
+        ('meta',('git-gui:working-tree',config.get("working_tree"),)),
+        ('meta',('git-gui:git-directory',config.get("git_directory"),)),
         ('meta',('app:author',config.get("credentials:name"),)),
         ('meta',('app:version',config.get("credentials:version"),)),
         ('meta',('keywords','git gui',)),
@@ -84,8 +84,8 @@ def render_page_home(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     year = config.get("credentials:year")
 
-    title = f'git - {html.escape(config.get("dir_work_tree"))}'
-    page_h1 = f'Track history with git - {html.escape(config.get("dir_work_tree"))}'
+    title = f'git - {html.escape(config.get("working_tree"))}'
+    page_h1 = f'Track history with git - {html.escape(config.get("working_tree"))}'
 
     page_body = make_html(
         title = title,
@@ -101,7 +101,7 @@ def render_page_home(net_request_handler, config: dict,added_data=None):
             ],
         body_css_classes= ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '','gitgui-page-header-narrow',],
         banners = [
-            # render_block_banner_config_git_folders(config),
+            # render_block_banner_config_git_directory(config),
         ],
         sections = ['<div class="container"><div id="gitui_app"></div></div>'],
     )
@@ -135,7 +135,7 @@ def render_page_version(net_request_handler, config: dict,added_data=None):
             ],
         body_css_classes= ['gitgui','gitgui-page-version','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
-            # render_block_banner_config_git_folders(config),
+            # render_block_banner_config_git_directory(config),
         ],
         sections = [f'<div class="container"><span>Version: <span class="version-string">{version}</span></span></div>'],
     )
@@ -170,7 +170,7 @@ def render_page_about(net_request_handler, config: dict,added_data=None):
             ],
         body_css_classes= ['gitgui','gitgui-page-about','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
-            # render_block_banner_config_git_folders(config),
+            # render_block_banner_config_git_directory(config),
         ],
         sections = [
             f'''
@@ -292,7 +292,7 @@ try {
             ],
         body_css_classes= ['gitgui','gitgui-page-help','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
         banners = [
-            # render_block_banner_config_git_folders(config),
+            # render_block_banner_config_git_directory(config),
         ],
         sections = [
             block_main_section,

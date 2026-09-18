@@ -27,6 +27,7 @@ const ErrorView = {
 <div
   :class="{
     'error-banner': true,
+    'mdm-git-gui-error-banner': true,
     'mdm-ui-records': true,
     'error': true,
     'error-banner-nonempty': errors.length>0,

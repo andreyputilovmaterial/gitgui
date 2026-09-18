@@ -3,7 +3,7 @@
 from urllib.parse import urlparse, unquote #, parse_qs # to detect path within endpoints
 import json # for responding, obviously
 from pathlib import Path # for resolving paths to resources
-import os # accessing physical files - gitignore, gitattributes, work-tree path, git repo path...
+import os # accessing physical files - gitignore, gitattributes, working tree path, git directory path...
 import subprocess # execute git rev-parse
 from datetime import datetime # format dates in json responses
 import re
@@ -47,7 +47,7 @@ def handle_gitignore(net_request_handler, config: dict,added_data=None):
             txt = f.write(txt)
             return txt
     WebResponse = config.get('iface').get('WebResponse')
-    fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'exclude'
+    fname = Path(config.get("git_directory")).resolve() / 'info' / 'exclude'
     method = net_request_handler.command
     if method=='GET':
         payload = read(fname)
@@ -105,7 +105,7 @@ def handle_gitattributes(net_request_handler, config: dict,added_data=None):
             txt = f.write(txt)
             return txt
     WebResponse = config.get('iface').get('WebResponse')
-    fname = Path(config.get("dir_git_repo")).resolve() / '.git' / 'info' / 'attributes'
+    fname = Path(config.get("git_directory")).resolve() / 'info' / 'attributes'
     method = net_request_handler.command
     if method=='GET':
         payload = read(fname)
@@ -219,9 +219,9 @@ def handle_is_git_repo(net_request_handler, config: dict,added_data=None):
         def sanitize_command(command):
             args = [*command]
             assert args[0]=='git', f'Not a git command'
-            git_dir = Path(config.get("dir_git_repo")).resolve() / '.git'
-            work_tree = Path(config.get("dir_work_tree")).resolve()
-            args = [args[0],'--git-dir',git_dir,'--work-tree',work_tree,'--no-pager',*args[1:]]
+            git_dir = Path(config.get("git_directory")).resolve()
+            working_tree = Path(config.get("working_tree")).resolve()
+            args = [args[0],'--git-dir',git_dir,'--work-tree',working_tree,'--no-pager',*args[1:]]
             return args
         # I am not making it async - should not take long to execute
         result = subprocess.run(
@@ -312,19 +312,23 @@ def handle_fspath(net_request_handler, config: dict,added_data=None):
 
 
 
-def handle_fspath_worktree(net_request_handler, config: dict,added_data=None):
-    path_fs = config.get("dir_work_tree")
+def handle_fspath_worktingree(net_request_handler, config: dict,added_data=None):
+    path_fs = Path(config.get("working_tree")).resolve()
     return handle_fspath(net_request_handler,config,added_data=path_fs)
 
-def handle_fspath_gitrepodir(net_request_handler, config: dict,added_data=None):
-    path_fs = config.get("dir_git_repo")
+def handle_fspath_gitdirectory(net_request_handler, config: dict,added_data=None):
+    path_fs = Path(config.get("git_directory")).resolve()
+    return handle_fspath(net_request_handler,config,added_data=path_fs)
+
+def handle_fspath_gitdirectory_parent(net_request_handler, config: dict,added_data=None):
+    path_fs = Path(config.get("git_directory_location")).resolve()
     return handle_fspath(net_request_handler,config,added_data=path_fs)
 
 def handle_git_list_pack_files(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     method = net_request_handler.command
-    path_git_repo = Path(config.get("dir_git_repo")).resolve()
-    path_fs = path_git_repo / '.git' / 'objects' / 'pack'
+    path_git_repo = Path(config.get("git_directory")).resolve()
+    path_fs = path_git_repo / 'objects' / 'pack'
     if method=='GET':
         files = [ f'{f.relative_to(path_git_repo)}' for f in path_fs.rglob("*.idx") ]
         return WebResponse(
@@ -342,8 +346,8 @@ def handle_dir_sizeof_files(net_request_handler, config: dict,added_data=None):
         return path_parts[3]
     WebResponse = config.get('iface').get('WebResponse')
     method = net_request_handler.command
-    path_git_repo = Path(config.get("dir_git_repo")).resolve()
-    path_worktree = Path(config.get("dir_work_tree")).resolve()
+    path_git_directory = Path(config.get("git_directory")).resolve()
+    path_working_tree = Path(config.get("working_tree")).resolve()
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path_parts = [ unquote(p) for p in path_parsed.split('/') ]
@@ -358,9 +362,9 @@ def handle_dir_sizeof_files(net_request_handler, config: dict,added_data=None):
                 content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: mno resource_id parsed',}, cls=JSONEncoder), headers = [],
         )
     known_paths = {
-        'git_repo': lambda : path_git_repo,
-        'worktree': lambda : path_worktree,
-        'git_pack_objects': lambda : path_git_repo / '.git' / 'objects' / 'pack',
+        'git_directory': lambda : path_git_directory,
+        'working_tree': lambda : path_working_tree,
+        'git_pack_objects': lambda : path_git_directory / 'objects' / 'pack',
     }
     path_fs_fn = known_paths.get(resource_id,None)
     if not path_fs_fn:
@@ -392,8 +396,8 @@ endpoints = {
     '/is-git-repo': handle_is_git_repo,
     '/gitignore': handle_gitignore, # .git/info/exclude
     '/gitattributes': handle_gitattributes, # .git/info/attributes
-    '/dir-work-tree': handle_fspath_worktree,
-    '/dir-git-repo-dir': handle_fspath_gitrepodir,
+    '/existence-working-tree': handle_fspath_worktingree,
+    '/existence-git-directory': handle_fspath_gitdirectory_parent,
     '/git-ls-pack-files': handle_git_list_pack_files,
     re.compile(r'^/dir-sizeof\b.*'): handle_dir_sizeof_files,
     '/config': handle_config,

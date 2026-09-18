@@ -21,11 +21,11 @@ const Monitor = {
   <div class="description" v-if="!isonline">Backend is offline or not responding, please check if python script is still running...</div>
   <div class="config-paths-mismatch-failure error" style="color: #990000;" v-if="!!configPathsMismatch">
     <span class="desc-line">Configuration paths have changed. Launched at <code>{{ host }}</code> with different paths:</span><br /><br />
-    work tree: <code>{{ config.dir_work_tree }}</code><br />
-    <div v-if="!(config.dir_work_tree==configPathsFirstCaptured.dir_work_tree)">Launched with work tree: <code>{{ configPathsFirstCaptured.dir_work_tree }}</code></div>
-    git dir: <code>{{ config.dir_git_repo }}</code><br />
-    <div v-if="!(config.dir_git_repo==configPathsFirstCaptured.dir_git_repo)">Launched with git dir: <code>{{ configPathsFirstCaptured.dir_git_repo }}</code></div>
-    <span class="suggest-line"><br /><br />Please <a href="" onclick="window.location.reload(); return false;">reload the page</a></span>
+    working tree: <code>{{ config.working_tree }}</code><br />
+    <div v-if="!(config.working_tree==configPathsFirstCaptured.working_tree)">Launched with working tree: <code>{{ configPathsFirstCaptured.working_tree }}</code></div>
+    git dir: <code>{{ config.git_directory }}</code><br />
+    <div v-if="!(config.git_directory==configPathsFirstCaptured.git_directory)">Launched with git dir: <code>{{ configPathsFirstCaptured.git_directory }}</code></div>
+    <span class="suggest-line"><br /><br />Please <a href="" onclick="window.location.reload(); return false;" class="mdm-link-inline-btn">reload the page</a></span>
   </div>
 </div>
 `,

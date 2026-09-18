@@ -85,7 +85,7 @@ def render_page_home(net_request_handler, config: dict,added_data=None):
     year = config.get("credentials:year")
 
     title = f'git - {html.escape(config.get("dir_work_tree"))}'
-    page_h1 = f'git - {html.escape(config.get("dir_work_tree"))}'
+    page_h1 = f'Track history with git - {html.escape(config.get("dir_work_tree"))}'
 
     page_body = make_html(
         title = title,
@@ -99,7 +99,7 @@ def render_page_home(net_request_handler, config: dict,added_data=None):
                 # ('js-link',('/assets/vendorlibs/vue.js',),),
                 ('js-link-module',('/assets/app.js',),),
             ],
-        body_css_classes= ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '',],
+        body_css_classes= ['gitgui','gitgui-page-home','gitui-embed' if check_query_string_flag(net_request_handler,'embed') else '','gitgui-page-header-narrow',],
         banners = [
             # render_block_banner_config_git_folders(config),
         ],
@@ -203,7 +203,7 @@ def render_page_help(net_request_handler, config: dict,added_data=None):
     version = config.get("credentials:version")
     version = f'{version}'.strip()
     year = config.get("credentials:year")
-    myname = 'Andrey.Putilov@materialplus.io'
+    myname = config.get("credentials:name")
 
     title = f'git ui - help'
     page_h1 = f'Help'

@@ -1,4 +1,4 @@
-from urllib.parse import urlparse, parse_qs # to deliver deeper resources, like in fonts
+from urllib.parse import urlparse, parse_qs, unquote # to deliver deeper resources, like in fonts
 import re # to set content-type based on file type
 
 
@@ -26,16 +26,19 @@ from .GENERATED.ASSETS import (
 
 
 
+def detect_content_type(path):
+    content_type = 'text/plain'
+    if re.match(r'.*\.css\s*$',path,flags=re.I):
+        content_type = 'text/css'
+    elif re.match(r'.*\.m?js\s*$',path,flags=re.I):
+        content_type = 'text/javascript'
+    return content_type
 
 def render_payload(net_request_handler, config: dict,added_data=None,is_binary=False):
     WebResponse = config.get('iface').get('WebResponse')
-    content_type = 'text/plain'
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    if re.match(r'.*\.css\s*$',path_parsed,flags=re.I):
-        content_type = 'text/css'
-    elif re.match(r'.*\.m?js\s*$',path_parsed,flags=re.I):
-        content_type = 'text/javascript'
+    content_type = detect_content_type(path_parsed)
     payload = added_data
     return WebResponse(
         status_code = 200,
@@ -82,7 +85,7 @@ def render_assets_vendorlibs_font_ibmplexsans(net_request_handler, config: dict,
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    path = '/'.join((path_parsed.split('/'))[5:])
+    path = '/'.join([ unquote(p) for p in (path_parsed.split('/'))[5:] ])
     if path not in payload_dict:
         return WebResponse(
             status_code = 404,
@@ -103,7 +106,7 @@ def render_assets_vendorlibs_font_ibmplexmono(net_request_handler, config: dict,
     payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    path = '/'.join((path_parsed.split('/'))[5:])
+    path = '/'.join([ unquote(p) for p in (path_parsed.split('/'))[5:] ])
     if path not in payload_dict:
         return WebResponse(
             status_code = 404,
@@ -147,10 +150,17 @@ def renderer_assets(net_request_handler, config: dict,added_data=None):
         )
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    path = path_parsed.split('/')
+    path_parts = [ unquote(p) for p in (path_parsed.split('/')) ]
+    if any( any( char in p for char in ('/','\\','\0',) ) for p in path_parts):
+        return WebResponse(
+            status_code = 404,
+            content_type = 'text/plain', # detect_content_type(path_parsed),
+            body = f'Error: "/" encoded in path element; paths can\'t contain "/": {path_parsed}',
+            headers = [],
+        )
     method = net_request_handler.command
-    if len(path)>=3 and path[0]=='' and (method in ('GET','HEAD',)):
-        path = '/'.join([]+['']+path[2:])
+    if len(path_parts)>=3 and path_parts[0]=='' and (method in ('GET','HEAD',)):
+        path = '/'.join(['']+path_parts[2:])
         renderer = get_matching_endpoint(path,endpoints) or not_found
     else:
         renderer = not_found
@@ -160,6 +170,11 @@ def renderer_assets(net_request_handler, config: dict,added_data=None):
             result.body = None
         return result
     except FileNotFoundError:
-        return not_found()
+        return WebResponse(
+            status_code = 404,
+            content_type = detect_content_type(path_parsed),
+            body = '',
+            headers = [],
+        )
     except Exception:
         raise # for readability - to make it clear any exception normally passes up to webserver engine

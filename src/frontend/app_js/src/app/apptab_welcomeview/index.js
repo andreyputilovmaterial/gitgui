@@ -20,13 +20,16 @@ const View = {
   template: `
 <div class="mdm-git-gui-welcomeview">
   <div class="mdm-git-gui-welcomeview-pane-status">
+    <h2>Current status</h2>
     <pane-status :repoStatus="repoStatus" :repoActions="repoActionsWithCreatePage" />
     <pages-site ref="pagesSite"/>
   </div>
   <div class="mdm-git-gui-welcomeview-pane-files">
+    <h2>Files</h2>
     <pane-files :repoStatus="repoStatus" :repoActions="repoActionsWithCreatePage" />
   </div>
   <div class="mdm-git-gui-welcomeview-pane-history">
+    <h2>History</h2>
     <p class="desc">Previosly saved revisions</p>
     <pane-history :repoStatus="repoStatus" :repoActions="repoActionsWithCreatePage" />
   </div>

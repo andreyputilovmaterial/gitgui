@@ -17,6 +17,8 @@ const Record = {
     'headObject',
     'indexObject',
     'path',
+    'diffLeft',
+    'diffRight',
     'componentRecordsFiltData',
     'repoStatus',
     'repoActions',
@@ -39,6 +41,11 @@ const Record = {
     <span class="label">File path: </span>
     {{ path }}
   </span>
+  <span class="link-show-diff mdm-ui-record-col-linkshowdiff mdm-ui-record-col-4">
+    <template v-if="!!diffLeft&&!!diffRight">
+      <a href="#!" #click.prevent="undefined" class="link-show-diff mdm-link">(show changes)</a>
+    </template>
+  </span>
 </div>
 `,
   setup() {
@@ -51,6 +58,8 @@ const Record = {
 const View = {
   props: [
     'records',
+    'diffLeft',
+    'diffRight',
     'label',
     'repoStatus',
     'repoActions',
@@ -95,6 +104,8 @@ const View = {
         :headObject="h.headObject"
         :indexObject="h.indexObject"
         :path="h.path"
+        :diffLeft="diffLeft"
+        :diffRight="diffRight"
         :componentRecordsFiltData="h.componentRecordsFiltData"
         :repoStatus="repoStatus"
         :repoActions="repoActions"

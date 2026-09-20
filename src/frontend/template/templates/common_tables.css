@@ -402,3 +402,15 @@ form.mdmreport-controls.mdmreport-form-busy:first-child:before {
 .mdm-link-inline-btn:hover {
   color: #111;
 }
+
+
+.mdm-link, .mdm-link:link, .mdm-link:active, .mdm-link:hover, .mdm-link:link {
+    outline: none;
+    color: #6c78ff;
+}
+.mdm-link.mdm-link-inline-btn {
+    color: inherit;
+}
+.mdm-link:hover, .mdm-link.mdm-link-inline-btn:hover {
+    color: #385;
+}

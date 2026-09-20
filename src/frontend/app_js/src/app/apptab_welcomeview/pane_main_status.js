@@ -53,7 +53,7 @@ const WelcomeUncommittedChangesView = {
   <div class="error" style="color: #900; font-weight: 500;">{{ error }}</div>
   <p>You have <template v-if="repoStatus.status.length>0">uncommitted changes ({{ repoStatus.status.length }} files)</template><template v-else>no uncommitted changes</template>.</p>
   <p>Before you commit your changes, you need to choose which changes to include. Selected changes are placed in the staging area. You can then commit the staged changes to save them in the history.</p>
-  <p>You currently have <a href="#!" @click.prevent="popupListStaged" class="mdm-git-gui-action mdm-git-gui-action-popup-list-index">{{ repoStatus.status.filter(f=>f.index!=='.').length }} staged files</a> and <a href="#!" @click.prevent="popupListChangedInWorktree" class="mdm-git-gui-action mdm-git-gui-action-popup-list-worktree">{{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</a>.</p>
+  <p>You currently have <a v-if="repoStatus.status.filter(f=>f.index!=='.').length>0" href="#!" @click.prevent="popupListStaged" class="mdm-git-gui-action mdm-link mdm-git-gui-action-popup-list-index">{{ repoStatus.status.filter(f=>f.index!=='.').length }} staged files</a><span v-else>{{ repoStatus.status.filter(f=>f.index!=='.').length }} staged files</span> and <a v-if="repoStatus.status.filter(f=>f.worktree!=='.').length>0" href="#!" @click.prevent="popupListChangedInWorktree" class="mdm-git-gui-action mdm-link mdm-git-gui-action-popup-list-worktree">{{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</a><span v-else>{{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</span>.</p>
   <p v-if="repoStatus.status.filter(f=>f.worktree!=='.').length>0">Stage <a href="#!" @click.prevent="doStageAll" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-stage mdm-git-gui-action-state-all">all {{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files</a> or stage <a href="#!" @click.prevent="doStageSelected" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-stage mdm-git-gui-action-state-selected">selected files</a>.</p>
   <p v-if="repoStatus.status.filter(f=>f.index!=='.').length>0"><a href="#!" @click.prevent="doCommit" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-commit">Commit</a> all changes in {{ repoStatus.status.filter(f=>f.index!=='.').length }} files that are now in staging area and create a new snapshot in history.</p>
 </div>
@@ -179,8 +179,10 @@ const WelcomeUncommittedChangesView = {
         try {
           await props.repoActions.createModal(h(WindowListRecordsFromGitStatus,{
             ...props,
-            label: 'Files with changes not added to index (staging area)',
+            label: 'Files with changes not added to staging area',
             records: props.repoStatus.status.filter(f=>f.worktree!=='.'),
+            diffLeft: 'HEAD',
+            diffRight: 'worktree',
           }));
         } catch(e) {
           if( e instanceof Error )
@@ -209,6 +211,8 @@ const WelcomeUncommittedChangesView = {
             ...props,
             label: 'Files in staging area. You can then commit the staged changes and have them saved in the history.',
             records: props.repoStatus.status.filter(f=>f.index!=='.'),
+            diffLeft: 'HEAD',
+            diffRight: 'index',
           }));
         } catch(e) {
           if( e instanceof Error )

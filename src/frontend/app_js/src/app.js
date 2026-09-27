@@ -50,6 +50,9 @@ import PageHistory from './app/apptab_historyview/index';
 import PageGitignore from './app/window_repoinitview/section_gitignore';
 import PagePackcompression from './app/apptab_packcompression/index';
 
+// functions and methods defined in app setup
+import makeCatFileFuncrions from './common_app_exposed_defs/cat_file/index';
+
 
 
 
@@ -134,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
       const gitCommandsPerfIssuesCheckingTimer = ref(undefined);
-      const repoInitRequiresAttention = ref(false);
       const commands = ref([]);
       const appBackendWarnings = ref([]);
       const gitCommandEvent = new ReplayEvent();
@@ -430,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // repoStatus.value = {...repoStatus.value,'repoExists':response}
           repoStatus.value.repoExists = response
           if(!response) {
-            repoInitRequiresAttention.value = true
+            repoStatus.value.repoInitRequiresAttention.value = true
           }
         }
         try {
@@ -888,8 +890,11 @@ document.addEventListener("DOMContentLoaded", () => {
           throw e;
         }
       };
-
       repoActions.value.diff = diff;
+
+      const { catFileBinary, catFileTextconv } = makeCatFileFuncrions({repoStatus:repoStatus.value,repoActions:repoActions.value});
+      repoActions.value.catFileBinary = catFileBinary;
+      repoActions.value.catFileTextconv = catFileTextconv;
 
       const maintenanceAndDebug = async () => {
         const tasks = [
@@ -898,6 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.isReactive = isReactive;
             window.vueVersion = version;
             window.toRaw = toRaw;
+            window.getRepoStatus = () => repoStatus;
           },
           () => {
             // set isOnline check code to run on timer
@@ -1026,8 +1032,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      window.getRepoStatus = () => repoStatus;
-
       return {
         errors,
         repoStatus,
@@ -1036,7 +1040,6 @@ document.addEventListener("DOMContentLoaded", () => {
         configPathsFirstCaptured,
         configPathsMismatch,
         isOnline,
-        repoInitRequiresAttention,
         commands,
         executeGitCommand,
       }

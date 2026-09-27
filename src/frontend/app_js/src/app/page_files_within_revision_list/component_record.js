@@ -31,8 +31,6 @@ const Record = {
   <span class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" title="File path"><span class="label">File path: </span>{{ filepath }}</span>
 </div>
 `,
-  components: {
-  },
   setup(props) {
 
     const error = ref('');
@@ -45,49 +43,17 @@ const Record = {
         fileViewLinkBusy.value = true;
         fileViewLinkWindowIsOpen.value = false;
         const resourcepath = `${props.hash}:${props.filepath}`;
-        const filename = `${resourcepath}`.split('/').pop();
+        const filename = `${resourcepath}`.replace(/^\w+:/ig,'').replace(/\/\\/ig,'/').split('/').pop();
 
         error.value = '';
-        const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',`${props.hash}:${props.filepath}`],{is_interactive:true,});
-        await jobData.promiseDownloadLinkReady;
-        // const promiseContext = {
-        //   resolve: () => { throw new Error('promise not inited'); },
-        //   reject:  () => { throw new Error('promise not inited'); },
-        //   onData:  () => { throw new Error('onData not inited'); },
-        // };
-        // const promise = new Promise((resolve,reject) => {
-        //   promiseContext.resolve = resolve;
-        //   promiseContext.reject = reject;
-        // });
-        // const stream = new ReadableStream({
-        //   async start(controller) {
-        //     promiseContext.onData = chunk => controller.enqueue(chunk);
-        //     await promise;
-        //     controller.close();
-        //   },
-        // });
-        // const contentAsTextPromise = props.repoActions.textconv(stream,filename);
-        //
-        // for await ( const chunk of jobData.getData() ) {
-        //   promiseContext.onData( chunk );
-        // }
-        // const contentAsText = await contentAsTextPromise;
-        // TODO: streamed
-        // TODO: direct textconv
-        const response = await fetch( jobData.download_url );
-        if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
-        const bufferPromise = response.arrayBuffer();
-        await jobData.promise;
-        const buffer = await bufferPromise;
-        const binaryData = new Uint8Array(buffer);
-        const content = await props.repoActions.textconv(binaryData,filename);
-      
+        const content = await props.repoActions.catFileTextconv(`${props.hash}:${props.filepath}`,filename,props.filepath);
+
         try {
           fileViewLinkWindowIsOpen.value = true;
           await props.repoActions.createModal(h(PageFileView,{
             ...props,
             resourcepath: resourcepath,
-            size: binaryData.length,
+            size: content?.headersRecognized?.bytes_consumed,
             contentAsText: content.text,
             contentHeaders: content.headers,
             headersRecognized: content.headersRecognized,

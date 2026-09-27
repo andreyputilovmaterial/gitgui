@@ -11,7 +11,6 @@ import './section_gitignore.css';
 
 const RepoInitViewGitignoreSection = {
   props: [
-    'repoInitRequiresAttention',
     'repoStatus',
     'repoActions',
     'mode', // edit, view, init

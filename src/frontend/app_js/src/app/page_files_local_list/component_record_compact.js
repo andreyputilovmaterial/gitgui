@@ -1,8 +1,6 @@
 
 import { ref, h, computed } from 'vue';
 
-import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
-
 import PageFileView from '@/app/window_fileviewer/index.js';
 
 import './style.css';
@@ -61,8 +59,6 @@ const Record = {
   <span class="modifiedat mdm-ui-record-col-modifiedat mdm-ui-record-col-5" :title=" fileTracked ? 'Modified at' : 'Modified at (Untracked file/directory - ignored per rules in .gitignore)' "><component-format-datetime :dt="modifiedAt" /></span>
 </div>
 `,
-  components: {
-  },
   setup(props) {
 
     const error = ref('');
@@ -80,30 +76,17 @@ const Record = {
         fileViewLinkBusy.value = true;
         fileViewLinkWindowIsOpen.value = false;
         const resourcepath = `${props.namespace}:${props.filepath}`;
-        const filename = `${resourcepath}`.split('/').pop();
+        const filename = `${props.filepath}`.split('/').pop();
 
         error.value = '';
-        const response = await fetch(
-          `/browse/${resourcepath}`,
-          {
-            method: 'DOWNLOAD',
-            headers: { "Content-Type": "application/octet-stream" },
-          },
-        );
-        if( !response.ok ) {
-            throw new Error(await makeFetchResponseErrorMessage(response) );
-        }
-        const bufferPromise = response.arrayBuffer();
-        const buffer = await bufferPromise;
-        const binaryData = new Uint8Array(buffer);
-        const content = await props.repoActions.textconv(binaryData,filename);
-      
+        const content = await props.repoActions.catFileTextconv(resourcepath,filename);
+
         try {
           fileViewLinkWindowIsOpen.value = true;
           await props.repoActions.createModal(h(PageFileView,{
             ...props,
             resourcepath: resourcepath,
-            size: binaryData.length,
+            size: content?.headersRecognized?.bytes_consumed,
             contentAsText: content.text,
             contentHeaders: content.headers,
             headersRecognized: content.headersRecognized,

@@ -350,13 +350,11 @@ const View = {
 
     const fetchDataLeft = async () => {
       try {
-        const textconvOutputsLeft = await props.getTextconvOutputsLeft();
-        const contentLeft = await props.repoActions.textconvParseHeaders(textconvOutputsLeft,props.fileModeLeft,props.filepathLeft||props.filepath);
+        const contentLeft = await props.getTextconvOutputsLeft();
         const txtLeft = contentLeft.text;
         statisticsLeft.value.textconvHeaders = contentLeft.headers;
         statisticsLeft.value.textconvHeadersRecognized = contentLeft.headersRecognized;
         statisticsLeft.value.binaryFileSize = contentLeft?.headersRecognized?.bytes_consumed;
-        if( typeof statisticsLeft.value.binaryFileSize==='undefined') statisticsLeft.value.binaryFileSize = '???';
         statisticsLeft.value.textFileSize = txtLeft.length;
         return txtLeft;
       } catch(e) {
@@ -368,13 +366,11 @@ const View = {
     };
     const fetchDataRight = async () => {
       try {
-        const textconvOutputsRight = await props.getTextconvOutputsRight();
-        const contentRight = await props.repoActions.textconvParseHeaders(textconvOutputsRight,props.fileModeRight,props.filepathRight||props.filepath);
+        const contentRight = await props.getTextconvOutputsRight();
         const txtRight = contentRight.text;
         statisticsRight.value.textconvHeaders = contentRight.headers;
         statisticsRight.value.textconvHeadersRecognized = contentRight.headersRecognized;
         statisticsRight.value.binaryFileSize = contentRight?.headersRecognized?.bytes_consumed;
-        if( typeof statisticsRight.value.binaryFileSize==='undefined') statisticsRight.value.binaryFileSize = '???';
         statisticsRight.value.textFileSize = txtRight.length;
         return txtRight;
       } catch(e) {

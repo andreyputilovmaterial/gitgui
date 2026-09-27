@@ -57,7 +57,7 @@ class Job:
                 'error': self.error,
 
                 'exit_code': self.returncode,
-                'stdout': self.stdout,
+                'stdout': self.stdout if self.stdout is None or isinstance(self.stdout,str) else self.stdout if not self.is_binary else [ n for n in self.stdout ],
                 'stderr': f'{self.stderr}' if self.stderr is not None else '',
             }
             # I'll not print fields that were not set yet

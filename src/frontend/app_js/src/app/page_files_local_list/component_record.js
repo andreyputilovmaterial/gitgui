@@ -1,10 +1,7 @@
 
 import { ref, h, computed } from 'vue';
 
-import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
-
 import PageFileView from '@/app/window_fileviewer/index.js';
-import getFileContents from './helper_get_file_contents';
 
 import './style.css';
 
@@ -63,8 +60,6 @@ const Record = {
   <span class="createdat mdm-ui-record-col-createdat mdm-ui-record-col-6" :title=" fileTracked ? 'Created at' : 'Created at (Untracked file/directory - ignored per rules in .gitignore)' "><component-format-datetime :dt="createdAt" /></span>
 </div>
 `,
-  components: {
-  },
   setup(props) {
 
     const error = ref('');
@@ -82,12 +77,11 @@ const Record = {
         fileViewLinkBusy.value = true;
         fileViewLinkWindowIsOpen.value = false;
         const resourcepath = `${props.namespace}:${props.filepath}`;
-        const filename = `${resourcepath}`.split('/').pop();
+        const filename = `${props.filepath}`.split('/').pop();
 
         error.value = '';
-        const textconvOutputs = await getFileContents(props.filepath,'worktree',props.repoActions,filename);
-        const content = await props.repoActions.textconvParseHeaders(textconvOutputs,filename,props.filepath);
-      
+        const content = await props.repoActions.catFileTextconv(resourcepath,filename);
+
         try {
           fileViewLinkWindowIsOpen.value = true;
           await props.repoActions.createModal(h(PageFileView,{

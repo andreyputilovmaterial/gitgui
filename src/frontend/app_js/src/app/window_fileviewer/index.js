@@ -27,7 +27,7 @@ const View = {
     <fieldset class="mdmreport-controls">
       <h2><template v-if="resourcepathRevisionPart">View file <span class="resource resource-filepath">{{ resourcepathFilepathPart }}</span> from revision <span class="resource resource-revision">{{ resourcepathRevisionPart }}</span></template><template v-else>View file <span class="resource resource-resourcepath">{{ resourcepath }}</span></template></h2>
       <div class="error">{{ error }}</div>
-      <div class="stats" v-if="['number','string'].includes(typeof size)">File size: <component-format-filesize :size="size" /></div>
+      <div class="stats" v-if="['number','string'].includes(typeof size)"><span title="How many bytes were read by textconv utility - not necessarily the full size of file">File size<sup>*</sup>: </span><component-format-filesize :size="size" /></div>
       <div class="stats" v-if="!!headersRecognized?.type">Textconv processor: {{ headersRecognized?.type }}</div>
       <textarea readonly disabled class="mdm-git-gui-filecontents">{{ contentAsText }}</textarea>
       <div><input type="submit" value="Close" class="gitgui-button-close"></input></div>

@@ -1,0 +1,122 @@
+
+
+
+
+
+import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
+
+
+
+// function gitEntryType(mode) {
+//     const m = parseInt(mode, 8);
+//     if(m===0)
+//         return "nocontent";
+//     const type = m & 0o170000;
+
+//     switch (type) {
+//         case 0o100000:
+//             return "blob";       // regular file
+//         case 0o120000:
+//             return "symlink";
+//         case 0o160000:
+//             return "gitlink";    // submodule
+//         case 0o040000:
+//             return "tree";       // directory
+//         default:
+//             return "unknown";
+//     }
+// }
+
+
+const makeFunctions = ({repoActions}) => {
+
+    async function catFileBinary(resourceSpec,filename=null) {
+        filename = filename || `${resourceSpec}`.replace(/^\w+:/ig,'').replace(/\/\\/ig,'/').split('/').pop();
+        const isEmpty = !resourceSpec;
+        const isFromWorkTree = !isEmpty && /^worktree:.*/.test(resourceSpec);
+        const isBlobEmpty = isEmpty || ( !isFromWorkTree && /^0+$/.test(resourceSpec) );
+        if( isEmpty || isBlobEmpty )
+            return new Uint8Array([]);
+        const gitCommandArgs = isFromWorkTree ? ['cat',resourceSpec.replace(/^worktree:/,'')] : ['git','cat-file','blob',resourceSpec];
+        const jobData = await repoActions.executeGitBinaryCommand(gitCommandArgs,{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
+        await jobData.promiseDownloadLinkReady;
+        const downloadUrl = jobData.getDownloadUrl(filename);
+
+        const response = await fetch( downloadUrl );
+        if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
+        const bufferPromise = response.arrayBuffer();
+        await jobData.promise;
+        const buffer = await bufferPromise;
+        const result = new Uint8Array(buffer);
+        return result;
+    }
+
+
+    async function catFileTextconvRawtext(resourceSpec,filename=null) {
+        const isEmpty = !resourceSpec;
+        const isFromWorkTree = !isEmpty && /^worktree:.*/.test(resourceSpec);
+        const isBlobEmpty = isEmpty || ( !isFromWorkTree && /^0+$/.test(resourceSpec) );
+        if( isEmpty || isBlobEmpty )
+            return new TextDecoder('utf-8').decode(new Uint8Array([]));
+        filename = filename || `${resourceSpec}`.replace(/^\w+:/ig,'').replace(/\/\\/ig,'/').split('/').pop();
+        const gitCommandArgs = isFromWorkTree ? ['cat',resourceSpec.replace(/^worktree:/,'')] : ['git','cat-file','blob',resourceSpec];
+        const jobData = await repoActions.executeGitBinaryCommand(gitCommandArgs,{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
+        await jobData.promiseDownloadLinkReady;
+        const downloadUrl = jobData.getDownloadUrl(filename);
+
+        const pipeArgs = [ 'textconv', '--filename', filename ];
+        const pipeRequest = await fetch(
+            downloadUrl,
+            {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([...pipeArgs]),
+            },
+        );
+        if( !pipeRequest.ok ) {
+            error.value = `textconv: process failed`;
+            repoActions.logError('textconv failed');
+            throw new Error(await makeFetchResponseErrorMessage(pipeRequest));
+        }
+        const pipeJobRequestPlaced = await pipeRequest.json();
+        const pipeJobId = pipeJobRequestPlaced.job_id;
+        const pipeJobData = await repoActions.attachToRunningCommand(pipeJobId,{parentJobId:jobData.job_id,is_binary:true,is_interactive:true});
+        await jobData.promise;
+        if( (jobData.exit_code!==0) || (!!jobData.stderr) ) {
+            const msg = `textconv: failed with exit_code ${jobData.exit_code}: ${jobData.stderr}`;
+            throw new Error(msg);
+        }
+        await pipeJobData.promise;
+        if( (pipeJobData.exit_code!==0) || (!!pipeJobData.stderr) ) {
+            const msg = `textconv: failed with exit_code ${pipeJobData.exit_code}: ${pipeJobData.stderr}`;
+            throw new Error(msg);
+        }
+        await pipeJobData.promiseDownloadLinkReady;
+        const pipeJobDownloadUrl = pipeJobData.getDownloadUrl(filename);
+        const response = await fetch( pipeJobDownloadUrl );
+        if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
+        const bufferPromise = response.arrayBuffer();
+        await jobData.promise;
+        const buffer = await bufferPromise;
+        const result = new TextDecoder('utf-8').decode(new Uint8Array(buffer));
+        return result;
+    }
+
+    async function catFileTextconv(resourceSpec,filename) {
+        const textconvOutputs = await catFileTextconvRawtext(resourceSpec,filename);
+        const content = await repoActions.textconvParseHeaders(textconvOutputs);
+        return content;
+    }
+
+    return {
+        catFileBinary,
+        catFileTextconv,
+    };
+
+};
+
+export default makeFunctions;
+
+

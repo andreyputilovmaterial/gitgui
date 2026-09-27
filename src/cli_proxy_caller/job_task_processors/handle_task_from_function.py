@@ -27,7 +27,6 @@ class JobInternalData:
             self.stderr_readonly_buf.close()
         except:
             pass
-        print(f'[DEBUG]: cli: handle_task_from_function: stdout_readonly_buf.close()')
 
 
 def consume_all(buffer, is_binary):
@@ -109,7 +108,8 @@ def handler(context,task,job):
                 stderr_readonly_buf = stderr_readonly_buf,
             )
             options = job.options # example: { stdout_chunk_size: 8, stderr_chunk_size: 4, }
-            job.stdout = ''
+            # job.stdout = b'' if job.is_binary else ''
+            job.stdout = None if job.is_binary else ''
             job.stderr = ''
         if not options:
             options = {}
@@ -164,7 +164,8 @@ def handler(context,task,job):
                         job.status = "done"
                         job.returncode = -999
                         job.stderr += str(e)
-                        job.stdout += consume_all(stdout_readonly_buf,is_binary=job.is_binary)
+                        if not job.is_binary:
+                            job.stdout += consume_all(stdout_readonly_buf,is_binary=job.is_binary)
                         job.stderr += consume_all(stderr_readonly_buf,is_binary=False)
 
             except Exception as e:
@@ -172,7 +173,8 @@ def handler(context,task,job):
                     job.status = "error"
                     job.returncode = -999
                     job.stderr += str(e)
-                    job.stdout += consume_all(stdout_readonly_buf,is_binary=job.is_binary)
+                    if not job.is_binary:
+                        job.stdout += consume_all(stdout_readonly_buf,is_binary=job.is_binary)
                     job.stderr += consume_all(stderr_readonly_buf,is_binary=False)
         
         finally:

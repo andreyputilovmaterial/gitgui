@@ -52,7 +52,7 @@ def handler(context,task,job):
                 raise Exception(f'Can only call new task on context.jobs with status "fresh" (job_id: "{job.job_id}")')
             job.status = "running"
             job.command = fn.__name__
-            job.is_binary = False # do I have to force False???
+            # job.is_binary = False # do I have to force False???
             job.execution_started_at = datetime.now(timezone.utc)
             job.last_activity_at = job.execution_started_at
 

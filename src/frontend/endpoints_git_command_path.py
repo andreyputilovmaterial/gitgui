@@ -5,47 +5,27 @@ from urllib.parse import urlparse, parse_qs, unquote, quote # to detect path wit
 import json # for responding, obviously
 from pathlib import Path # for resolving paths to resources
 import re # to check url params against "1", "yes", "affirmative", etc...
+import argparse
+from io import BytesIO
 
 
 
+from collections.abc import Callable, Iterable
 from .common_functions import JSONEncoder
 
 
 
 
 
+def sanitize_command(command,is_binary:bool=False,config:dict|None=None) -> list[str] | Callable:
 
-def handle_git_command(net_request_handler, config: dict, added_data=None):
-
-    def prep_payload(f):
-        return f
-
-    # def make_bytes_example(bytes):
-    #     if bytes is None:
-    #         return None
-    #     return [ n for n in bytes[:65] ]
-
-    def make_download_url(path_parts,job_id,filename):
-        return f'{quote(path_parts[0])}/{quote(path_parts[1])}/{quote(job_id)}/{quote("stdout")}/{quote(filename)}'
-
-    WebResponse = config.get('iface').get('WebResponse')
-    call_cli_command_initiate = config.get('iface').get('cli_command_initiate')
-    call_cli_initiate_from_function = config.get('iface').get('cli_initiate_from_function')
-    call_cli_command_get_job = config.get('iface').get('cli_command_get_job')
-    call_cli_command_terminate_job = config.get('iface').get('cli_command_terminate_job')
-    call_cli_command_get_job_stdout_reader = config.get('iface').get('cli_command_get_job_stdout_reader')
-
-    def sanitize_command(command,is_binary=False):
-        def startswith(seq, prefix):
-            return seq[:len(prefix)] == prefix
+    def startswith(seq, prefix):
+        return seq[:len(prefix)] == prefix
+    
+    def sanitize_git_command(command,is_binary:bool=False,config:dict|None=None) -> list[str]:
+        if not config:
+            config = {}
         command = [*command]
-        is_allowed = startswith(command,['git']) or startswith(command,['python','~/test.py'])
-        # is_allowed = startswith(command,['git'])
-        if not is_allowed:
-            raise Exception(f'Not a git command')
-        if startswith(command,['python','~/test.py']):
-            # return ['python',Path.home() / 'test.py'] + command[2:]
-            return ['python','-c',r'import time,random,sys;k=int(random.random()*13+9);print(f"Will do {k} iterations");[(d:=random.random()*4+2,n:="".join(str(int(random.random()*10)) for _ in range(5)),print(f"Hello #{c+1}, {n} ({k-c-1} left)!"),random.random()>.5 and print(f"Uuhhhh #{c+1}, {n}!",file=sys.stderr),time.sleep(d)) for c in range(k)]']
 
         config_git_dir: str | Path | None = config.get("git_directory")
         config_working_tree: str | Path | None = config.get("working_tree")
@@ -73,6 +53,80 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
             + \
             [ *command[1:] ]
         return command
+
+    def sanitize_test_command(command,is_binary:bool=False,config:dict|None=None) -> list[str]:
+        if startswith(command,['test','python','~/test.py']):
+            return ['python','-c',r'import time,random,sys;k=int(random.random()*13+9);print(f"Will do {k} iterations");[(d:=random.random()*4+2,n:="".join(str(int(random.random()*10)) for _ in range(5)),print(f"Hello #{c+1}, {n} ({k-c-1} left)!"),random.random()>.5 and print(f"Uuhhhh #{c+1}, {n}!",file=sys.stderr),time.sleep(d)) for c in range(k)]']
+        else:
+            raise Exception(f'cli: handle_command: unrecognized test command: {repr(command)}')
+    
+    def sanitize_catfile_command(command,is_binary:bool=False,config:dict|None=None) -> Callable:
+        class CatfileUsageError(ValueError):
+            pass
+        class CatfileArgumentParser(argparse.ArgumentParser):
+            def error(self, message):
+                raise CatfileUsageError(message)
+        parser = CatfileArgumentParser(
+                description="cat"
+            )
+        parser.add_argument( 'filename' )
+        args = parser.parse_args(command[1:])
+        if not args.filename:
+            raise CatfileUsageError(f'cat: filename is required, got {repr(args.filename)}')
+        config_working_tree: str | Path | None = config.get("working_tree")
+        if config_working_tree is None: # to make linter happy
+            raise ValueError(f'execute git command: config.working_tree is required')
+        working_tree = Path(config_working_tree).resolve()
+        filepath = working_tree / args.filename
+        try:
+            filepath.resolve().relative_to(working_tree.resolve())
+        except ValueError:
+            raise Exception(f'cli: handle_command: cat: path is not within working tree: {filepath}')
+        def fn(stdin_stream, stdout_stream, stderr_stream):
+            with Path(filepath).open("rb") as f:
+                while chunk := f.read(64 * 1024):
+                    stdout_stream.write(chunk)
+        return fn
+
+    allowed = {
+        'git': sanitize_git_command,
+        'test': sanitize_test_command,
+        'cat': sanitize_catfile_command,
+    }
+
+    if not isinstance(command,Iterable) or not ( len(command)>=1 ):
+        raise Exception(f'cli: handle_command: wrong command format: {repr(command)}')
+    command_first_arg = next(iter(command[:1]))
+
+    sanitize_fn = allowed.get(command_first_arg,None)
+    if not sanitize_fn:
+        raise Exception(f'cli: handle_command: command not supported: {repr(command)}')
+
+    return sanitize_fn(command,is_binary,config)
+
+
+
+
+
+def handle_git_command(net_request_handler, config: dict, added_data=None):
+
+    def prep_payload(f):
+        return f
+
+    # def make_bytes_example(bytes):
+    #     if bytes is None:
+    #         return None
+    #     return [ n for n in bytes[:65] ]
+
+    def make_download_url(path_parts,job_id,filename):
+        return f'{quote(path_parts[0])}/{quote(path_parts[1])}/{quote(job_id)}/{quote("stdout")}/{quote(filename)}'
+
+    WebResponse = config.get('iface').get('WebResponse')
+    call_cli_command_initiate = config.get('iface').get('cli_command_initiate')
+    call_cli_initiate_from_function = config.get('iface').get('cli_initiate_from_function')
+    call_cli_command_get_job = config.get('iface').get('cli_command_get_job')
+    call_cli_command_terminate_job = config.get('iface').get('cli_command_terminate_job')
+    call_cli_command_get_job_stdout_reader = config.get('iface').get('cli_command_get_job_stdout_reader')
 
     def handle_initiate_new_command(net_request_handler):
 
@@ -108,7 +162,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         payload = json.loads(body)
         command = prep_payload(payload)
         try:
-            command = sanitize_command(command, is_binary = flag_is_binary)
+            command = sanitize_command( command, is_binary = flag_is_binary, config=config )
         except Exception as e:
             return WebResponse(
                 status_code=403,
@@ -117,7 +171,10 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 headers=[],
             )
 
-        job_dict = call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive,options=params_flattened)
+        job_dict = \
+            call_cli_command_initiate(command,config,is_binary=flag_is_binary,is_interactive=flag_is_interactive,options=params_flattened) \
+            if not callable(command) \
+            else call_cli_initiate_from_function(command,[],BytesIO(b''),config,{},is_binary=flag_is_binary)
         job_id = job_dict.get('job_id')
 
         headers = []
@@ -296,7 +353,8 @@ Response is HTTP 202 with job dict that contains new job id."""
                 headers = [],
             )
         options = params_flattened
-        output_file_obj = call_cli_command_get_job_stdout_reader(job_id,config)()
+        output_reader = call_cli_command_get_job_stdout_reader(job_id,config)
+        output_file_obj = output_reader()
         if not output_file_obj:
             return WebResponse(
                 status_code = 404,
@@ -326,13 +384,12 @@ Response is HTTP 202 with job dict that contains new job id."""
                 headers = [],
             )
 
-        output_file_obj = call_cli_command_get_job_stdout_reader(job_id,config)()
         job_dict = call_cli_initiate_from_function(next_processor_in_pipe,args_rest,output_file_obj,config,{})
 
         job_id = job_dict.get('job_id')
 
         headers = []
-        need_add_downloadurl = ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
+        need_add_downloadurl = True # ( call_cli_command_get_job_stdout_reader(job_id,config) is not None )
         if need_add_downloadurl:
             filename = Path('%FILENAME%').name
             url_get_rawbytes = make_download_url(path_parts, job_id,

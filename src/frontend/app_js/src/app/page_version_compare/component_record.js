@@ -146,9 +146,29 @@ const Record = {
     const error = ref(null);
     const isBusy = ref(false);
 
-    async function getContentsFromBlob(blobid,filename=null) {
+    async function getContentsFromBlob(blobid,filemode,filename=null) {
+      function gitEntryType(mode) {
+          const m = parseInt(mode, 8);
+          const type = m & 0o170000;
+
+          switch (type) {
+              case 0o100000:
+                  return "blob";       // regular file
+              case 0o120000:
+                  return "symlink";
+              case 0o160000:
+                  return "gitlink";    // submodule
+              case 0o040000:
+                  return "tree";       // directory
+              default:
+                  return "unknown";
+          }
+      }
       if( /^0+$/.test(blobid) )
         return new TextDecoder('utf-8').decode(new Uint8Array([]));
+      const filetype = gitEntryType(filemode);
+      if( !(filetype==='blob') )
+        return `${filetype} ${blobid}`;
       const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',blobid],{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
       await jobData.promiseDownloadLinkReady;
       const downloadUrl = jobData.getDownloadUrl(filename||props.new_path);
@@ -196,7 +216,7 @@ const Record = {
       try{
         error.value = null;
         isBusy.value = true;
-        return await getContentsFromBlob(props.old_oid,props.old_path||props.path);
+        return await getContentsFromBlob(props.old_oid,props.old_mode,props.old_path||props.path);
       } catch(e) {
         error.value = e;
         props.repoActions.logError(e);
@@ -211,7 +231,7 @@ const Record = {
       try {
         error.value = null;
         isBusy.value = true;
-        return await getContentsFromBlob(props.new_oid,props.new_path||props.path);
+        return await getContentsFromBlob(props.new_oid,props.new_mode,props.new_path||props.path);
       } catch(e) {
         error.value = e;
         props.repoActions.logError(e);

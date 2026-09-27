@@ -270,8 +270,10 @@ const View = {
     'filepath',
     'getTextconvOutputsLeft',
     'getTextconvOutputsRight',
-    'filepathLeft', // not used
-    'filepathRight', // not used
+    'filepathLeft',
+    'filepathRight',
+    'fileModeLeft',
+    'fileModeRight',
     'repoStatus',
     'repoActions',
   ],
@@ -349,7 +351,7 @@ const View = {
     const fetchDataLeft = async () => {
       try {
         const textconvOutputsLeft = await props.getTextconvOutputsLeft();
-        const contentLeft = await props.repoActions.textconvParseHeaders(textconvOutputsLeft,props.filepath);
+        const contentLeft = await props.repoActions.textconvParseHeaders(textconvOutputsLeft,props.fileModeLeft,props.filepathLeft||props.filepath);
         const txtLeft = contentLeft.text;
         statisticsLeft.value.textconvHeaders = contentLeft.headers;
         statisticsLeft.value.textconvHeadersRecognized = contentLeft.headersRecognized;
@@ -367,7 +369,7 @@ const View = {
     const fetchDataRight = async () => {
       try {
         const textconvOutputsRight = await props.getTextconvOutputsRight();
-        const contentRight = await props.repoActions.textconvParseHeaders(textconvOutputsRight,props.filepath);
+        const contentRight = await props.repoActions.textconvParseHeaders(textconvOutputsRight,props.fileModeRight,props.filepathRight||props.filepath);
         const txtRight = contentRight.text;
         statisticsRight.value.textconvHeaders = contentRight.headers;
         statisticsRight.value.textconvHeadersRecognized = contentRight.headersRecognized;

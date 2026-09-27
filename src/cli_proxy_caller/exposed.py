@@ -95,7 +95,7 @@ def initiate_command(command,config,is_binary=False,is_interactive=False,options
     return job.as_dict()
 
 
-def initiate_from_function(fn: Callable, args, inp, config, options: dict | None = None):
+def initiate_from_function(fn: Callable, args, inp, config, options: dict | None = None, is_binary: bool = False):
     """
         A helper function to be called for pipes
 
@@ -129,6 +129,7 @@ def initiate_from_function(fn: Callable, args, inp, config, options: dict | None
             task = JobTask(
                 action = "job:processor_from_function:new_command",
                 command = (fn, args, inp,),
+                is_binary = is_binary,
             )
         )
     )

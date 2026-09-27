@@ -33,6 +33,10 @@ def make_project_label(record):
         except Exception as e:
             raise Exception(f'can\'t read project label') from e
         try:
+            project_number = record.get('project_number')
+        except Exception as e:
+            raise Exception(f'can\'t read project_number') from e
+        try:
             working_tree = Path(record.get('working_tree')).resolve()
         except Exception as e:
             raise Exception(f'can\'t read working_tree ({record.get("working_tree")}): {e}') from e
@@ -40,7 +44,7 @@ def make_project_label(record):
             git_directory_location = Path(record.get('git_directory_location')).resolve()
         except Exception as e:
             raise Exception(f'can\'t read git_directory_location ({record.get("git_directory_location")}): {e}') from e
-        return f"{label}, working tree: {working_tree}, git directory location: {git_directory_location}"
+        return f"{label}, project number: {project_number}, working tree: {working_tree}, git directory location: {git_directory_location}"
     except Exception as e:
         raise Exception(f'malformed config file: {e} (when reading {repr(record)})') from e
 

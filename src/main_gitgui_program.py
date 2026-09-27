@@ -25,6 +25,7 @@ from .textconv import (
 )
 from .output_postprocessors import register_output_postprocessor, output_postprocessors #, get_output_postprocessor
 from .output_postprocessors.tar import tar_output_processor
+from .output_postprocessors.textconv import make_textconv_output_processor
 from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
@@ -131,7 +132,7 @@ def main(*argcs,**kwargs):
         config['warnings'].append(f'Warning: python {verify_python_ver.get("python_version")} is quite old and is beyond its EOL and is not receiving security updates. Please consider updating.')
 
     register_output_postprocessor('tar',tar_output_processor)
-    register_output_postprocessor('textconv',textconv_from_stream)
+    register_output_postprocessor('textconv',make_textconv_output_processor(config))
 
     if args.working_tree:
         working_tree = f'{args.working_tree}' # make sure it's text

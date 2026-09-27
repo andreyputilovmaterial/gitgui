@@ -268,10 +268,10 @@ const RecordTxt = {
 const View = {
   props: [
     'filepath',
-    'blobIdLeft',
-    'blobIdRight',
-    'filepath_left', // not used
-    'filepath_right', // not used
+    'getTextconvOutputsLeft',
+    'getTextconvOutputsRight',
+    'filepathLeft', // not used
+    'filepathRight', // not used
     'repoStatus',
     'repoActions',
   ],
@@ -282,7 +282,7 @@ const View = {
   <template v-else-if="memorysave">
     <form  @submit.prevent="memorysave=false" class="mdmreport-controls memorysave-form">
       <fieldset class="mdmreport-controls">
-        <div><button type="submit" class="gitgui-button-show">Click to calc diff ({{ Math.max(statisticsLeft.textLineCount,statisticsRight.textLineCount) }} lines)</button></div>
+        <div v-if=" ! ( !!error && ( !isFinite(statisticsLeft.textLineCount) || !isFinite(statisticsRight.textLineCount) ) )"><button type="submit" class="gitgui-button-show">Click to calc diff ({{ Math.max(statisticsLeft.textLineCount,statisticsRight.textLineCount) }} lines)</button></div>
       </fieldset>
     </form>
   </template>
@@ -346,30 +346,15 @@ const View = {
       return !!v;
     }
 
-    async function getContentsFromBlob(blobid) {
-      if( /^0+$/.test(blobid) )
-        return new Uint8Array([]);
-      const jobData = await props.repoActions.executeGitBinaryCommand(['git','cat-file','blob',blobid],{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
-      await jobData.promiseDownloadLinkReady;
-      // TODO: streamed
-      // TODO: direct textconv
-      const response = await fetch( jobData.download_url );
-      if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
-      const bufferPromise = response.arrayBuffer();
-      await jobData.promise;
-      const buffer = await bufferPromise;
-      return new Uint8Array(buffer);
-    }
-
     const fetchDataLeft = async () => {
       try {
-        statisticsLeft.value.binaryFileSize = '???';
-        const binaryDataLeft = await getContentsFromBlob(props.blobIdLeft);
-        statisticsLeft.value.binaryFileSize = binaryDataLeft.length;
-        const contentLeft = await props.repoActions.textconv(binaryDataLeft,props.filepath);
+        const textconvOutputsLeft = await props.getTextconvOutputsLeft();
+        const contentLeft = await props.repoActions.textconvParseHeaders(textconvOutputsLeft,props.filepath);
         const txtLeft = contentLeft.text;
         statisticsLeft.value.textconvHeaders = contentLeft.headers;
         statisticsLeft.value.textconvHeadersRecognized = contentLeft.headersRecognized;
+        statisticsLeft.value.binaryFileSize = contentLeft?.headersRecognized?.bytes_consumed;
+        if( typeof statisticsLeft.value.binaryFileSize==='undefined') statisticsLeft.value.binaryFileSize = '???';
         statisticsLeft.value.textFileSize = txtLeft.length;
         return txtLeft;
       } catch(e) {
@@ -381,19 +366,19 @@ const View = {
     };
     const fetchDataRight = async () => {
       try {
-        statisticsRight.value.binaryFileSize = '???';
-        const binaryDataRight = await getContentsFromBlob(props.blobIdRight);
-        statisticsRight.value.binaryFileSize = binaryDataRight.length;
-        const contentRight = await props.repoActions.textconv(binaryDataRight,props.filepath);
+        const textconvOutputsRight = await props.getTextconvOutputsRight();
+        const contentRight = await props.repoActions.textconvParseHeaders(textconvOutputsRight,props.filepath);
         const txtRight = contentRight.text;
         statisticsRight.value.textconvHeaders = contentRight.headers;
         statisticsRight.value.textconvHeadersRecognized = contentRight.headersRecognized;
+        statisticsRight.value.binaryFileSize = contentRight?.headersRecognized?.bytes_consumed;
+        if( typeof statisticsRight.value.binaryFileSize==='undefined') statisticsRight.value.binaryFileSize = '???';
         statisticsRight.value.textFileSize = txtRight.length;
         return txtRight;
       } catch(e) {
         error.value = e;
         props.repoActions.logError(e);
-        props.repoActions.logError('Failed when fetching contents for right file');
+        props.repoActions.logError('Failed when fetching contents for reft file');
         throw e;
       }
     };

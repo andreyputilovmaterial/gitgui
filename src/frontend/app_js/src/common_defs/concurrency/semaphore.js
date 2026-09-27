@@ -6,6 +6,7 @@ class Semaphore {
     this.maxConcurrent = maxConcurrent;
     this.running = 0;
     this.queue = [];
+    this._delaysData = [];
   }
 
   acquire() {
@@ -30,13 +31,38 @@ class Semaphore {
     resolve(() => this.release());
   }
 
-  async run(fn) {
-    const release = await this.acquire();
+  getPerformanceMetric(metricName) {
+    const getRecentTasksMinDelay = () => {
+      if(this.running===0) return 0; // true
+      const maxConcurrent = this.maxConcurrent>1 ? this.maxConcurrent : 1;
+      const recentDelays = this._delaysData.slice(Math.max(this._delaysData.length - maxConcurrent, 0));
+      const minDelay = Math.min(...recentDelays.map(a=>a.duration));
+      return minDelay;
+    }
+    const metrics = {
+      'recent-tasks-min-delay': getRecentTasksMinDelay,
+    };
+    return metrics[metricName];
+  }
 
+  async run(fn) {
+    const timeStarted = new Date();
+    const delayData = {timeStarted,duration:0};
+    this._delaysData.push(delayData);
+    const intId = setInterval(()=>{
+      const timeNow = new Date();
+      const duration = new Date((+timeNow) - (+timeStarted));
+      delayData.duration = duration;
+    },309);
+    const release = await this.acquire();
     try {
       return await fn();
     } finally {
       release();
+      clearInterval(intId);
+      const timeFinished = new Date();
+      const duration = new Date((+timeFinished) - (+timeStarted));
+      delayData.duration = duration;
     }
   }
 }

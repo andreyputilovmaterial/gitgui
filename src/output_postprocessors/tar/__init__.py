@@ -6,7 +6,7 @@ class TarUsageError(ValueError):
     pass
 
 
-def tar_output_processor(input_stream: BinaryIO, *args: str) -> None:
+def tar_output_processor(stdin_stream: BinaryIO, stdout_stream: BinaryIO, stderr_stream: BinaryIO, *args: str) -> None:
     """
     Small pipe-oriented wrapper around Python's tarfile module.
 
@@ -144,18 +144,18 @@ def tar_output_processor(input_stream: BinaryIO, *args: str) -> None:
         #   read from file-like object
         #   streaming mode
         #   automatically detect compression
-        with tarfile.open(fileobj=input_stream, mode="r|*") as archive:
+        with tarfile.open(fileobj=stdin_stream, mode="r|*") as archive:
             if verbose:
                 for member in archive:
-                    print(member.name)
+                    print(member.name,file=stdout_stream)
                     archive.extract(member, destination)
             else:
                 archive.extractall(destination)
 
     elif mode == "t":
-        with tarfile.open(fileobj=input_stream, mode="r|*") as archive:
+        with tarfile.open(fileobj=stdin_stream, mode="r|*") as archive:
             for member in archive:
-                print(member.name)
+                print(member.name,file=stdout_stream)
 
     elif mode == "c":
         raise TarUsageError(

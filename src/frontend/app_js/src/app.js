@@ -1,6 +1,6 @@
 
 // import { Vue } from "./vue.js";
-import { createApp, ref, onMounted, toRaw, watch, reactive, isReactive, h, version } from 'vue'
+import { createApp, ref, onMounted, onUnmounted, watch, reactive, h, toRaw, version, isReactive, } from 'vue'
 
 
 import './app.css';
@@ -15,7 +15,8 @@ import ReplayEvent from './common_defs/concurrency/subscribe.js';
 
 // "lib"
 import { diff } from './lib/myers-diff/src/index';
-import textconvBackendFactory from './textconv_backend/index';
+import textconvBackend from './textconv_backend/index';
+import textconvParseHeadersFromBackend from './textconv_backend/parse_headers';
 
 // all from "common_components"
 import ComponentSectionRollup from './common_components/rollable_sections/index';
@@ -132,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const errors = ref([]);
       const isOnline = ref(true);
       const isOnlinePollingTimer = ref(undefined);
+      const gitCommandsPerfIssuesCheckingTimer = ref(undefined);
       const repoInitRequiresAttention = ref(false);
       const commands = ref([]);
       const appBackendWarnings = ref([]);
@@ -867,21 +869,67 @@ document.addEventListener("DOMContentLoaded", () => {
       repoActions.value.createModal = (Component) => createModal(h(Component,{repoStatus,repoActions,}));
 
       // repoActions.value.textconv_js = textconvJsFactory( ({ logError: (...args) => repoActions.value.logError(...args), }) );
-      repoActions.value.textconv_backend = textconvBackendFactory( ({ logError: (...args) => repoActions.value.logError(...args),}) );
+      repoActions.value.textconv_backend = (outputs,filename,...args) => {
+        try {
+          return textconvBackend(outputs,filename,...args);
+        } catch(e) {
+          logError(e);
+          logError(`Failed requesting /textconv endpoint for "${filename}"`);
+          throw e;
+        }
+      };
       repoActions.value.textconv = repoActions.value.textconv_backend;
+      repoActions.value.textconvParseHeaders = (outputs,filename,...args) => {
+        try {
+          return textconvParseHeadersFromBackend(outputs,filename,...args);
+        } catch(e) {
+          logError(e);
+          logError(`Failed requesting /textconv endpoint for "${filename}"`);
+          throw e;
+        }
+      };
 
       repoActions.value.diff = diff;
 
       const maintenanceAndDebug = async () => {
         const tasks = [
           () => {
+            // expose some local vars in global namespace for debugging
             window.isReactive = isReactive;
             window.vueVersion = version;
+            window.toRaw = toRaw;
           },
           () => {
+            // set isOnline check code to run on timer
             setIsOnlineTimer();
           },
           () => {
+            // monitor for perf issues - if git commands take too long to finish, or if they don't finish
+            // TODO: also monitor memory
+            const randomJitter = () => Math.floor(Math.random()*200-100);
+            const updateInterval = 9000 + randomJitter();
+            gitCommandsPerfIssuesCheckingTimer.value = setInterval(
+              ()=>{
+                const recentCommandsMinDelay = gitCommandConcurrencyManager.getPerformanceMetric('recent-tasks-min-delay')();
+                if( (+recentCommandsMinDelay)>10000 ) {
+                  const warnRecordId = 'git-command-perf-warning';
+                  const timestamp = new Date();
+                  const warnMsg = `Warning: performance issues while executing git commands, some take up to ${((+recentCommandsMinDelay)/1000)|0} seconds, or more (alerted ${timestamp})`;
+                  const warnRecordsMatchingId = errors.value.filter(e=>e.id===warnRecordId);
+                  const warnRecordObject = warnRecordsMatchingId.length>0 ? warnRecordsMatchingId[0] : ({
+                    id: warnRecordId,
+                    time: timestamp,
+                  });
+                  warnRecordObject.error = warnMsg;
+                  if( warnRecordsMatchingId.length===0 ) // if not added before, append a new record; or, existing one was updated
+                    errors.value.push(warnRecordObject);
+                }
+              },
+              updateInterval,
+            );
+          },
+          () => {
+            // watch config updates
             configUpdatesEvent.subscribe( config => {
               try {
                 // const configPathsFirstCaptured = ref({working_tree:null,git_directory:null,git_paths_hash:null});
@@ -907,6 +955,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           },
           () => {
+            // retrieve warning messages from backend on config updates
             configUpdatesEvent.subscribe( config => {
               const newWarnings = (config?.warnings||[]).filter(message=>!appBackendWarnings.value.includes(message));
               appBackendWarnings.value.push(...newWarnings);
@@ -915,9 +964,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           },
           // async () => {
+          //   // testing code
           //   throw new Error('Check failed maintenance task!');
           // },
           () => {
+            // monitor for missing browser capabilities and print a warning
             const doesBrowserSupportCssMediaRules = (()=>{
               try {
                 return !!window.CSS && !!window.CSS.supports && window.CSS.supports('container-type: inline-size');
@@ -958,6 +1009,13 @@ document.addEventListener("DOMContentLoaded", () => {
           })(),
           maintenanceAndDebug(),
         ])
+      });
+
+      onUnmounted(async ()=>{
+        await Promise.all([
+          () => new Promise((resolve,reject)=>resolve(clearInterval(isOnlinePollingTimer.value))),
+          () => new Promise((resolve,reject)=>resolve(clearInterval(gitCommandsPerfIssuesCheckingTimer.value))),
+        ]);
       });
 
       // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.

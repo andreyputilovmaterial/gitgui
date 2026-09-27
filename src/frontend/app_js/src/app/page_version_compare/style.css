@@ -41,3 +41,29 @@
 .mdm-git-gui-diff-records .diff-record > .mdm-ui-rollup > .mdm-ui-rollup-body {
   padding: 7px;
 }
+
+.mdm-git-gui-diff-record, .mdm-git-gui-diff-record-inner {
+  position: relative;
+  container-type: inline-size;
+}
+
+.mdm-git-gui-diff-record-inner .is-busy-overlay {
+  display: none;
+}
+.mdm-git-gui-diff-record.is-busy .is-busy-overlay {
+  display: block;
+  position: absolute;
+  background: rgba(244,244,244,.6);
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  text-align: center;
+}
+.mdm-git-gui-diff-record.is-busy .mdm-ui-rollup-body > form > .is-busy-overlay {
+  left: -8px;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+}

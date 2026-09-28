@@ -1,7 +1,7 @@
 # import sys
 from pathlib import Path
 import tempfile
-from threading import Thread, Lock
+from threading import Lock
 
 global_mdd_lock = Lock()
 
@@ -14,6 +14,19 @@ try:
 except ImportError as e:
     win32com_import_success = False
     win32com_import_error = e
+
+
+
+
+
+def consume_all_and_emit_as_chunks(buffer):
+    while True:
+        chunk = buffer.read()
+        if not chunk:
+            break
+        yield chunk
+
+
 
 
 class MDMDocument:
@@ -72,11 +85,12 @@ def textconv(file,filename):
     if not win32com_import_success:
         return f'TEXTCONV MDD: win32com not available - will not be able to show MDD files ({win32com_import_error})'
     with tempfile.TemporaryDirectory() as tmp_dir:
-        data = file.read()
+        # data = file.read()
         temp_filename = Path(tmp_dir) / Path(filename).name
         print(f'MDD TEXTCONV: Preparing local MDD at "{temp_filename}"') # TODO: debug code
         with open(temp_filename,'wb') as f:
-            f.write(data)
+            for p in consume_all_and_emit_as_chunks(file):
+                f.write(p)
         try:
             with global_mdd_lock:
                 try:

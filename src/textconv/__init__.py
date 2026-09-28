@@ -3,6 +3,7 @@ from pathlib import Path
 from io import BytesIO, StringIO
 import re
 import hashlib
+import sys # to print exception to stderr
 
 from typing import Protocol
 
@@ -14,7 +15,7 @@ from .config import (
     SAMPLE_SIZE_BYTES,
 )
 from .helper_log_errors import (
-    print_error,
+    make_exception_text,
 )
 
 
@@ -181,9 +182,10 @@ def textconv_from_stream(inpFile: FileLikeObject,filename: str) -> str:
         )
     
     except Exception as e:
-        print_error(e)
+        exception_text = make_exception_text(e)
         print( make_header('error'), file=buf, end='\n' )
         print( f'{e}', file=buf, end='' )
+        print( exception_text, file=sys.stderr )
     
     return buf.getvalue()
 

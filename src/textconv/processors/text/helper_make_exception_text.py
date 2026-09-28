@@ -2,7 +2,7 @@
 
 LINE_MARKER = 'TEXTCONF UNICODE ERROR: '
 
-def report_unicode_decode_error(e,data,filename,encoding,bom,bom_len):
+def unicode_decode_error_make_exception_msg(e,data,filename,encoding,bom,bom_len):
     try:
         pos = e.start
         context = data[bom_len + pos - 32:bom_len + pos + 32]

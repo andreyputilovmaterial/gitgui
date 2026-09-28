@@ -1,7 +1,22 @@
 import codecs
 import sys # for error reporting
 
-from .report_error import report_unicode_decode_error
+from .helper_make_exception_text import unicode_decode_error_make_exception_msg
+
+
+
+
+
+
+def consume_all_and_emit_as_chunks(buffer):
+    while True:
+        chunk = buffer.read()
+        if not chunk:
+            break
+        yield chunk
+
+
+
 
 
 def detect_bom(data):
@@ -58,16 +73,24 @@ def textconv(file, filename: str):
         UnicodeDecodeError: If the data cannot be decoded using the
             detected encoding or UTF-8 when no BOM is present.
     """
-    data = file.read()
-    
-    encoding, bom, bom_len = detect_bom(data)
-
     try:
-        return data[bom_len:].decode(encoding=encoding,errors='replace')
+        # data = file.read()
+        decoder = None
+        
+        txt = ''
+        # return data[bom_len:].decode(encoding=encoding,errors='replace')
+        for p in consume_all_and_emit_as_chunks(file):
+            if not decoder:
+                encoding, bom, bom_len = detect_bom(p)
+                decoder = codecs.getincrementaldecoder(encoding)(errors='replace')
+
+            txt += decoder.decode(p,final=False)
+        txt += decoder.decode('',final=True)
+        return txt
     except UnicodeDecodeError as e:
         try:
-            detailed_err_msg = report_unicode_decode_error(e,data,filename,encoding,bom,bom_len)
+            detailed_err_msg = unicode_decode_error_make_exception_msg(e,data,filename,encoding,bom,bom_len)
             print(detailed_err_msg,file=sys.stderr)
         except:
             pass
-        raise e
+        raise

@@ -16,6 +16,20 @@ except ImportError as e:
 	markitdown_import_success = False
 
 
+
+
+
+
+def consume_all_and_emit_as_chunks(buffer):
+    while True:
+        chunk = buffer.read()
+        if not chunk:
+            break
+        yield chunk
+
+
+
+
 # def textconv(data,filename):
 #     if not markitdown_import_success:
 #         return f'TEXTCONV MarkItDown: Markitdown module is not available - will not be able to wide range of files ({markitdown_import_error})'
@@ -34,7 +48,10 @@ def textconv(inpFile,filename):
     if not markitdown_import_success:
         raise Exception( f'TEXTCONV MarkItDown: Markitdown module is not available - will not be able to wide range of files ({markitdown_import_error})' )
     md = MarkItDown()
-    file = BytesIO(inpFile.read())
+    # file = BytesIO(inpFile.read())
+    file = BytesIO()
+    for p in consume_all_and_emit_as_chunks(inpFile):
+        file.write(p)
     file.seek(0)
     result = md.convert_stream(
         file,

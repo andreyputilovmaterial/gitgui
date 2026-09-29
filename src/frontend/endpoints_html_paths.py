@@ -220,7 +220,7 @@ try {
         const txt = '.helppage-fetch-content { /* margin: 56px 0 56px; */ }';
         const style = document.createElement('style');
         style.textContent = txt;
-        target = document.head || document;
+        const target = document.head || document;
         target.append(style);
     }
     async function fetchHelpPage() {
@@ -259,7 +259,7 @@ try {
     promisePageReady.then(embedStyles);
     const help_text_md = await fetchHelpPage();
     const helpFormatted = DOMPurify.sanitize(marked.parse(help_text_md));
-    targetEl = await promiseTargetReady;
+    const targetEl = await promiseTargetReady;
     targetEl.innerHTML = helpFormatted;
 } catch(e) {
     console.error(e);

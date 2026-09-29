@@ -136,20 +136,22 @@ function parseRecord(record) {
 
 function takeField(bytes, pos) {
     const start = pos;
-
     while (pos < bytes.length && bytes[pos] !== 0x20) {
         pos++;
     }
-
     return {
         value: bytes.subarray(start, pos),
         next: pos < bytes.length ? pos + 1 : pos,
     };
 }
 
-// function takeRemaining(bytes, pos) {
-//     return bytes.subarray(pos);
-// }
+
+function takeRemainingField(bytes, pos) {
+    return {
+        value: bytes.subarray(pos),
+        next: bytes.length,
+    };
+}
 
 
 
@@ -216,7 +218,7 @@ function parseOrdinaryRecord(record) {
     const indexObject = decodeUtf8(field.value);
     pos = field.next;
 
-    field = takeField(record, pos);
+    field = takeRemainingField(record, pos);
     const path = decodeUtf8(field.value);
     pos = field.next;
 
@@ -313,7 +315,7 @@ function parseRenamedRecord(record, originalPath) {
     const score = decodeUtf8(field.value);
     pos = field.next;
 
-    field = takeField(record, pos);
+    field = takeRemainingField(record, pos);
     const path = decodeUtf8(field.value);
     pos = field.next;
 
@@ -419,7 +421,7 @@ function parseUnmergedRecord(record) {
     const stage3Object = decodeUtf8(field.value);
     pos = field.next;
 
-    field = takeField(record, pos);
+    field = takeRemainingField(record, pos);
     const path = decodeUtf8(field.value);
     pos = field.next;
 

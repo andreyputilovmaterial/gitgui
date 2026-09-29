@@ -73,24 +73,24 @@ def textconv(file, filename: str):
         UnicodeDecodeError: If the data cannot be decoded using the
             detected encoding or UTF-8 when no BOM is present.
     """
-    try:
-        # data = file.read()
-        decoder = None
-        
-        txt = ''
-        # return data[bom_len:].decode(encoding=encoding,errors='replace')
-        for p in consume_all_and_emit_as_chunks(file):
-            if not decoder:
-                encoding, bom, bom_len = detect_bom(p)
-                decoder = codecs.getincrementaldecoder(encoding)(errors='replace')
+    # data = file.read()
+    decoder = None
+    
+    txt = ''
+    # return data[bom_len:].decode(encoding=encoding,errors='replace')
+    for p in consume_all_and_emit_as_chunks(file):
+        if not decoder:
+            encoding, bom, bom_len = detect_bom(p)
+            decoder = codecs.getincrementaldecoder(encoding)(errors='replace')
 
-            txt += decoder.decode(p,final=False)
-        txt += decoder.decode('',final=True)
-        return txt
-    except UnicodeDecodeError as e:
         try:
-            detailed_err_msg = unicode_decode_error_make_exception_msg(e,data,filename,encoding,bom,bom_len)
-            print(detailed_err_msg,file=sys.stderr)
-        except:
-            pass
-        raise
+            txt += decoder.decode(p,final=False)
+        except UnicodeDecodeError as e: # should not happen, as errors=replace; however, we might want it configurable
+            try:
+                detailed_err_msg = unicode_decode_error_make_exception_msg(e,p,filename,encoding,bom,bom_len)
+                print(detailed_err_msg,file=sys.stderr)
+            except:
+                pass
+            raise
+    txt += decoder.decode(b'',final=True)
+    return txt

@@ -50,8 +50,12 @@ def textconv(inpFile,filename):
     md = MarkItDown()
     # file = BytesIO(inpFile.read())
     file = BytesIO()
+    total_datasize_counter = 0
     for p in consume_all_and_emit_as_chunks(inpFile):
+        total_datasize_counter += len(p) if p else 0
         file.write(p)
+    if not (total_datasize_counter>0):
+        return ''
     file.seek(0)
     result = md.convert_stream(
         file,

@@ -88,9 +88,15 @@ def textconv(file,filename):
         # data = file.read()
         temp_filename = Path(tmp_dir) / Path(filename).name
         print(f'MDD TEXTCONV: Preparing local MDD at "{temp_filename}"') # TODO: debug code
+
         with open(temp_filename,'wb') as f:
+            total_datasize_counter = 0
             for p in consume_all_and_emit_as_chunks(file):
+                total_datasize_counter += len(p) if p else 0
                 f.write(p)
+            if not (total_datasize_counter>0):
+                # TODO: lazy wrapper - do not even create a temp file if input stream is 0 bytes - create a temp file on first non-zero write
+                return ''
         try:
             with global_mdd_lock:
                 try:

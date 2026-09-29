@@ -11,7 +11,7 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 
-def make_exception_text():
+def make_exception_text(e):
     buf = StringIO()
     print('Error:\n',file=buf)
     print(f'{STDOUT_COLOR_RED}{e}{STDOUT_COLOR_RESET}',file=buf)

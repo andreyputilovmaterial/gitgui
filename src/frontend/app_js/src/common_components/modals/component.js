@@ -3,45 +3,15 @@
 
 import { ref, onMounted, markRaw } from 'vue';
 
+import appContext from './_context';
+import { generateUUID, } from './_util';
+
 import './styles.css';
 
 
 
-const appContext = {
-  modalsSitePromiseResolve: () => { throw new Error('Promise not inited'); },
-  modalsSitePromiseReject: () => { throw new Error('Promise not inited'); },
-  modalsSitePromise: undefined,
-}
-appContext.modalsSitePromise = new Promise((resolve,reject) => {
-  appContext.modalsSitePromiseResolve = resolve;
-  appContext.modalsSitePromiseReject = reject;
-});
 
 
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-
-
-export function createModal(Component) {
-  const context = {
-    promiseResolve: () => { throw new Error('Promise not inited'); },
-    promiseReject: () => { throw new Error('Promise not inited'); },
-    promise: null,
-  }
-  const promise = new Promise((resolve,reject)=>{
-    context.promiseResolve = resolve;
-    context.promiseReject = reject;
-    appContext.modalsSitePromise.then(createModal => createModal(Component,context) );
-  });
-  context.promise = promise;
-  return promise;
-}
 
 
 const Modal = {
@@ -105,7 +75,6 @@ export const ModalsSite = {
   },
   setup() {
     try{
-    // const {ref,onMounted,markRaw} = Vue
 
     const modals = ref([])
 
@@ -150,3 +119,5 @@ export const ModalsSite = {
   }
   }
 }
+
+export default ModalsSite;

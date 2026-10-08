@@ -16,10 +16,10 @@ const View = {
   ],
   template: `
 <div class="mdm-git-gui-historyview">
-  <template v-if="!repoStatus?.history">
+  <template v-if="!repoStatus?.historyData?.history">
     Fetching history...
   </template>
-  <template v-else-if="!!repoStatus?.history">
+  <template v-else-if="!!repoStatus?.historyData?.history">
     <pages-site ref="pagesSite"/>
   </template>
 </div>
@@ -56,15 +56,12 @@ const View = {
     onMounted(async () => {
       await Promise.all([
         props.repoActions.updateHistory(),
-        props.repoActions.getHEAD(),
-        props.repoActions.checkIfSomethingInIndex(),
-        props.repoActions.getStatus(),
         navigateHomePage(),
       ])
     });
 
-    watch(() => props?.repoStatus?.history, () => {
-      promiseContextHistoryReady.resolve(props?.repoStatus?.history);
+    watch(() => props?.repoStatus?.historyData?.history, () => {
+      promiseContextHistoryReady.resolve(props?.repoStatus?.historyData?.history);
     });
 
     return { pagesSite, createPage };

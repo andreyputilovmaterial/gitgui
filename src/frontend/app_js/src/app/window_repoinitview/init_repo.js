@@ -14,7 +14,6 @@ const RepoInitViewInitTheRepo = {
   props: [
     'repoStatus',
     'repoActions',
-    'config',
   ],
   template: `
   <form  @submit.prevent="handleSubmit" :class="\`mdmreport-controls mdm-git-gui-app-git-repo-init-form \${isBusy ? 'mdmreport-form-busy' : ''}\`">
@@ -64,8 +63,7 @@ setup(props) {
      } catch (error) {
        if(error instanceof Error) {
          validationaFailureMsg.value = error;
-         props.repoActions.logError('Init-the-repo Form submission failed');
-         props.repoActions.logError(error);
+         props.repoActions.logError(`Init-the-repo Form submission failed: ${error}`);
          console.error("Init-the-repo Form submission failed:", error);
        } else {
          /* rejected - means "cancel" - ok */
@@ -77,7 +75,7 @@ setup(props) {
 
    // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
    watch(() => props.repoStatus.gitignore, () => {
-     formFields.gitignore = props.repoStatus.gitignore;
+     formFields.gitignore = props.repoStatus?.gitignoreData?.gitignore;
    })
 
   return { formFields, handleSubmit, isBusy, validationaFailureMsg }

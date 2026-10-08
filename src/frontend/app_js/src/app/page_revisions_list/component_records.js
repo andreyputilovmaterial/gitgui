@@ -49,9 +49,10 @@ const Records = {
     const filteringComponent = ref(null);
     const worktreeTimestamp = ref(new Date());
     const indexTimestamp = ref(new Date());
+    const isSomethingInStagingArea = computed(()=> Array.isArray(props.repoStatus?.statusData?.status) && (props.repoStatus?.statusData?.status.filter(f=>f.index!=='.').length>0) );
     const historyWithRecordsForWorktreeAndIndex = computed(()=>[
       { hash: 'worktree', timestamp: worktreeTimestamp.value, },
-      ...( props?.repoStatus?.isSomethingInStagingArea ? [{ hash: 'index', timestamp: indexTimestamp.value, }] : [] ),
+      ...( isSomethingInStagingArea.value ? [{ hash: 'index', timestamp: indexTimestamp.value, }] : [] ),
       ...props.history,
     ]);
 

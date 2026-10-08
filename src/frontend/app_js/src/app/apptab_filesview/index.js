@@ -41,7 +41,6 @@ Changed files are in orange. Merge conflicts are in pink. Untracked/ignored file
 
     onMounted(async () => {
       await Promise.all([
-        props.repoActions.checkIfSomethingInIndex(),
         // props.repoActions.getStatus(),
         navigateHomePage(),
       ])

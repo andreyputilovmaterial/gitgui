@@ -61,7 +61,7 @@ v-else
 
     const isBusy = ref(false);
     const error = ref('');
-    const fileStatusInfoReady = computed(()=>Array.isArray(props.repoStatus.status)&&Array.isArray(props.repoStatus.trackedFiles));
+    const fileStatusInfoReady = computed(()=>Array.isArray(props.repoStatus?.statusData?.status)&&Array.isArray(props.repoStatus?.statusData?.trackedFiles));
 
     const filesSorted = computed(() => {
       if( filteringComponent.value?.paginateAndSort ) {

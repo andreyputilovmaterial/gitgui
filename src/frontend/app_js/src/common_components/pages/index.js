@@ -99,7 +99,6 @@ const PagesSite = {
   },
   setup(props,context) {
     try{
-    // const {ref,onMounted,markRaw} = Vue
 
     const appContext = ref({
       pagesSitePromiseResolve: () => { throw new Error('Promise not inited'); },

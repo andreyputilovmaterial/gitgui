@@ -1,5 +1,4 @@
 
-from bs4 import BeautifulSoup
 import sys # for checking pinliner, and for verifying python ver
 import re
 import hashlib
@@ -52,31 +51,6 @@ def make_hash(working_tree,git_directory):
     return h
 
 
-
-
-
-def sanitize(input):
-    return f'{input}'.replace(r'"""',r'\"""')
-
-def sanitize_classname(s):
-    def err(i):
-        raise Exception(f'Not valid class name: {i}')
-    s = f'{s}'.split()
-    return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
-
-def wrap_div(classname, txt) -> str:
-    soup = BeautifulSoup("<div></div>", "html.parser")
-    div = soup.div
-
-    fragment = BeautifulSoup(txt, "html.parser")
-
-    # IMPORTANT: iterate over a copy
-    for child in list(fragment.contents):
-        div.append(child)
-
-    div["class"] = sanitize_classname(classname).split()
-
-    return str(div)
 
 
 

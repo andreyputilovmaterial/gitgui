@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, } from 'vue';
 
 import './style.css';
 
@@ -50,8 +50,7 @@ const View = {
         }
         filesList.value = response.stdout.split('\n').filter(a=>a!=='').map(filepath=>({filepath}));
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError(`Failed fetching file list for hash "${props.hash}"`);
+        props.repoActions.logError(`Failed fetching file list for hash "${props.hash}": ${e}`);
         throw e;
       }
     };

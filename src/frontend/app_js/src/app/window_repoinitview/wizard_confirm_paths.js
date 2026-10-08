@@ -48,7 +48,6 @@ const WizardConfirmPaths = {
     'reject',
     'repoStatus',
     'repoActions',
-    'config',
   ],
   template: `
 <div class="mdm-git-gui-repoinit-wizard-confirm-paths-inner">
@@ -57,7 +56,7 @@ const WizardConfirmPaths = {
       <component-section-rollup header="Step 1: confirm working-tree path" :condensed="!!formFields.step1Acknowledged">
         <p>Here you confirm the working tree path.</p>
         <p>This is <span style="text-decoration: underline;">the tracked folder</span>: with files, scripts, data, etc...</p>
-        <div class="config-working-tree-path"><code>{{ config.working_tree }}</code></div>
+        <div class="config-working-tree-path"><code>{{ repoStatus?.config.working_tree }}</code></div>
         <path-status :status="formContext.pathWorkingTreeExists" />
         <div class="hidden">
           <input type="checkbox" v-model="formFields.step1Acknowledged" />
@@ -71,7 +70,7 @@ const WizardConfirmPaths = {
     <section :class="{'step-2-confirm-dir-git-dir':true,'step-confirmed':formFields.step2Acknowledged}">
       <component-section-rollup header="Step 2: confirm git directory" :condensed="!formFields.step1Acknowledged || !!formFields.step2Acknowledged">
         <p>Here you confirm the git directory, where history is stored.</p>
-        <div class="config-git-dir-path"><code>{{ config.git_directory }}</code></div>
+        <div class="config-git-dir-path"><code>{{ repoStatus?.config.git_directory }}</code></div>
         <path-status :status="formContext.pathGitDirectoryExists" />
         <div class="hidden">
           <input type="checkbox" v-model="formFields.step2Acknowledged" />
@@ -182,10 +181,8 @@ const WizardConfirmPaths = {
          }
          props.resolve('git init'); // message does not matter
        } catch (err) {
-         props.repoActions.logError(err);
-         props.repoActions.logError('Failed submitting git init form');
-         console.error('Failed submitting git init form',err)
-         // Promise.resolve().then(()=>{throw err;});
+         props.repoActions.logError(`Failed submitting git init form: ${err}`);
+         console.error('Failed submitting git init form',err);
          return props.reject(err)
        } finally {
          isBusy.value = false

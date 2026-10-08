@@ -153,8 +153,7 @@ const PackRecord = {
         await props.repoActions.createPage(h(PageFilesList,{...props,hash:props.revisionHash}));
       } catch(e) {
         if( e instanceof Error ) {
-          props.repoActions.logError(e);
-          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.revisionHash}`);
+          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.revisionHash}: ${e}`);
           throw e;
         }
       }

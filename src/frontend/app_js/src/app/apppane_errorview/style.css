@@ -12,14 +12,15 @@
   margin-bottom: 28px;
 }
 
-.mdm-ui-error-record {
-  display: flex;
+.mdm-ui-error-record, .mdm-ui-record.mdm-ui-error-record {
+  display: grid;
   position: relative;
+  container-type: inline-size;
   flex-direction: row;
+  grid-template-columns: max-content max-content 2fr;
 }
 .mdm-ui-error-record.mdm-ui-record > * {
-  padding-top: 0px;
-  padding-bottom: 2px;
+  padding: 0 0 2px 0;
 }
 
 .mdm-ui-error-record .timestamp {
@@ -27,24 +28,40 @@
   font-weight: 200;
   display: block;
   padding-right: 7px;
-  flex: 0 0 16em;
-  font-size: 86%;
 }
 .mdm-ui-error-record .label {
-  display: block;
-  padding-left: 14px;
-  padding-right: .5em;
+  display: none;
   font-weight: 200;
   text-align: right;
   color: #bb0000;
+  padding-right: 3px;
 }
 .mdm-ui-error-record .errorbody {
   display: block;
   font-weight: 500;
   color: #940000;
 }
-@container (max-width: 550px) {
-  .mdm-ui-error-record {
-    flex-direction: column;
+.mdm-ui-error-record > .mdm-ui-record-col-1, .mdm-ui-error-record > .mdm-ui-record-col-2, .mdm-ui-error-record > .mdm-ui-record-col-3, .mdm-ui-error-record > .mdm-ui-record-col-4, .mdm-ui-error-record > .mdm-ui-record-col-5 {
+  grid-column: 1/-1;
+}
+
+@container (min-width: 550px) {
+  .mdm-ui-error-record > .mdm-ui-record-col-1 {
+    grid-column: 1;
+  }
+  .mdm-ui-error-record > .mdm-ui-record-col-2 {
+    grid-column: 2;
+  }
+  .mdm-ui-error-record > .mdm-ui-record-col-3 {
+    grid-column: 3;
+  }
+  .mdm-ui-error-record > .mdm-ui-record-col-4 {
+    grid-column: 4;
+  }
+  .mdm-ui-error-record > .mdm-ui-record-col-5 {
+    grid-column: 5;
+  }
+  .mdm-ui-error-record .label {
+    display: block;
   }
 }

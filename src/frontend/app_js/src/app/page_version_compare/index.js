@@ -204,8 +204,7 @@ const View = {
         error.value = '';
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}"`);
+        props.repoActions.logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}": ${e}`);
         throw e;
       }
     };

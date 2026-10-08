@@ -67,8 +67,7 @@ const Record = {
 
       } catch(e) {
         if( e instanceof Error ) {
-          props.repoActions.logError(e);
-          props.repoActions.logError(`Failed to navigate to page: history-file-view/${props?.hash}`);
+          props.repoActions.logError(`Failed to navigate to page: history-file-view/${props?.hash}: ${e}`);
           error.value = e;
           fileViewLinkBusy.value = false;
           throw e;
@@ -117,8 +116,7 @@ const Record = {
         fileDownloadLinkBusy.value = false;
 
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError(`Failed fetching file for hash "${props.hash}", path "${props.filepath}"`);
+        props.repoActions.logError(`Failed fetching file for hash "${props.hash}", path "${props.filepath}": ${e}`);
         error.value = e;
         fileDownloadLinkBusy.value = false;
         throw e;

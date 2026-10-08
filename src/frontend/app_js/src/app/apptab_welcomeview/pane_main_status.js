@@ -51,11 +51,11 @@ const WelcomeUncommittedChangesView = {
   template: `
 <div class="mdm-git-gui-welcomeview-uncommittedchanges">
   <div class="error" style="color: #900; font-weight: 500;">{{ error }}</div>
-  <p>You have <template v-if="repoStatus.status.length>0">uncommitted changes ({{ repoStatus.status.length }} files)</template><template v-else>no uncommitted changes</template>.</p>
+  <p>You have <template v-if="repoStatus?.statusData?.status.length>0">uncommitted changes ({{ repoStatus?.statusData?.status.length }} files)</template><template v-else>no uncommitted changes</template>.</p>
   <p>Before you commit your changes, you need to choose which changes to include. Selected changes are placed in the staging area. You can then commit the staged changes to save them in the history.</p>
-  <p>You currently have <a v-if="repoStatus.status.filter(f=>f.index!=='.').length>0" href="#!" @click.prevent="popupListStaged" class="mdm-git-gui-action mdm-link mdm-git-gui-action-popup-list-index">{{ repoStatus.status.filter(f=>f.index!=='.').length }} staged files</a><span v-else>{{ repoStatus.status.filter(f=>f.index!=='.').length }} staged files</span> and <a v-if="repoStatus.status.filter(f=>f.worktree!=='.').length>0" href="#!" @click.prevent="popupListChangedInWorktree" class="mdm-git-gui-action mdm-link mdm-git-gui-action-popup-list-worktree">{{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</a><span v-else>{{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</span>.</p>
-  <p v-if="repoStatus.status.filter(f=>f.worktree!=='.').length>0">Stage <a href="#!" @click.prevent="doStageAll" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-stage mdm-git-gui-action-state-all">all {{ repoStatus.status.filter(f=>f.worktree!=='.').length }} changed files</a> or stage <a href="#!" @click.prevent="doStageSelected" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-stage mdm-git-gui-action-state-selected">selected files</a>.</p>
-  <p v-if="repoStatus.status.filter(f=>f.index!=='.').length>0"><a href="#!" @click.prevent="doCommit" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-commit">Commit</a> all changes in {{ repoStatus.status.filter(f=>f.index!=='.').length }} files that are now in staging area and create a new snapshot in history.</p>
+  <p>You currently have <a v-if="repoStatus?.statusData?.status.filter(f=>f.index!=='.').length>0" href="#!" @click.prevent="popupListStaged" class="mdm-git-gui-action mdm-link mdm-git-gui-action-popup-list-index">{{ repoStatus?.statusData?.status.filter(f=>f.index!=='.').length }} staged files</a><span v-else>{{ repoStatus?.statusData?.status.filter(f=>f.index!=='.').length }} staged files</span> and <a v-if="repoStatus?.statusData?.status.filter(f=>f.worktree!=='.').length>0" href="#!" @click.prevent="popupListChangedInWorktree" class="mdm-git-gui-action mdm-link mdm-git-gui-action-popup-list-worktree">{{ repoStatus?.statusData?.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</a><span v-else>{{ repoStatus?.statusData?.status.filter(f=>f.worktree!=='.').length }} changed files not added to staging area</span>.</p>
+  <p v-if="repoStatus?.statusData?.status.filter(f=>f.worktree!=='.').length>0">Stage <a href="#!" @click.prevent="doStageAll" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-stage mdm-git-gui-action-state-all">all {{ repoStatus?.statusData?.status.filter(f=>f.worktree!=='.').length }} changed files</a> or stage <a href="#!" @click.prevent="doStageSelected" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-stage mdm-git-gui-action-state-selected">selected files</a>.</p>
+  <p v-if="repoStatus?.statusData?.status.filter(f=>f.index!=='.').length>0"><a href="#!" @click.prevent="doCommit" class="mdm-git-gui-action mdm-link-inline-btn mdm-git-gui-action-commit">Commit</a> all changes in {{ repoStatus?.statusData?.status.filter(f=>f.index!=='.').length }} files that are now in staging area and create a new snapshot in history.</p>
 </div>
 `,
   setup(props) {
@@ -64,8 +64,8 @@ const WelcomeUncommittedChangesView = {
 
     // xy="M.", parsed as "index"="M" (modified), "worktree"="." (up to date) - means that file was changed, since last commit, but changes are staged.
     // xy=".M", parsed as "index"="." and "worktree"="M" - means file is edited in worktree but the changed is not staged
-    // to get files in index (staging area), do    props.repoStatus.status.filter(f=>f.index!=='.')
-    // to get changed files in worktree, do        props.repoStatus.status.filter(f=>f.worktree!=='.')
+    // to get files in index (staging area), do    props.repoStatus?.statusData?.status.filter(f=>f.index!=='.')
+    // to get changed files in worktree, do        props.repoStatus?.statusData?.status.filter(f=>f.worktree!=='.')
 
     const doStageAll = async () => {
       try {
@@ -87,8 +87,7 @@ const WelcomeUncommittedChangesView = {
         }
         return false;
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Stage all: failed retrieving data');
+        props.repoActions.logError(`Stage all: failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -100,7 +99,7 @@ const WelcomeUncommittedChangesView = {
         try {
           const filesToAdd = await props.repoActions.createModal(h(WindowChooseFilesToHaveStaged,{
               ...props,
-              records: props.repoStatus.status.filter(f=>f.worktree!=='.'),
+              records: props.repoStatus?.statusData?.status.filter(f=>f.worktree!=='.'),
             }));
           const jobData = await props.repoActions.executeGitCommand(['git','add',...filesToAdd]);
           try {
@@ -125,8 +124,7 @@ const WelcomeUncommittedChangesView = {
             return false;
         }
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Stage selected: failed retrieving data');
+        props.repoActions.logError(`Stage selected: failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -162,8 +160,7 @@ const WelcomeUncommittedChangesView = {
             return false;
         }
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Commit: failed retrieving data');
+        props.repoActions.logError(`Commit: failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -174,13 +171,13 @@ const WelcomeUncommittedChangesView = {
         error.value = null;
         // xy="M.", parsed as "index"="M" (modified), "worktree"="." (up to date) - means that file was changed, since last commit, but changes are staged.
         // xy=".M", parsed as "index"="." and "worktree"="M" - means file is edited in worktree but the changed is not staged
-        // to get files in index (staging area), do    props.repoStatus.status.filter(f=>f.index!=='.')
-        // to get changed files in worktree, do        props.repoStatus.status.filter(f=>f.worktree!=='.')
+        // to get files in index (staging area), do    props.repoStatus?.statusData?.status.filter(f=>f.index!=='.')
+        // to get changed files in worktree, do        props.repoStatus?.statusData?.status.filter(f=>f.worktree!=='.')
         try {
           await props.repoActions.createModal(h(WindowListRecordsFromGitStatus,{
             ...props,
             label: 'Files with changes not added to staging area',
-            records: props.repoStatus.status.filter(f=>f.worktree!=='.'),
+            records: props.repoStatus?.statusData?.status.filter(f=>f.worktree!=='.'),
             diffLeft: 'HEAD',
             diffRight: 'worktree',
           }));
@@ -192,8 +189,7 @@ const WelcomeUncommittedChangesView = {
         }
         return false;
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('List changed in worktree: failed retrieving data');
+        props.repoActions.logError(`List changed in worktree: failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -204,13 +200,13 @@ const WelcomeUncommittedChangesView = {
         error.value = null;
         // xy="M.", parsed as "index"="M" (modified), "worktree"="." (up to date) - means that file was changed, since last commit, but changes are staged.
         // xy=".M", parsed as "index"="." and "worktree"="M" - means file is edited in worktree but the changed is not staged
-        // to get files in index (staging area), do    props.repoStatus.status.filter(f=>f.index!=='.')
-        // to get changed files in worktree, do        props.repoStatus.status.filter(f=>f.worktree!=='.')
+        // to get files in index (staging area), do    props.repoStatus?.statusData?.status.filter(f=>f.index!=='.')
+        // to get changed files in worktree, do        props.repoStatus?.statusData?.status.filter(f=>f.worktree!=='.')
         try {
           await props.repoActions.createModal(h(WindowListRecordsFromGitStatus,{
             ...props,
             label: 'Files in staging area. You can then commit the staged changes and have them saved in the history.',
-            records: props.repoStatus.status.filter(f=>f.index!=='.'),
+            records: props.repoStatus?.statusData?.status.filter(f=>f.index!=='.'),
             diffLeft: 'HEAD',
             diffRight: 'index',
           }));
@@ -222,8 +218,7 @@ const WelcomeUncommittedChangesView = {
         }
         return false;
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('List staged: failed retrieving data');
+        props.repoActions.logError(`List staged: failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -259,9 +254,8 @@ const WelcomeView = {
   setup(props) {
 
     const detectCurrentRepoState = () => {
-      const gitStatusRecords = props.repoStatus.status;
-      if( Array.isArray(gitStatusRecords) ) {
-        if( gitStatusRecords.length>0 )
+      if( Array.isArray(props.repoStatus?.statusData?.status) ) {
+        if( props.repoStatus?.statusData?.status.length>0 )
           return 'uncommittedchanges';
         else
           return 'uptodate';
@@ -273,7 +267,7 @@ const WelcomeView = {
 
     onMounted(async () => {
       await Promise.all([
-        // updateSomething(),
+        props.repoActions.getStatus(),
       ])
     });
 

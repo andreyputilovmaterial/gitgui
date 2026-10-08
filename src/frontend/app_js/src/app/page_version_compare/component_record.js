@@ -182,8 +182,7 @@ const Record = {
         return await getContentsFromBlob(props.old_oid,props.old_mode,props.old_path||props.path);
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when preparing diff results');
+        props.repoActions.logError(`Failed when preparing diff results: ${e}`);
         throw e;
       } finally {
         isBusy.value = false;
@@ -197,8 +196,7 @@ const Record = {
         return await getContentsFromBlob(props.new_oid,props.new_mode,props.new_path||props.path);
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when preparing diff results');
+        props.repoActions.logError(`Failed when preparing diff results: ${e}`);
         throw e;
       } finally {
         isBusy.value = false;

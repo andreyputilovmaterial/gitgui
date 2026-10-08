@@ -123,17 +123,17 @@ const Records = {
         const pipeJobData = await props.repoActions.attachToRunningCommand(pipeJobId,{parentJobId:jobData.job_id});
         await jobData.promise;
         if( (jobData.exit_code!==0) || (!!jobData.stderr) ) {
-          error.value = `git archive: failed with exit_code ${jobData.exit_code}: ${jobData.stderr}`;
-          props.repoActions.logError('"Restore files" failed');
-          props.repoActions.logError(error.value);
+          const errMsg = `git archive: failed with exit_code ${jobData.exit_code}: ${jobData.stderr}`;
+          props.repoActions.logError(`"Restore files" failed: ${errMsg}`);
+          error.value = errMsg;
           isBusy.value = false;
           return;
         }
         await pipeJobData.promise;
         if( (pipeJobData.exit_code!==0) || (!!pipeJobData.stderr) ) {
-          error.value = `tar: failed with exit_code ${pipeJobData.exit_code}: ${pipeJobData.stderr}`;
-          props.repoActions.logError('"Restore files" failed');
-          props.repoActions.logError(error.value);
+          const errMsg = `tar: failed with exit_code ${pipeJobData.exit_code}: ${pipeJobData.stderr}`;
+          props.repoActions.logError(`"Restore files" failed: ${errMsg}`);
+          error.value = errMsg;
           isBusy.value = false;
           return;
         }

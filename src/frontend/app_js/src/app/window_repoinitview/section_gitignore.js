@@ -33,7 +33,7 @@ setup(props) {
 
   const isBusy = ref(false)
   const formFields = reactive({
-    gitignore: props.repoStatus.gitignore,
+    gitignore: props.repoStatus?.gitignoreData?.gitignore,
   })
 
   const handleSubmit = async () => {
@@ -59,7 +59,7 @@ setup(props) {
    };
 
    // To watch a deeply nested property passed via props, you should use a getter function returning the specific field you are interested in, combined with the { deep: true } option if you want to detect changes inside that nested structure.
-   watch(() => props.repoStatus.gitignore, () => {
+   watch(() => props.repoStatus?.gitignoreData?.gitignore, () => {
      formFields.gitignore = props.repoStatus.gitignore;
    })
 

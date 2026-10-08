@@ -8,6 +8,7 @@ import PackRecord from './component_record.js';
 import StatisticsPane from './component_statistics_pane.js';
 
 import './style.css';
+import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
 
 
 
@@ -24,10 +25,10 @@ const View = {
     <form @submit.prevent="handleGitGC" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
       <div class="error">{{ error }}</div>
       <div class="error">{{ validationMessage }}</div>
-      <template v-if="!repoStatus?.history && !error">
+      <template v-if="!repoStatus?.historyData?.history && !error">
         Querying data, please wait...
       </template>
-      <template v-else-if="!!repoStatus?.history">
+      <template v-else-if="!!repoStatus?.historyData?.history">
         <div class="top-row mdmreport-banner">
           <fieldset class="mdmreport-controls">
             <component-loader-spinner v-if="isBusy" />
@@ -44,7 +45,7 @@ const View = {
         </div>
       </template>
     </form>
-    <template v-if="!!repoStatus?.history">
+    <template v-if="!!repoStatus?.historyData?.history">
       <div v-if="!gitPackCompressionIsReady" class="note">Please hit the button above to see packed files.<br /><div class="footnote"></div></div>
       <div v-else class="mdm-git-gui-verifypack-inner">
         <div v-if="!allIsReady" class="note">
@@ -184,13 +185,13 @@ const View = {
     const historyIsReady = ref(undefined);
     const historyIsReadyPromise = new Promise(resolve => {
       const checkHistoryIsReady = () => {
-        const value = !!props.repoStatus?.history;
+        const value = !!props.repoStatus?.historyData?.history;
         if(value) {
           historyIsReady.value = true;
           resolve();
         }
       }
-      watch(()=>props.repoStatus?.history,checkHistoryIsReady);
+      watch(()=>props.repoStatus?.historyData?.history,checkHistoryIsReady);
       checkHistoryIsReady();
     });
 
@@ -227,22 +228,23 @@ const View = {
         isBusy.value = false;
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when running git gc');
+        props.repoActions.logError(`Failed when running git gc: ${e}`);
         throw e;
       }
     };
 
     const initGetPackFiles = async () => {
       try {
-        const retrievedPackFiles = await props.repoActions.fetchWrapper( 'GET', '/functionality/git-ls-pack-files', undefined );
+        const retrieveHttpResponse = await fetch( '/functionality/git-ls-pack-files', { method: 'GET', } );
+        if( !retrieveHttpResponse.ok )
+          throw new Error( await makeFetchResponseErrorMessage(retrieveHttpResponse) );
+        const retrievedPackFiles = await retrieveHttpResponse.json();
         packFiles.value = retrievedPackFiles;
         // const packFileFullPath = ref(`${props.repoStatus?.config?.git_directory.replace(/[\\/]+$/, '')}/${`${props.packFile}`.replace(/^[\\/]+/, '')}`);
         // const outputs = ref(undefined);
         return retrievedPackFiles;
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError('Git Pack View: initGetPackFiles: Failed retrieving data');
+        props.repoActions.logError(`Git Pack View: initGetPackFiles: Failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -305,8 +307,7 @@ const View = {
         packPhysicalObjects.value = retrievedPackPhysicalObjects;
         return retrievedPackPhysicalObjects;
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError('Git Pack View: initGetPackPhysicalObjects: Failed retrieving data');
+        props.repoActions.logError(`Git Pack View: initGetPackPhysicalObjects: Failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -330,7 +331,7 @@ const View = {
       }
       try {
         const retrievedPackObjects = {};
-        for( const { hash, author, message, timestamp } of props.repoStatus.history) {
+        for( const { hash, author, message, timestamp } of props.repoStatus?.historyData?.history) {
           // 0: Object {
           //   author: The-city-not-present
           //   hash: b4c0edf2997fe2bfef7da19b25b4423635d10323
@@ -365,8 +366,7 @@ const View = {
         }
         return retrievedPackObjects;
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError('Git Pack View: initParseHistory: Failed retrieving data');
+        props.repoActions.logError(`Git Pack View: initParseHistory: Failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -398,8 +398,7 @@ const View = {
         }
         packObjects.value = Object.entries(objs).map(([hash,o])=>({...o,hash})).sort((a,b)=>a.order-b.order);
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(`Git Pack View: Failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }
@@ -408,7 +407,6 @@ const View = {
     onMounted(async () => {
       await Promise.all([
         props.repoActions.updateHistory(),
-        props.repoActions.configCheckUpdates(),
         init(),
       ])
     });
@@ -458,8 +456,7 @@ const View = {
         }
         return result;
       } catch(e) {
-        props.repoActions.logError(e); // that would be called as a repetition - already logged from called funtion - but anyway it's better to have RED ERRORS printed with duplicates rather than missing a failed activity and have errors silent
-        props.repoActions.logError('Git Pack View: Failed retrieving data');
+        props.repoActions.logError(`Git Pack View: Failed retrieving data: ${e}`);
         error.value = e;
         throw e;
       }

@@ -28,9 +28,10 @@ import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js
 // }
 
 
-const makeFunctions = ({repoActions}) => {
+const useCatFile = (getAppSetupExports) => {
 
     async function catFileBinary(resourceSpec,filename=null) {
+        const {repoActions} = getAppSetupExports();
         filename = filename || `${resourceSpec}`.replace(/^\w+:/ig,'').replace(/\/\\/ig,'/').split('/').pop();
         const isEmpty = !resourceSpec;
         const isFromWorkTree = !isEmpty && /^worktree:.*/.test(resourceSpec);
@@ -59,6 +60,7 @@ const makeFunctions = ({repoActions}) => {
 
 
     async function catFileTextconvRawtext(resourceSpec,filename=null) {
+        const {repoActions} = getAppSetupExports();
         const isEmpty = !resourceSpec;
         const isFromWorkTree = !isEmpty && /^worktree:.*/.test(resourceSpec);
         const isBlobEmpty = isEmpty || ( !isFromWorkTree && /^0+$/.test(resourceSpec) );
@@ -116,18 +118,21 @@ const makeFunctions = ({repoActions}) => {
     }
 
     async function catFileTextconv(resourceSpec,filename) {
+        const {repoActions} = getAppSetupExports();
         const textconvOutputs = await catFileTextconvRawtext(resourceSpec,filename);
         const content = await repoActions.textconvParseHeaders(textconvOutputs);
         return content;
     }
 
     return {
-        catFileBinary,
-        catFileTextconv,
+        repoActions: {
+            catFileBinary,
+            catFileTextconv,
+        },
     };
 
 };
 
-export default makeFunctions;
+export default useCatFile;
 
 

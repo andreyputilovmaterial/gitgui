@@ -8,6 +8,7 @@ from datetime import datetime
 from importlib import resources
 from dataclasses import dataclass
 from pathlib import Path
+from bs4 import BeautifulSoup
 
 
 
@@ -18,17 +19,14 @@ from pathlib import Path
 
 if __name__ == '__main__':
     # run as a program
-    from src.helper_utilities import sanitize
     from src.frontend.template.minify_assets import minify_js, minify_css
     from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 elif '.' in __name__:
     # package
-    from .src.helper_utilities import sanitize
     from .src.frontend.template.minify_assets import minify_js, minify_css
     from .src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 else:
     # included with no parent package
-    from src.helper_utilities import sanitize
     from src.frontend.template.minify_assets import minify_js, minify_css
     from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 
@@ -43,6 +41,36 @@ STDOUT_COLOR_GREEN = "\033[32m"
 # def wrap_argparse_coloroutputs(Classname):
 #     class Arg(Classname):
 #
+
+
+
+
+
+def sanitize(input):
+    return f'{input}'.replace(r'"""',r'\"""')
+
+def sanitize_classname(s):
+    def err(i):
+        raise Exception(f'Not valid class name: {i}')
+    s = f'{s}'.split()
+    return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
+
+def wrap_div(classname, txt) -> str:
+    soup = BeautifulSoup("<div></div>", "html.parser")
+    div = soup.div
+
+    fragment = BeautifulSoup(txt, "html.parser")
+
+    # IMPORTANT: iterate over a copy
+    for child in list(fragment.contents):
+        div.append(child)
+
+    div["class"] = sanitize_classname(classname).split()
+
+    return str(div)
+
+
+
 
 
 @dataclass

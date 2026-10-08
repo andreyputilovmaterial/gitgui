@@ -25,13 +25,13 @@ const View = {
   <form v-if="!isCompactView" @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
     <div class="error">{{ error }}</div>
     <div class="error">{{ validationMessage }}</div>
-    <template v-if="!repoStatus?.history && !error">
+    <template v-if="!repoStatus?.historyData?.history && !error">
       Querying data, please wait...
     </template>
-    <template v-else-if="!!repoStatus?.history">
+    <template v-else-if="!!repoStatus?.historyData?.history">
       <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
       <history-records
-        :history="repoStatus?.history"
+        :history="repoStatus?.historyData?.history"
         :formVerCompareFields="formVerCompareFields"
         :repoStatus="repoStatus"
         :repoActions="repoActions"
@@ -40,7 +40,7 @@ const View = {
   </form>
   <history-records-compact
     v-else
-    :history="repoStatus?.history"
+    :history="repoStatus?.historyData?.history"
     :formVerCompareFields="formVerCompareFields"
     :repoStatus="repoStatus"
     :repoActions="repoActions"
@@ -84,8 +84,7 @@ const View = {
         await navigateVersionComparePage();
       } catch (err) {
         error.value = err;
-        props.repoActions.logError(err);
-        props.repoActions.logError('Failed to call for version compare window');
+        props.repoActions.logError(`Failed to call for version compare window: ${err}`);
         console.error('Failed to call for versioncompare window',err)
         // Promise.resolve().then(()=>{throw err;});
         return props.reject(err)

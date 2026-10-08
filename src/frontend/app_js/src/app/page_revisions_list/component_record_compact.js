@@ -99,7 +99,7 @@ const Record = {
   },
   setup(props) {
 
-    const isHEAD = ref(props.repoStatus.HEAD&&(props.repoStatus.HEAD==props.hash));
+    const isHEAD = ref(props.repoStatus?.historyData?.head&&(props.repoStatus?.historyData?.head==props.hash));
     const isWorktree = ref(props.hash==='worktree');
     const isIndex = ref(props.hash==='index');
 
@@ -108,8 +108,7 @@ const Record = {
         await props.repoActions.createPage(h(PageFilesList,{...props,hash:props.hash}));
       } catch(e) {
         if( e instanceof Error ) {
-          props.repoActions.logError(e);
-          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.hash}`);
+          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.hash}: ${e}`);
           throw e;
         }
       }

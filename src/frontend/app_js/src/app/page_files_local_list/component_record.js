@@ -101,8 +101,7 @@ const Record = {
 
       } catch(e) {
         if( e instanceof Error ) {
-          props.repoActions.logError(e);
-          props.repoActions.logError(`Failed to navigate to file viewer page: ${props?.filepath}`);
+          props.repoActions.logError(`Failed to navigate to file viewer page: ${props?.filepath}: ${e}`);
           error.value = e;
           fileViewLinkBusy.value = false;
           throw e;
@@ -125,8 +124,7 @@ const Record = {
         return false;
       } catch(e) {
         if( e instanceof Error ) {
-          props.repoActions.logError(e);
-          props.repoActions.logError(`Failed to navigate to directory: ${props?.filepath}`);
+          props.repoActions.logError(`Failed to navigate to directory: ${props?.filepath}: ${e}`);
           error.value = e;
           // fileNavigateBusy.value = false;
           throw e;

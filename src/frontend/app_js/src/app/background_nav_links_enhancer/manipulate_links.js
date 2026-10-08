@@ -1,4 +1,4 @@
-import { defineComponent, h, markRaw, onMounted } from 'vue';
+import { defineComponent, h, onMounted, onUnmounted, } from 'vue';
 
 
 import Window from './window_component';
@@ -47,7 +47,14 @@ const LinksSiteComponent = {
         return function( event ) {
           event.preventDefault();
           ( async function() {
-            await props.repoActions.createModal( MyWindowSpecificToThisUrl )
+            try {
+              await props.repoActions.createModal( MyWindowSpecificToThisUrl );
+            } catch(e) {
+              if( e instanceof Error ) {
+                props.repoActions.logError(`error when calling modal on opened nav link: ${e}`);
+                throw e;
+              }
+            }
           } )();
           return false;
         }
@@ -57,8 +64,11 @@ const LinksSiteComponent = {
         try {
 
           const url = readUrl( linkEl );
-          if( safetyUrlCheck( url ) )
-            linkEl.addEventListener( 'click', createLinkHandler( url ) );
+          if( safetyUrlCheck( url ) ) {
+            const handler = createLinkHandler( url );
+            linkEl.addEventListener( 'click', handler );
+            onUnmounted( () => { linkEl.removeEventListener( 'click', handler ); } );
+          }
 
         } catch( e ) {
           try {
@@ -71,14 +81,7 @@ const LinksSiteComponent = {
     };
 
 
-    onMounted( async () => {
-      await Promise.all( [
-        ( function() {
-          init();
-          return null;
-        } )(),
-      ] )
-    } );
+    onMounted( init );
 
   },
 }

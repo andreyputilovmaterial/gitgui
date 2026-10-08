@@ -1,6 +1,6 @@
 
 
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, } from 'vue';
 
 import safetyUrlCheck from './safetycheck';
 
@@ -25,7 +25,6 @@ const Window = {
 </div>
 `,
   setup(props) {
-    // const { ref, reactive, onMounted } = Vue
 
     const isBusy = ref(false)
     const content = ref('Content is loading, please wait...');
@@ -38,8 +37,7 @@ const Window = {
          isBusy.value = true;
          return props.resolve('Yes!')
        } catch (err) {
-         props.repoActions.logError(err);
-         props.repoActions.logError('Failed submitting ajax page view form');
+         props.repoActions.logError(`Failed submitting ajax page view form: ${e}`);
          console.error('Failed submitting ajax page view form',err);
          isBusy.value = false;
          return props.reject(err);
@@ -67,11 +65,7 @@ const Window = {
       throw e;
     }
   }
-  onMounted(async () => {
-    await Promise.all([
-      fetchContents(),
-    ])
-  })
+  onMounted(fetchContents)
 
   return { formFields, handleSubmit, isBusy, content, error, lastFetchCounter }
 }

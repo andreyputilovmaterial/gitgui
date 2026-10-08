@@ -8,7 +8,7 @@ const View = {
   ],
   template: `
 <div class="tygydyk">
-  <p>Hey how's it going?</p>
+  <p>Select files to stage... TBD...</p>
 </div>
 `,
   setup() {

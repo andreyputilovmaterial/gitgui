@@ -1,8 +1,7 @@
 
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, } from 'vue';
 
 
-import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functions.js';
 
 
 
@@ -359,8 +358,7 @@ const View = {
         return txtLeft;
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when fetching contents for left file');
+        props.repoActions.logError(`Failed when fetching contents for left file: ${e}`);
         throw e;
       }
     };
@@ -375,8 +373,7 @@ const View = {
         return txtRight;
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when fetching contents for reft file');
+        props.repoActions.logError(`Failed when fetching contents for reft file: ${e}`);
         throw e;
       }
     };
@@ -500,8 +497,7 @@ const View = {
         linesRef.value = lines;
       } catch(e) {
         error.value = e;
-        props.repoActions.logError(e);
-        props.repoActions.logError('Failed when preparing diff results');
+        props.repoActions.logError(`Failed when preparing diff results: ${e}`);
         throw e;
       }
     };

@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted, computed, reactive, watch } from 'vue';
+import { ref, onMounted, computed, reactive, watch, } from 'vue';
 
 
 
@@ -105,7 +105,7 @@ const View = {
   template: `
 <div :class="['mdm-git-gui-fileslistview',...(isCompactView?['mdm-git-gui-fileslistview-compact']:[])]">
   <p class="root-page-description">View files in <component-format-local-file-path :path="pathCurrent" /></p>
-  <template v-if="!repoStatus.status">
+  <template v-if="!repoStatus?.statusData?.status">
     Querying data, please wait...
   </template>
   <template v-else>
@@ -154,8 +154,7 @@ const View = {
         history.push(newPath);
         pathCurrent.value = newPath;
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError(`failed navigating to path: ${newPath}`);
+        props.repoActions.logError(`failed navigating to path: ${newPath}: ${e}`);
         error.value = e;
         throw e; 
       }
@@ -168,8 +167,7 @@ const View = {
         const prevVal = history[history.length-1];
         pathCurrent.value = prevVal;
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError(`failed navigating to path: ${newPath}`);
+        props.repoActions.logError(`failed navigating to path: ${newPath}: ${e}`);
         error.value = e;
         throw e; 
       }
@@ -214,8 +212,7 @@ const View = {
           createdAt: record.created_at ? new Date(record.created_at) : null,
         }));
       } catch(e) {
-        props.repoActions.logError(e);
-        props.repoActions.logError(`Failed fetching file list for path "${props.path}"`);
+        props.repoActions.logError(`Failed fetching file list for path "${props.path}": ${e}`);
         error.value = e;
         throw e;
       }

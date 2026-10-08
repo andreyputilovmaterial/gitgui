@@ -18,7 +18,6 @@ const WizardWalkOverGitignore = {
     'reject',
     'repoStatus',
     'repoActions',
-    'config',
   ],
   template: `
 <div class="mdm-git-gui-repoinit-wizard-confirm-paths-inner">
@@ -62,8 +61,7 @@ const WizardWalkOverGitignore = {
          validationMessage.value = '';
          props.resolve('git init'); // message does not matter
        } catch (err) {
-         props.repoActions.logError(err);
-         props.repoActions.logError('Failed submitting git init form');
+         props.repoActions.logError(`Failed submitting git init form: ${err}`);
          console.error('Failed submitting git init form',err)
          // Promise.resolve().then(()=>{throw err;});
          return props.reject(err)

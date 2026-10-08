@@ -1,6 +1,6 @@
 
 
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, } from 'vue';
 
 
 
@@ -43,7 +43,7 @@ const Record = {
   </span>
   <span class="link-show-diff mdm-ui-record-col-linkshowdiff mdm-ui-record-col-4">
     <template v-if="!!diffLeft&&!!diffRight">
-      <a href="#!" #click.prevent="undefined" class="link-show-diff mdm-link">(show changes)</a>
+      <a href="#!" @click.prevent="()=>undefined" class="link-show-diff mdm-link">(show changes)</a>
     </template>
   </span>
 </div>

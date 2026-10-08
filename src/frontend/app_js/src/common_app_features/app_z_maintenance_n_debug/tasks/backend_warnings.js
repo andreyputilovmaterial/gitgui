@@ -10,7 +10,6 @@ function useBackendWarnings(getAppSetupExports) {
         ()=>getAppSetupExports().repoStatus?.config?.warnings,
         warnings => {
             warnings = warnings || [];
-            console.log('[DEBUG-warnings]: received',warnings); // TODO: debug
             const {repoStatus,repoActions,...exports} = getAppSetupExports();
             // const config = repoStatus?.config;
             const newWarnings = warnings.filter(message=>!appBackendWarnings.includes(message));

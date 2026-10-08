@@ -153,7 +153,8 @@ function useGitStatus(getAppSetupExports) {
         }
     }
 
-    async function checkFileStatus(filepath) {
+    // must be sync - we are calling it from computed()
+    function checkFileStatus(filepath) {
         const {repoActions,repoStatus,...exports} = getAppSetupExports();
         for(const record of statusData.status) {
           if( record.path===filepath ) {
@@ -169,6 +170,7 @@ function useGitStatus(getAppSetupExports) {
         return null;
     }
 
+    // must be sync - we are calling it from computed()
     function checkFolderStatus(filepath) {
 
         const {repoActions,repoStatus,...exports} = getAppSetupExports();
@@ -226,7 +228,8 @@ function useGitStatus(getAppSetupExports) {
         }
     }
 
-    async function checkFileTracked(filepath) {
+    // must be sync - we are calling it from computed()
+    function checkFileTracked(filepath) {
 
         const {repoActions,repoStatus,...exports} = getAppSetupExports();
 
@@ -240,7 +243,8 @@ function useGitStatus(getAppSetupExports) {
         return false;
     }
 
-    async function checkFolderTracked(filepath) {
+    // must be sync - we are calling it from computed()
+    function checkFolderTracked(filepath) {
 
         const {repoActions,repoStatus,...exports} = getAppSetupExports();
         

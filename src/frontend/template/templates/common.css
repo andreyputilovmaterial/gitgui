@@ -1,105 +1,757 @@
+/* =====================================================================
+   common.css — global, reusable styles (the "skin")
+
+   Load order:
+     1. normalize.css
+     2. common.css            (this file)
+     3. project-specific.css
+     4. app.css + app_form_control_adjustments.css
+     5. per-component styles
+
+   Modular spacing scale (base unit = 30px):
+     2x    = 60px   (--mdm-space-2x)
+     1.5x  = 45px   (--mdm-space-1-5x)
+     1x    = 30px   (--mdm-space)
+     0.5x  = 15px   (--mdm-space-0-5x)
+     0.25x = 7.5px  (--mdm-space-0-25x)
+
+   Naming:
+     mdm-*        generic reusable domains (buttons, links, tables, utilities)
+     mdmreport-*  the report feature domain (forms, banners, diff tables)
+     unprefixed   a few truly-global layout blocks (.container, .header, ...)
+   ===================================================================== */
+
+/* Modular scale + shared tokens */
+:root {
+    --mdm-space-2x: 60px;
+    --mdm-space-1-5x: 45px;
+    --mdm-space: 30px;
+    --mdm-space-0-5x: 15px;
+    --mdm-space-0-25x: 7.5px;
+
+    --mdm-border-color: #d0d0d0;
+    --mdm-border-radius: 4px;
+    --mdm-transition: 350ms ease;
+
+    --mdm-color-primary: #6670bb;
+    --mdm-color-confirm: #2c7d51;
+    --mdm-color-reject: #c0392b;
+    --mdm-color-muted: #666;
+    --mdm-color-error: #cc0000;
+}
+
+/* Base */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
 body {
     font-size: 14px;
-    Font-family: "Helvetica";
+    /* font-family is set in project-specific.css; normalize gives sans-serif */
 }
-* {
-    box-sizing: border-box;
+
+.clearfix::after,
+.mdm-u-clearfix::after {
+    content: "";
+    display: block;
+    clear: both;
 }
-.clearfix:after {
-   content: " "; /* Older browser do not support empty content */
-   visibility: hidden;
-   display: block;
-   height: 0;
-   clear: both;
-}
-.error {
-    color: #cc0000;
-    font-weight: 500;
-}
-.hidden {
-  display: none;
-}
+
+/* Layout */
 .container {
-    margin: 0 15px 0;
+    margin: 0 var(--mdm-space-0-5x);
 }
-@media all and (min-width: 1300px) {
-    .container {
-        margin: 0 auto 0;
-        width: 1200px;
-    }
+@media (min-width: 500px) {
+    .container { margin: 0 var(--mdm-space); }
 }
-@media all and (min-width: 1650px) {
-    .container {
-        margin: 0 auto 0;
-        width: 1500px;
-    }
+@media (min-width: 750px) {
+    .container { margin: 0 var(--mdm-space-1-5x); }
 }
-@media all and (min-width: 1800px) {
-    .container {
-        margin: 0 auto 0;
-        width: 1700px;
-    }
+@media (min-width: 1300px) {
+    .container { margin: 0 auto; width: 1200px; }
 }
+@media (min-width: 1650px) {
+    .container { margin: 0 auto; width: 1500px; }
+}
+@media (min-width: 1800px) {
+    .container { margin: 0 auto; width: 1700px; }
+}
+
+.header {
+    padding: var(--mdm-space-0-5x) 0;
+    border-bottom: 1px solid #eee;
+}
+.footer {
+    padding: var(--mdm-space-0-5x) 0;
+    border-top: 1px solid #eee;
+}
+.main {
+    padding: var(--mdm-space-0-5x) 0;
+}
+.wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+.section {
+    margin-bottom: var(--mdm-space);
+}
+
+/* Typography (general) */
 h1 {
     font-weight: 700;
     font-size: 32px;
     color: #333;
     margin: 0;
-    padding: 0px 0 30px;
+    padding: 0 0 var(--mdm-space);
 }
 h2 {
     font-weight: 700;
     font-size: 21px;
     color: #222;
     margin: 0;
-    padding: 22.5px 0 7.5px;
+    padding: var(--mdm-space-0-5x) 0 var(--mdm-space-0-25x);
 }
 h3 {
     font-weight: 700;
     font-size: 17px;
     color: #111;
     margin: 0;
-    padding: 22.5px 0 7.5px;
+    padding: var(--mdm-space-0-5x) 0 var(--mdm-space-0-25x);
 }
-ul, ol {
-  padding: 0 0 0 14px;
-  margin: 2px 0 14px;
-  list-style-type: "–  ";
+ul,
+ol {
+    padding: 0 0 0 var(--mdm-space-0-5x);
+    margin: var(--mdm-space-0-25x) 0 var(--mdm-space-0-5x);
+    list-style-type: "–  ";
 }
-p + ul, p + ol {
-  margin-top: -1em;
+p + ul,
+p + ol {
+    margin-top: -1em;
 }
-ul > li, ol > li {
-  padding: 2px 0;
+ul > li,
+ol > li {
+    padding: 2px 0;
 }
-table tr td {
-  padding: 7px;
-  vertical-align: top;
-}
-table tr td:first-child {
-  padding-left: 0;
-}
-table tr td:last-child {
-  padding-right: 0;
-}
-.header {
-    padding: 15px 0 15px;
-    border-bottom: 1px solid #eee;
-}
-.footer {
-    padding: 15px 0 15px;
-    border-top: 1px solid #eee;
-}
-.main {
-    padding: 15px 0 15px;
-}
-.wrapper {
-    width: 100%; max-width: 100%; overflow-x: auto;
-}
+
+/* Banner (callout box) */
 .mdmreport-banner {
-    display: block; position: relative; padding: 1em; margin: 0 0 1em; border: #ddd solid 1px;
+    display: block;
+    position: relative;
+    padding: var(--mdm-space-0-5x);
+    margin: 0 0 var(--mdm-space-0-5x);
+    border: 1px solid #ddd;
 }
+
+/* Links */
+.mdm-link {
+    outline: none;
+    color: var(--mdm-color-primary);
+    text-decoration: none;
+    transition: color var(--mdm-transition);
+}
+.mdm-link:hover {
+    color: #385;
+    text-decoration: underline;
+}
+
+/* a link that looks like plain surrounding text */
+.mdm-link-unstyled,
+.link-unstyled,
+.mdm-link-unstyled:link,
+.mdm-link-unstyled:visited,
+.link-unstyled:link,
+.link-unstyled:visited {
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    transition: color var(--mdm-transition);
+}
+.mdm-link-unstyled:hover,
+.link-unstyled:hover {
+    text-decoration: underline;
+}
+
+/* a link that stays underlined like ordinary body text */
+.mdm-link-underline {
+    color: inherit;
+    text-decoration: underline;
+    outline: none;
+    transition: color var(--mdm-transition);
+}
+
+/* Buttons */
+.mdm-btn {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+    margin: 0;
+    border: 1px solid var(--mdm-border-color);
+    border-radius: var(--mdm-border-radius);
+    background: #fff;
+    color: #333;
+    font: inherit;
+    line-height: 1.4;
+    padding: var(--mdm-space-0-25x) var(--mdm-space-0-5x);
+    text-decoration: none;
+    transition: all var(--mdm-transition);
+}
+.mdm-btn:hover,
+.mdm-btn:focus {
+    border-color: var(--mdm-color-primary);
+    color: var(--mdm-color-primary);
+    outline: none;
+}
+.mdm-btn:active {
+    background: #f2f2f2;
+}
+
+.mdm-btn-primary {
+    background: var(--mdm-color-primary);
+    border-color: var(--mdm-color-primary);
+    color: #fff;
+}
+.mdm-btn-primary:hover,
+.mdm-btn-primary:focus {
+    background: #5560a8;
+    border-color: #5560a8;
+    color: #fff;
+}
+
+.mdm-btn-secondary {
+    background: transparent;
+}
+
+.mdm-btn-confirm {
+    background: var(--mdm-color-confirm);
+    border-color: var(--mdm-color-confirm);
+    color: #fff;
+}
+.mdm-btn-confirm:hover,
+.mdm-btn-confirm:focus {
+    background: #1f5f3d;
+    border-color: #1f5f3d;
+    color: #fff;
+}
+
+.mdm-btn-reject {
+    background: var(--mdm-color-reject);
+    border-color: var(--mdm-color-reject);
+    color: #fff;
+}
+.mdm-btn-reject:hover,
+.mdm-btn-reject:focus {
+    background: #a32c22;
+    border-color: #a32c22;
+    color: #fff;
+}
+
+.mdm-btn-close {
+    background: transparent;
+    color: var(--mdm-color-muted);
+}
+
+.mdm-btn-large {
+    padding: var(--mdm-space-0-5x) var(--mdm-space);
+    font-size: 16px;
+}
+
+.mdm-btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* a button/input that looks like a plain text link */
+.mdm-btn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--mdm-color-primary);
+    font: inherit;
+    line-height: inherit;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+}
+.mdm-btn-link:hover {
+    color: #385;
+    text-decoration: underline;
+}
+
+/* a button/input that looks like plain surrounding text */
+.mdm-btn-unstyled {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: none;
+}
+.mdm-btn-unstyled:hover {
+    text-decoration: underline;
+}
+
+/* a compact inline link-button (kept for compatibility) */
+.mdm-link-inline-btn,
+.mdm-link-inline-btn:link,
+.mdm-link-inline-btn:visited {
+    display: inline-block;
+    padding: 2px var(--mdm-space-0-5x) 4px;
+    border: 1px solid currentColor;
+    border-radius: var(--mdm-border-radius);
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+    line-height: inherit;
+    cursor: pointer;
+    transition: all var(--mdm-transition);
+}
+.mdm-link-inline-btn:hover {
+    color: #111;
+}
+
+/* Form controls */
+/* .mdmreport-controls is a <form>, <fieldset> or <div> namespace that groups
+   controls into one returnable bundle. */
+.mdmreport-controls {
+    position: relative;
+}
+/* strip native chrome from a form/fieldset that is the namespace, or nested
+   inside one. A bare <div> keeps its own box (e.g. .mdmreport-banner). */
+.mdmreport-controls form,
+form.mdmreport-controls,
+.mdmreport-controls fieldset,
+fieldset.mdmreport-controls {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* A row of controls. Negative side margins cancel the children's side
+   padding, so the row's outer edges stay aligned with its container. */
+.mdmreport-controls-group {
+    display: block;
+    margin-left: -7.5px;   /* -(0.25x) */
+    margin-right: -7.5px;
+}
+.mdmreport-controls-group-nonegmargin,
+.mdmreport-controls-group.mdmreport-controls-group-nonegmargin {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Labels / legends sit inline with controls; their side padding is the gap
+   that the group's negative margins compensate for. */
+.mdmreport-controls legend,
+.mdmreport-controls label {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1.5;
+    padding: var(--mdm-space-0-25x);
+    border: 1px solid transparent;
+    transition: border-color var(--mdm-transition);
+}
+.mdmreport-controls label:hover {
+    border-color: #ddd;
+}
+
+/* Uniform look for every control — whether it wears .mdmreport-control or is
+   a bare element inside the namespace. Selects keep their native arrow. */
+.mdmreport-control,
+.mdmreport-controls input,
+.mdmreport-controls select,
+.mdmreport-controls textarea,
+.mdmreport-controls button {
+    box-sizing: border-box;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    padding: var(--mdm-space-0-25x) var(--mdm-space-0-5x);
+    border: 1px solid var(--mdm-border-color);
+    border-radius: var(--mdm-border-radius);
+    background: #fff;
+    color: #333;
+    font: inherit;
+    line-height: 1.4;
+    box-shadow: none;
+    outline: none;
+    transition: border-color var(--mdm-transition), box-shadow var(--mdm-transition);
+}
+.mdmreport-control,
+.mdmreport-controls input,
+.mdmreport-controls textarea,
+.mdmreport-controls button {
+    appearance: none;
+    -webkit-appearance: none;
+}
+.mdmreport-control:focus,
+.mdmreport-controls input:focus,
+.mdmreport-controls select:focus,
+.mdmreport-controls textarea:focus,
+.mdmreport-controls button:focus {
+    border-color: var(--mdm-color-primary);
+    box-shadow: 0 0 0 2px rgba(102, 112, 187, 0.2);
+}
+
+/* Inside a group, text-like controls expand to fill the row; bare action
+   buttons (submit / button / reset / checkbox / radio) stay inline. */
+.mdmreport-controls-group .mdmreport-control,
+.mdmreport-controls-group input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]),
+.mdmreport-controls-group select,
+.mdmreport-controls-group textarea {
+    display: block;
+    width: 100%;
+}
+
+.mdmreport-controls textarea {
+    resize: vertical;
+    min-height: var(--mdm-space-2x);
+}
+
+/* checkbox & radio — custom-drawn via ::before, kept compatible with the
+   app-level overrides in app_form_control_adjustments.css */
+.mdmreport-controls label input[type="checkbox"],
+.mdmreport-controls label input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-block;
+    width: 0;
+    margin: 0 0 0 22.5px;   /* box (15px) + gap (7.5px) */
+    padding: 0;
+    border: none;
+    position: relative;
+    vertical-align: middle;
+}
+.mdmreport-controls label input[type="checkbox"]::before,
+.mdmreport-controls label input[type="radio"]::before {
+    content: "";
+    display: block;
+    box-sizing: border-box;
+    position: absolute;
+    right: 100%;
+    transform: translateX(-7.5px);
+    width: var(--mdm-space-0-5x);
+    height: var(--mdm-space-0-5x);
+    background: #fff;
+    border: 1px solid var(--mdm-border-color);
+    text-align: center;
+    line-height: 13px;
+    color: #444;
+    font-weight: 600;
+    transition: all var(--mdm-transition);
+}
+.mdmreport-controls label input[type="radio"]::before {
+    border-radius: 50%;
+}
+.mdmreport-controls label input[type="checkbox"]:checked::before {
+    content: "\2713";      /* ✓ */
+    border-color: var(--mdm-color-primary);
+    color: var(--mdm-color-primary);
+}
+.mdmreport-controls label input[type="radio"]:checked::before {
+    content: "\25CF";      /* ● */
+    border-color: var(--mdm-color-primary);
+    color: var(--mdm-color-primary);
+    font-size: 70%;
+}
+
+/* disabled controls + busy overlay */
+.mdmreport-control[disabled],
+.mdmreport-controls [disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.mdmreport-controls.mdmreport-form-busy::before,
+.mdmreport-controls.disabled::before,
+.mdmreport-controls[disabled]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(222, 222, 222, 0.4);
+    z-index: 1;
+}
+
+/* Tables */
+/* Global default: a table with no classes is borderless and airy. */
+table tr td,
+table tr th {
+    padding: var(--mdm-space-0-25x);
+    vertical-align: top;
+    text-align: left;
+}
+table tr td:first-child,
+table tr th:first-child {
+    padding-left: 0;
+}
+table tr td:last-child,
+table tr th:last-child {
+    padding-right: 0;
+}
+
+/* Basic bordered table (thin, light-grey). */
+.mdm-table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid #e0e0e0;
+}
+.mdm-table th,
+.mdm-table td {
+    border: 1px solid #e0e0e0;
+    padding: var(--mdm-space-0-25x);
+    vertical-align: top;
+    text-align: left;
+}
+
+/* Explicit borderless table. */
+.mdm-table-noborder th,
+.mdm-table-noborder td {
+    border: none;
+    padding: var(--mdm-space-0-25x);
+    vertical-align: top;
+    text-align: left;
+}
+
+/* Report tables (mdmreport-*) */
+.mdmreport-section-wrapper {
+    font-size: 13px;
+}
+.mdmreport-table-wrapper {
+    overflow-x: scroll;
+}
+.mdmreport-table,
+.mdmreport-table tbody,
+.mdmreport-table thead,
+.mdmreport-table tr,
+.mdmreport-table td {
+    margin: 0;
+    padding: 0;
+    line-height: 16px;
+    border-collapse: collapse;
+    border-spacing: 1px;
+    border: 1px solid #ddd;
+}
+.mdmreport-table {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    display: block;
+}
+.mdmreport-table tr td {
+    vertical-align: top;
+}
+.mdmreport-section-wrapper .mdmreport-banner {
+    color: #555;
+}
+.mdmreport-section-wrapper .mdmreport-banner p {
+    margin: 0.1em 0;
+}
+.mdmreport-table .mdmreport-record {
+    position: relative;
+    background: #fff;
+    transition: all 200ms ease;
+}
+.mdmreport-table .mdmreport-record:hover {
+    background: #efefef;
+}
+.mdmreport-table .mdmreport-record td {
+    padding: 0.15em 0.35em;
+    min-width: 60px;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+/* first (header) row */
+.mdmreport-table .mdmreport-record:first-child td {
+    font-weight: 600;
+    padding-top: 0.85em;
+    padding-bottom: 0.85em;
+    border: 0.5px solid #666;
+    background: #e1e1e1;
+    border-bottom: 4px solid #217346;
+}
+.mdmreport-contentcell,
+.mdmreport-contentcell pre {
+    font-family: monospace, monospace;
+    font-size: 100%;
+    margin: 0;
+}
+.mdmreport-contentcell pre {
+    white-space: pre;
+    overflow-x: scroll;
+}
+.mdmreport-contentcell p {
+    margin: 0;
+}
+.mdmreport-contentcell-fullwidth {
+    width: 100%;
+    min-width: 100%;
+}
+.mdmreport-table-dummy .mdmreport-record .mdmreport-contentcell {
+    padding: var(--mdm-space-0-25x) var(--mdm-space-0-25x) var(--mdm-space-0-25x) var(--mdm-space-0-5x);
+}
+
+/* report table column widths */
+.mdmreportpage-type-MDDDiff .mdmreport-table td.mdmreport-colindex-0 {
+    padding: 0.25em;
+    width: 5em;
+    min-width: 5em;
+    max-width: 5em;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+.mdmreport-table td.mdmreport-col-flagdiff {
+    max-width: 130px;
+}
+.mdmreport-table td.mdmreport-col-name {
+    max-width: 300px;
+}
+.mdmreport-table td.mdmreport-col-col_x95_axis_x40_side_x41_ {
+    max-width: 200px;
+    min-width: 200px;
+    width: 200px;
+}
+
+/* borderless report table */
+.mdmreport-table.mdmreport-table-noborder .mdmreport-record td {
+    border-width: 0;
+    padding: var(--mdm-space-0-25x) var(--mdm-space-0-25x) var(--mdm-space-0-25x) 0;
+}
+.mdmreport-table.mdmreport-table-noborder tr.mdmreport-record {
+    border-width: 0;
+    padding: 0;
+}
+
+/* diff record highlighting */
+.mdmreport-table .mdmreport-record.mdmdiff-added,
+.mdmreport-table .mdmreport-record.mdmdiff-diff.mdmdiff-added {
+    background: #c8f0da;
+}
+.mdmreport-table .mdmreport-record.mdmdiff-removed,
+.mdmreport-table .mdmreport-record.mdmdiff-diff.mdmdiff-removed {
+    background: #ffcbbd;
+}
+.mdmreport-table .mdmreport-record.mdmdiff-ghost {
+    background: #fff5da;
+    color: #444;
+}
+.mdmreport-table tr.mdmreport-record.mdmdiff-ghost,
+.mdmreport-table tr.mdmreport-record.mdmdiff-movedfrom {
+    background: repeating-linear-gradient(45deg, #e5e5e5, #e5e5e5 20px, #eaeaea 21px, #eaeaea 40px);
+}
+.mdmreport-table .mdmreport-record.mdmdiff-diff {
+    background: #ffe49c;
+}
+.mdmreport-table .mdmreport-record.mdmdiff-diff.mdmdiff-specialtype-routing,
+.mdmreport-table .mdmreport-record.mdmdiff-diff.mdmdiff-specialtype-routing:hover {
+    background: #f2f2f2;
+}
+.mdmdiff-in-diff .mdmreport-table .mdmreport-record {
+    display: none;
+}
+.mdmdiff-in-diff .mdmreport-table .mdmreport-record.mdmdiff-diff,
+.mdmdiff-in-diff .mdmreport-table .mdmreport-record.mdmreport-record-header {
+    display: table-row;
+    background: none;
+}
+.mdmdiff-in-diff.mdmdiff-in-diff-show-all-records .mdmreport-table .mdmreport-record {
+    display: table-row;
+}
+.mdmreport-prop-fieldvalue {
+    color: #600060;
+}
+td.mdmreport-contentcell label {
+    display: block;
+    font-weight: 400;
+    color: #666;
+    font-size: 90%;
+    padding: 0.25em 0 0.25em 1em;
+    position: relative;
+}
+
+/* inline diff overlays */
+.mdmdiff-inlineoverlay-added {
+    background: #6bc795;
+}
+.mdmdiff-inlineoverlay-removed {
+    background: #f59278;
+}
+.mdmdiff-inlineoverlay-diff,
+.mdmdiff-inlineoverlay-added.mdmdiff-inlineoverlay-removed,
+.mdmdiff-inlineoverlay-added .mdmdiff-inlineoverlay-removed,
+.mdmdiff-inlineoverlay-removed .mdmdiff-inlineoverlay-added {
+    background: repeating-linear-gradient(45deg, #6bc795, #6bc795 6px, #f59278 7px, #f59278 12px);
+}
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-added {
+    background: none;
+    outline: 4px solid #2c7d51;
+}
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-removed {
+    background: none;
+    outline: 4px solid #ef3c19;
+}
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-diff,
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-added.mdmdiff-inlineoverlay-removed,
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-added .mdmdiff-inlineoverlay-removed,
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-removed .mdmdiff-inlineoverlay-added {
+    background: none;
+    outline: 4px solid #000;
+    position: relative;
+}
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-underlying-added {
+    background: #9de1bc;
+}
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-underlying-removed {
+    background: #f8b2a1;
+}
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-underlying-diff,
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-underlying-added.mdmdiff-inlineoverlay-underlying-removed,
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-underlying-added .mdmdiff-inlineoverlay-underlying-removed,
+.mdmdiff-in-diff .mdmdiff-inlineoverlay-underlying-removed .mdmdiff-inlineoverlay-underlying-added {
+    background: repeating-linear-gradient(45deg, #9de1bc, #9de1bc 6px, #f8b2a1 7px, #f8b2a1 12px);
+}
+
+/* format helpers */
+.mdmreport-format-multiline {
+    white-space: pre;
+}
+.mdmreport-format-multiline br {
+    display: none;
+}
+.mdmreport-format-hidden,
+.mdmreport-table .mdmreport-format-hidden {
+    display: none;
+}
+.mdmreport-label-pseudo[data-added] {
+    position: relative;
+}
+.mdmreport-label-pseudo[data-added]::after {
+    content: attr(data-added);
+    box-sizing: border-box;
+    white-space: pre;
+    display: block;
+    font-weight: 400;
+    color: #666;
+    font-size: 90%;
+    padding: 0.25em 0 0.25em 1em;
+    position: relative;
+}
+
+/* banner wrappers */
 .mdmreport-banners-wrapper-noborders .mdmreport-banner {
     padding: 0;
     border: none;
@@ -107,15 +759,47 @@ table tr td:last-child {
 .mdmreport-banners-wrapper-noborders .mdmreport-banner h3 {
     margin-top: 0;
 }
-.mdmreport-contentcell-fullwidth {
-    width: 100%;
-    min-width: 100%;
+
+/* Utilities */
+.hidden,
+.mdm-u-hidden {
+    display: none;
 }
-.mdmreport-table-dummy .mdmreport-record .mdmreport-contentcell {
-    padding: 7.5px 7.5px 7.5px 15px;
+.error,
+.mdm-u-text-error {
+    color: var(--mdm-color-error);
+    font-weight: 500;
 }
+.mdm-u-text-muted {
+    color: var(--mdm-color-muted);
+}
+.mdm-u-nowrap {
+    white-space: nowrap;
+}
+.pre,
+.mdm-u-pre {
+    white-space: pre;
+}
+.mdm-u-sr-only,
+.mdmreport-sronly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* embedded frames fill their container */
 iframe {
-  width: 100%;
-  border: none;
-  height: 70vh;
+    width: 100%;
+    border: none;
+    height: 70vh;
 }
+
+
+
+

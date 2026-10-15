@@ -22,6 +22,14 @@
 .mdm-ui-error-record.mdm-ui-record > * {
   padding: 0 0 2px 0;
 }
+/* Pin a single line-height for the whole record row so the timestamp,
+   the "Error:" label and the error text share the same line box and stay
+   vertically aligned regardless of the font-weight differences between them
+   (and regardless of how a browser computes line-height: normal). */
+.mdm-ui-error-record,
+.mdm-ui-error-record * {
+  line-height: 1.4;
+}
 
 .mdm-ui-error-record .timestamp {
   color: #aaa;

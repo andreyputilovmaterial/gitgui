@@ -9,11 +9,14 @@
      5. per-component styles
 
    Modular spacing scale (base unit = 30px):
+     3x    = 90px   (--mdm-space-3x)
      2x    = 60px   (--mdm-space-2x)
      1.5x  = 45px   (--mdm-space-1-5x)
      1x    = 30px   (--mdm-space)
+     0.75x = 22.5px (--mdm-space-0-75x)
      0.5x  = 15px   (--mdm-space-0-5x)
      0.25x = 7.5px  (--mdm-space-0-25x)
+     0.125x = 3.75px (--mdm-space-0-125x)
 
    Naming:
      mdm-*        generic reusable domains (buttons, links, tables, utilities)
@@ -23,13 +26,17 @@
 
 /* Modular scale + shared tokens */
 :root {
+    --mdm-space-3x: 90px;
     --mdm-space-2x: 60px;
     --mdm-space-1-5x: 45px;
     --mdm-space: 30px;
+    --mdm-space-0-75x: 22.5px;
     --mdm-space-0-5x: 15px;
     --mdm-space-0-25x: 7.5px;
+    --mdm-space-0-125x: 3.75px;
 
     --mdm-border-color: #d0d0d0;
+    --mdm-border-color-dark: #444;
     --mdm-border-radius: 4px;
     --mdm-transition: 350ms ease;
 
@@ -38,6 +45,13 @@
     --mdm-color-reject: #c0392b;
     --mdm-color-muted: #666;
     --mdm-color-error: #cc0000;
+
+    --mdm-color-link: #6c78ff;
+    --mdm-color-link-hover: #4d56cc;
+    --mdm-color-green: #385;
+    --mdm-color-green-hover: #217346;
+    --mdm-color-blue: #5b9bd5;
+    --mdm-color-blue-hover: #2f6fa8;
 }
 
 /* Base */
@@ -146,16 +160,37 @@ ol > li {
 }
 
 /* Links */
-.mdm-link {
+.mdm-link,
+.mdm-link-green,
+.mdm-link-blue,
+.mdm-link-red,
+.mdm-link-muted {
     outline: none;
-    color: var(--mdm-color-primary);
     text-decoration: none;
     transition: color var(--mdm-transition);
 }
-.mdm-link:hover {
-    color: #385;
-    text-decoration: underline;
+.mdm-link {
+    color: var(--mdm-color-link);
 }
+.mdm-link:hover,
+.mdm-link:focus {
+    color: var(--mdm-color-link-hover);
+    outline: none;
+}
+
+/* link color variants */
+.mdm-link-green { color: var(--mdm-color-green); }
+.mdm-link-green:hover,
+.mdm-link-green:focus { color: var(--mdm-color-green-hover); }
+.mdm-link-blue { color: var(--mdm-color-blue); }
+.mdm-link-blue:hover,
+.mdm-link-blue:focus { color: var(--mdm-color-blue-hover); }
+.mdm-link-red { color: var(--mdm-color-reject); }
+.mdm-link-red:hover,
+.mdm-link-red:focus { color: #96281b; }
+.mdm-link-muted { color: var(--mdm-color-muted); }
+.mdm-link-muted:hover,
+.mdm-link-muted:focus { color: #333; }
 
 /* a link that looks like plain surrounding text */
 .mdm-link-unstyled,
@@ -199,15 +234,14 @@ ol > li {
     background: #fff;
     color: #333;
     font: inherit;
-    line-height: 1.4;
-    padding: var(--mdm-space-0-25x) var(--mdm-space-0-5x);
+    line-height: 1.2;
+    padding: 0.35em 0.8em;
     text-decoration: none;
-    transition: all var(--mdm-transition);
+    transition: border-color var(--mdm-transition), background var(--mdm-transition);
 }
 .mdm-btn:hover,
 .mdm-btn:focus {
-    border-color: var(--mdm-color-primary);
-    color: var(--mdm-color-primary);
+    border-color: var(--mdm-border-color-dark);
     outline: none;
 }
 .mdm-btn:active {
@@ -260,7 +294,7 @@ ol > li {
 }
 
 .mdm-btn-large {
-    padding: var(--mdm-space-0-5x) var(--mdm-space);
+    padding: 0.6em 1.4em;
     font-size: 16px;
 }
 
@@ -361,11 +395,6 @@ fieldset.mdmreport-controls {
     vertical-align: middle;
     line-height: 1.5;
     padding: var(--mdm-space-0-25x);
-    border: 1px solid transparent;
-    transition: border-color var(--mdm-transition);
-}
-.mdmreport-controls label:hover {
-    border-color: #ddd;
 }
 
 /* Uniform look for every control — whether it wears .mdmreport-control or is
@@ -379,16 +408,16 @@ fieldset.mdmreport-controls {
     display: inline-block;
     vertical-align: middle;
     margin: 0;
-    padding: var(--mdm-space-0-25x) var(--mdm-space-0-5x);
+    padding: 0.35em 0.65em;
     border: 1px solid var(--mdm-border-color);
     border-radius: var(--mdm-border-radius);
     background: #fff;
     color: #333;
     font: inherit;
-    line-height: 1.4;
+    line-height: 1.2;
     box-shadow: none;
     outline: none;
-    transition: border-color var(--mdm-transition), box-shadow var(--mdm-transition);
+    transition: border-color var(--mdm-transition), background var(--mdm-transition);
 }
 .mdmreport-control,
 .mdmreport-controls input,
@@ -397,13 +426,29 @@ fieldset.mdmreport-controls {
     appearance: none;
     -webkit-appearance: none;
 }
+/* clickable controls: light-grey border darkens on hover / focus */
+.mdmreport-control:hover,
 .mdmreport-control:focus,
+.mdmreport-controls input:hover,
 .mdmreport-controls input:focus,
+.mdmreport-controls select:hover,
 .mdmreport-controls select:focus,
+.mdmreport-controls textarea:hover,
 .mdmreport-controls textarea:focus,
+.mdmreport-controls button:hover,
 .mdmreport-controls button:focus {
-    border-color: var(--mdm-color-primary);
-    box-shadow: 0 0 0 2px rgba(102, 112, 187, 0.2);
+    border-color: var(--mdm-border-color-dark);
+}
+
+/* dropdowns and toggles show a pointer cursor */
+select,
+.mdmreport-controls input[type="checkbox"],
+.mdmreport-controls input[type="radio"] {
+    cursor: pointer;
+}
+.mdmreport-controls label:has(input[type="checkbox"]),
+.mdmreport-controls label:has(input[type="radio"]) {
+    cursor: pointer;
 }
 
 /* Inside a group, text-like controls expand to fill the row; bare action
@@ -455,6 +500,12 @@ fieldset.mdmreport-controls {
 }
 .mdmreport-controls label input[type="radio"]::before {
     border-radius: 50%;
+}
+.mdmreport-controls label input[type="checkbox"]:hover::before,
+.mdmreport-controls label input[type="checkbox"]:focus::before,
+.mdmreport-controls label input[type="radio"]:hover::before,
+.mdmreport-controls label input[type="radio"]:focus::before {
+    border-color: var(--mdm-border-color-dark);
 }
 .mdmreport-controls label input[type="checkbox"]:checked::before {
     content: "\2713";      /* ✓ */

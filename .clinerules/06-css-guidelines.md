@@ -313,10 +313,12 @@ deliberate refinements on top of the core rules:
    role, not a location, so it stays legal under "roles, not locations".
 
 4. **Modular spacing scale.** All spacing derives from a 30px base unit, with
-   named steps: `--mdm-space-2x` (60px), `--mdm-space-1-5x` (45px),
-   `--mdm-space` (30px), `--mdm-space-0-5x` (15px), `--mdm-space-0-25x` (7.5px).
-   Prefer these steps; deviate only where a value genuinely does not fit (dense
-   data tables may use `em` micro-padding).
+   named steps from 3x down to 0.125x: `--mdm-space-3x` (90px),
+   `--mdm-space-2x` (60px), `--mdm-space-1-5x` (45px), `--mdm-space` (30px),
+   `--mdm-space-0-75x` (22.5px), `--mdm-space-0-5x` (15px),
+   `--mdm-space-0-25x` (7.5px), `--mdm-space-0-125x` (3.75px). Prefer these
+   steps for layout; control/button inner padding uses `em` so it stays
+   proportional to the surrounding text size.
 
 5. **Form controls are a namespace with a negative-margin row.**
    `.mdmreport-controls` is a `<form>`/`<fieldset>`/`<div>` namespace. Inside it,
@@ -330,5 +332,6 @@ deliberate refinements on top of the core rules:
 6. **Buttons, links, tables and utilities live under `mdm-*`.** See `common.css`
    for the catalog: `mdm-btn` (+ `-primary`, `-secondary`, `-confirm`, `-reject`,
    `-close`, `-large`, `-block`, `-link`, `-unstyled`), `mdm-link`
-   (+ `-unstyled`, `-underline`), `mdm-table` (+ `-noborder`), and `mdm-u-*`
-   (`-hidden`, `-sr-only`, `-clearfix`, `-nowrap`, `-text-muted`, `-text-error`).
+   (+ `-unstyled`, `-underline`, and color variants `-green`, `-blue`, `-red`,
+   `-muted`), `mdm-table` (+ `-noborder`), and `mdm-u-*` (`-hidden`,
+   `-sr-only`, `-clearfix`, `-nowrap`, `-text-muted`, `-text-error`).

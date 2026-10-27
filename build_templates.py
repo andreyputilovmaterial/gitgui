@@ -446,9 +446,71 @@ def call_bundle_program(*argcs,**kwargs):
 
 
 
+def call_transform_run_script_program(*argcs, **kwargs):
+    time_start = datetime.now()
+    script_name = 'transform run script'
+
+    parser = argparse.ArgumentParser(
+        description="Adapt a root-level run script for the dist/ layout",
+        prog='build_templates --program transform-run-script'
+    )
+    parser.add_argument(
+        '--input',
+        help='Source run script (root-level)',
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        '--output',
+        help='Destination run script (dist/)',
+        type=str,
+        required=True
+    )
+    args = None
+    try:
+        args = parser.parse_args(*argcs, **kwargs)
+    except SystemExit as e:
+        print(f'{STDOUT_COLOR_RED}Error: Invalid command-line arguments{STDOUT_COLOR_RESET}', file=sys.stderr)
+        raise e
+
+    src_text = Path(args.input).read_text(encoding='utf-8')
+    # .bat scripts use backslash path separators, .sh scripts use forward slashes.
+    sep = chr(92) if args.input.endswith('.bat') else '/'
+
+    # 1. strip the dev-only "build the bundle first" block (inclusive of its markers)
+    lines = src_text.splitlines(keepends=True)
+    kept = []
+    inside_block = False
+    for line in lines:
+        if 'BEGIN BUILD-ONLY' in line:
+            inside_block = True
+            continue
+        if 'END BUILD-ONLY' in line:
+            inside_block = False
+            continue
+        if not inside_block:
+            kept.append(line)
+    result = ''.join(kept)
+
+    # 2. point at the bundle instead of the dev launcher
+    result = result.replace('-m src.launcher', 'gitgui_bundle.py')
+    result = result.replace(f'dist{sep}gitgui_bundle.py', 'gitgui_bundle.py')
+
+    # 3. optional per-processor dependencies live in optional_dependencies/ in dist/
+    result = result.replace(f'src{sep}textconv{sep}processors', 'optional_dependencies')
+
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(result, encoding='utf-8')
+
+    time_finish = datetime.now()
+    print(f'{script_name}: {STDOUT_COLOR_GREEN}finished at {time_finish} (elapsed {time_finish-time_start}){STDOUT_COLOR_RESET}')
+
+
 run_programs = {
     'build': call_build_program,
     'bundle-file-into-py': call_bundle_program,
+    'transform-run-script': call_transform_run_script_program,
 }
 
 

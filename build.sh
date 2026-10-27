@@ -33,24 +33,15 @@ echo -
 
 
 
-echo "Discover optional dependencies for textconv processors"
-#optional_dependencies=$(find src/textconv/processors -type f -path '*/requirements.txt' -print0)
-optional_dependencies=$(find src/textconv/processors -type f -path '*/requirements.txt' -print)
-echo "done"
-echo -
-echo -
-
-
-
-echo "Install optional dependencies for textconv processors"
-# printf '%s' "$optional_dependencies" |
-# while IFS= read -r -d '' requirements; do
-while IFS= read -r requirements; do
-    echo "installing for $requirements:"
-    if ! "$pythonexecutable" -m pip install -r "$requirements"; then
-        echo "WARNING: not installed"
-    fi
-done <<< "$optional_dependencies"
+echo "Install optional dependencies for textconv processors (best-effort)"
+if [ -d src/textconv/processors ]; then
+    for requirements in $(find src/textconv/processors -type f -name 'requirements.txt' | sort); do
+        echo "installing optional dependencies: $requirements"
+        if ! "$pythonexecutable" -m pip install -r "$requirements"; then
+            echo "WARNING: optional dependencies in $requirements not installed (the corresponding processor will be unavailable)"
+        fi
+    done
+fi
 echo "done"
 echo -
 echo -
@@ -164,42 +155,20 @@ echo -
 
 echo "Bring run.sh and requirements.txt to \"$DIST_DIR\""
 cp "requirements.txt" "$DIST_DIR/"
-echo "Bring other optional dependencies to $DIST_DIR/"
-mkdir -p $DIST_DIR/optional_dependencies
-counter=0
-optional_dependencies_block=""
-# # printf '%s' "$optional_dependencies" |
-# echo "$optional_dependencies" |
-#while IFS= read -r -d '' requirements; do
-while IFS= read -r requirements; do
-    [ -z "$requirements" ] && continue
-    destination="optional_dependencies/requirements-${counter}.txt"
-    echo "copying $requirements -> $DIST_DIR/$destination"
-    # optional_dependencies_esc="$optional_dependencies_esc$destination\\n"
-    optional_dependencies_block+="    \"$destination\""$'\n'
-    cp "$requirements" "$DIST_DIR/$destination"
-    ((counter++)) || true
-done <<< "$optional_dependencies"
-awk '
-    BEGIN { deps=ARGV[2]; delete ARGV[2] }
-    { gsub(/dist[\/\\]/, "") }
-    /# BEGIN GENERATED OPTIONAL DEPENDENCIES/ {
-        print
-        print "optional_dependencies=("
-        printf "%s", deps
-        print ")"
-        in_generated_block = 1
-        next
-    }
-    /# END GENERATED OPTIONAL DEPENDENCIES/ {
-        print
-        in_generated_block = 0
-        next
-    }
-    !in_generated_block {
-        print
-    }
-' "example.run.sh" "$optional_dependencies_block" > "$DIST_DIR/run.sh"
+# Optional per-processor dependencies are copied into
+# dist/optional_dependencies/ (preserving their path under src/) and installed
+# best-effort by the generated run.sh. A missing one is not fatal: the affected
+# processor simply reports its import error when used.
+if [ -d src/textconv/processors ]; then
+    for requirements in $(find src/textconv/processors -type f -name 'requirements.txt' | sort); do
+        rel="${requirements#src/}"
+        dest="$DIST_DIR/optional_dependencies/$rel"
+        mkdir -p "$(dirname "$dest")"
+        echo "copying optional requirements: $requirements -> $dest"
+        cp "$requirements" "$dest"
+    done
+fi
+"$pythonexecutable" build_templates.py --program transform-run-script --input example.run.sh --output "$DIST_DIR/run.sh"
 awk '
     { gsub(/dist[\/\\]/, "") }
     { print }

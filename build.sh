@@ -62,7 +62,16 @@ rm -rf -- src/GENERATED || true
 mkdir -p src/GENERATED
 touch src/GENERATED/__init__.py
 git fetch --tags || true
-git describe | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _VERSION > src/GENERATED/VERSION.py
+# Most complete/descriptive version: nearest tag + commit count since it + short
+# commit hash, plus a `-dirty` suffix when the working tree differs from that
+# commit. `--tags` also accepts lightweight tags, `--long` always prints the
+# count+hash (even when exactly on a tag), and `--always` falls back to the raw
+# commit hash when there are no tags at all.
+version="$(git describe --tags --long --always --dirty 2>/dev/null || true)"
+if [ -z "$version" ]; then
+    version="unknown"
+fi
+printf '%s' "$version" | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _VERSION > src/GENERATED/VERSION.py
 echo "done"
 echo -
 echo -

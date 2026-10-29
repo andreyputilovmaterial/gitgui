@@ -46,6 +46,13 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
   `src/textconv/processors` → `optional_dependencies` in the generated
   `dist/run.sh` (replacing the old awk/array-injection approach).
 - `build.sh` version string now uses `git describe --tags --long --always --dirty`.
+- Expanded the `py_js_bundler` submodule's ES-module support (it now has its own
+  local `docs/project-context.md` + `.clinerules/00-project-context.md`):
+  structured import/export parsing, namespace imports, re-exports, expression
+  defaults, multiple declarators, destructuring declarations, string-literal/
+  reserved module names — and fixed a latent bug where aliased imports emitted
+  invalid destructuring. Submodule suite: 405 passed, 0 xfailed; the real
+  `src/frontend/app_js` bundle still builds.
 
 ## Known gotchas
 

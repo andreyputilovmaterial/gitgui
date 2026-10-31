@@ -34,8 +34,28 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 - Global CSS `src/frontend/template/templates/common.css` is a shared "skin";
   every change must be logged in the adjacent `common.css.changelog.md`.
 
+## Templating (no Jinja2)
+
+HTML pages are rendered by a small self-rolled layer
+(`src/frontend/template/make_html.py` + `html_begin.html`/`html_end.html` with
+`{{INS_*}}` placeholders filled via `.replace()`). It already implements basic
+templating and is enough for the ~5 pages / ~330 lines we render, so we don't
+add a templater (e.g. Jinja2):
+
+- Jinja2 drags in more dependencies (the Flask ecosystem) we'd rather avoid.
+- pinliner only bundles our local modules, so a templater installed from
+  `requirements.txt` would *not* be bundled — that part is fine. But a templater
+  that reads standalone `.html` files at runtime *would* clash with pinliner's
+  "no separate files at runtime" model and need hacks/workarounds.
+- This isn't about avoiding the mainstream web stack; it's about starting
+  minimal and simple and seeing whether maintenance/readability actually
+  suffers. Either outcome is useful knowledge.
+
 ## Last state
 
+- Added docstrings + light type hints to `src/frontend/endpoints_html_paths.py`
+  and the `src/frontend/template` helpers; fixed HTML escaping at the right
+  boundary (escaped `pagename`/`version`, removed double-escaping of `title`/`h1`).
 - Brought over/adapted several `.clinerules` from the sibling `apqa` repo:
   commit messages, non-interactive git, dates & time, `common.css` changelog,
   project-context, and optional dependencies.

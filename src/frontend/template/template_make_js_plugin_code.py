@@ -1,21 +1,28 @@
+"""Generate inline CSS/JS for the report-page plugins."""
+
 
 from .minify_assets import minify_js, minify_css
 
 
 
-def sanitize_comment(s):
+def sanitize_comment(s: str) -> str:
+    """Neutralize ``*/`` so a value can be embedded in a JS/CSS comment."""
     return f'{s}'.replace('*/','*-/')
 
-def sanitize_identifier(s):
+def sanitize_identifier(s: str) -> str:
+    """Escape single quotes for embedding in a JS string literal."""
     return s.replace("'","\\'")
 
-def sanitize_commen_csst(s):
+def sanitize_comment_css(s: str) -> str:
+    """Alias of :func:`sanitize_comment` for CSS text."""
     return sanitize_comment(s)
 
-def sanitize_comment_js(s):
+def sanitize_comment_js(s: str) -> str:
+    """Alias of :func:`sanitize_comment` for JS text."""
     return sanitize_comment(s)
 
-def make_syntax(plugin):
+def make_syntax(plugin: dict) -> str:
+    """Render one plugin's CSS + JS into inline ``<style>``/``<script>`` tags."""
     name = plugin['name']
     description = plugin['description']
     js = plugin['js']

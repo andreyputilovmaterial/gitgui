@@ -1,3 +1,5 @@
+"""Helpers to assemble a full HTML page from a template and page fragments."""
+
 
 import html
 from bs4 import BeautifulSoup
@@ -57,11 +59,13 @@ STATIC_PATH = os.getenv("ASSET_BASE_URL", "/assets/")
 
 
 
-def make_banner(txt) -> str:
+def make_banner(txt: str) -> str:
+    """Wrap ``txt`` in a banner div."""
     return wrap_div('mdmreport-banner',txt)
 
 
-def make_tag(tagname,attrs,children):
+def make_tag(tagname: str, attrs: dict, children: str) -> str:
+    """Build an HTML tag from a name, attributes dict, and children HTML."""
     soup = BeautifulSoup("", "html.parser")
     tag = soup.new_tag(tagname)
     for attr_name, attr_value in attrs.items():
@@ -73,34 +77,42 @@ def make_tag(tagname,attrs,children):
             tag.append(child)
     return str(tag)
 
-def make_meta(prop_name, prop_value):
+def make_meta(prop_name: str, prop_value: str) -> str:
+    """Build a ``<meta>`` tag."""
     return make_tag('meta',{'name':prop_name,'content':prop_value},None)
 
-def make_icon(txt):
+def make_icon(txt: str) -> str:
+    """Build a favicon ``<link>`` tag."""
     return make_tag('link',{'rel':'icon','href':txt},None)
 
-def make_asset_jsembed(txt):
+def make_asset_jsembed(txt: str) -> str:
+    """Build an inline ``<script>`` tag from minified JS."""
     soup = BeautifulSoup("", "html.parser")
     tag = soup.new_tag("script")
     tag.append(minify_js(txt))
     return str(tag)
 
-def make_asset_cssembed(txt):
+def make_asset_cssembed(txt: str) -> str:
+    """Build an inline ``<style>`` tag from minified CSS."""
     soup = BeautifulSoup("", "html.parser")
     tag = soup.new_tag("style")
     tag.append(minify_css(txt))
     return str(tag)
 
-def make_asset_jslink(txt,attrs={}):
+def make_asset_jslink(txt: str, attrs: dict = {}) -> str:
+    """Build a ``<script src=...>`` tag."""
     return make_tag('script',{**attrs,'src':txt},None)
 
-def make_asset_jslinkmodule(txt,attrs={}):
+def make_asset_jslinkmodule(txt: str, attrs: dict = {}) -> str:
+    """Build a ``<script type="module" src=...>`` tag."""
     return make_asset_jslink(txt,attrs={**attrs,'type':'module'})
 
-def make_asset_csslink(txt):
+def make_asset_csslink(txt: str) -> str:
+    """Build a ``<link rel="stylesheet">`` tag."""
     return make_tag('link',{'rel':'stylesheet','href':txt},None)
 
-def make_asset(type,payload) -> str:
+def make_asset(type: str, payload: tuple) -> str:
+    """Render one head asset (js/css link or embed, meta, icon, or raw tag)."""
     renderers = {
         'js-embed': make_asset_jsembed,
         'js-link': make_asset_jslink,
@@ -116,7 +128,8 @@ def make_asset(type,payload) -> str:
         raise Exception(f'Can\'t make asset of type {type}')
     return renderer(*payload)
 
-def make_section(html_scripts):
+def make_section(html_scripts: str) -> str:
+    """Wrap ``html_scripts`` in a ``<section>`` div."""
     result = wrap_div('section',html_scripts)
     return result
 
@@ -131,6 +144,12 @@ def make_html(
     banners: list = [],
     sections: list = [],
 ) -> str:
+    """Assemble a full HTML page.
+
+    ``title`` and ``h1`` are HTML-escaped here; ``header_block``,
+    ``footer_block``, ``banners`` and ``sections`` are trusted HTML fragments
+    inserted as-is.
+    """
     TEMPLATE_JS_PLUGINS = ''
     result = ''
     result += template.TEMPLATE_HTML_BEGIN.replace(

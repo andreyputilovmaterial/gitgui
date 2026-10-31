@@ -1,3 +1,5 @@
+"""Optional CSS/JS minification wrappers."""
+
 
 import sys # for error reporting to stderr
 # import warnings
@@ -20,7 +22,8 @@ except ImportError:
     jsmin = None
 
 
-def minify_css(txt):
+def minify_css(txt: str) -> str:
+    """Minify CSS; fall back to the original text when csscompressor is missing."""
     if not csscompressor:
         if not _csscompressor_import_error_warning_emitted['emitted']:
             print(f'\033[31mCan\'t import csscompressor: please install csscompressor package; CSS are not minified!\033[0m',file=sys.stderr)
@@ -29,7 +32,8 @@ def minify_css(txt):
         return txt
     return csscompressor.compress(txt)
 
-def minify_js(txt):
+def minify_js(txt: str) -> str:
+    """Minify JS; fall back to the original text when rjsmin is missing."""
     if not jsmin:
         if not _rjsmin_import_error_warning_emitted['emitted']:
             print(f'\033[31mCan\'t import rjsmin: please install rjsmin package; JS are not minified!\033[0m',file=sys.stderr)

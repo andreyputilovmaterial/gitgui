@@ -1,3 +1,9 @@
+"""HTML page renderers for the git-gui web endpoints.
+
+Each ``render_page_*`` builds one full HTML page via
+:func:`~.template.make_html.make_html` and returns a ``WebResponse``.
+"""
+
 
 import html # for escaping
 from urllib.parse import urlparse, parse_qs # to detect ?embed=1
@@ -11,7 +17,8 @@ from .icon import make_icon
 
 
 
-def render_block_banner_config_git_directory(config):
+def render_block_banner_config_git_directory(config: dict) -> str:
+    """Return the HTML banner showing the working-tree and git-directory paths."""
     return f'''
 <div class="banner-global-folder-props">
     <p class="mdmreport-prop-row">Working tree: <code>{html.escape(""+config.get("working_tree"))}</code></p>
@@ -20,7 +27,8 @@ def render_block_banner_config_git_directory(config):
 '''
 
 
-def render_block_header_nav():
+def render_block_header_nav() -> str:
+    """Return the HTML top navigation block."""
     return '''
 <div class="gitgui-html-page-navigation">
     <ul>
@@ -34,13 +42,14 @@ def render_block_header_nav():
 '''
 
 
-def render_block_html_page_navigatation_block(pagename,config):
+def render_block_html_page_navigatation_block(pagename: str, config: dict) -> str:
+    """Return the HTML page header block (page name, nav, folder banner)."""
     banner_gitguiapp_folders_config = render_block_banner_config_git_directory(config)
     nav = render_block_header_nav()
     return f'''
 <div class="gitgui-html-page-header-outer">
     <div class="gitgui-html-page-header">
-        <div class="gitgui-html-pagename">{pagename}</div>
+        <div class="gitgui-html-pagename">{html.escape(pagename)}</div>
         {nav}
     </div>
     {banner_gitguiapp_folders_config}
@@ -48,7 +57,8 @@ def render_block_html_page_navigatation_block(pagename,config):
 '''
 
 
-def check_query_string_flag(net_request_handler,param_name):
+def check_query_string_flag(net_request_handler, param_name: str) -> bool:
+    """Return the boolean value of a query-string flag on the request path."""
     parsed = urlparse(net_request_handler.path)
     params = parse_qs(parsed.query)
     flag = params.get(param_name, ["0"])[0]
@@ -63,7 +73,8 @@ def check_query_string_flag(net_request_handler,param_name):
         return not not flag
 
 
-def make_default_assets_list(config):
+def make_default_assets_list(config: dict) -> list:
+    """Return the default list of head assets (meta, css-links, icon)."""
     return [
         ('icon',(make_icon(),),),
         ('meta',('git-gui:datetime-process-started',config.get("time_start"),)),
@@ -80,12 +91,14 @@ def make_default_assets_list(config):
     ]
 
 
-def render_page_home(net_request_handler, config: dict,added_data=None):
+def render_page_home(net_request_handler, config: dict, added_data=None):
+    """Render the home page."""
     WebResponse = config.get('iface').get('WebResponse')
     year = config.get("credentials:year")
 
-    title = f'git - {html.escape(config.get("working_tree"))}'
-    page_h1 = f'Track history with git - {html.escape(config.get("working_tree"))}'
+    # make_html escapes title/h1 itself, so pass the raw values here.
+    title = f'git - {config.get("working_tree")}'
+    page_h1 = f'Track history with git - {config.get("working_tree")}'
 
     page_body = make_html(
         title = title,
@@ -115,7 +128,8 @@ def render_page_home(net_request_handler, config: dict,added_data=None):
 
 
 
-def render_page_version(net_request_handler, config: dict,added_data=None):
+def render_page_version(net_request_handler, config: dict, added_data=None):
+    """Render the version page."""
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -137,7 +151,7 @@ def render_page_version(net_request_handler, config: dict,added_data=None):
         banners = [
             # render_block_banner_config_git_directory(config),
         ],
-        sections = [f'<div class="container"><span>Version: <span class="version-string">{version}</span></span></div>'],
+        sections = [f'<div class="container"><span>Version: <span class="version-string">{html.escape(version)}</span></span></div>'],
     )
 
     return WebResponse(
@@ -149,7 +163,8 @@ def render_page_version(net_request_handler, config: dict,added_data=None):
 
 
 
-def render_page_about(net_request_handler, config: dict,added_data=None):
+def render_page_about(net_request_handler, config: dict, added_data=None):
+    """Render the about page."""
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -198,7 +213,8 @@ def render_page_about(net_request_handler, config: dict,added_data=None):
 
 
 
-def render_page_help(net_request_handler, config: dict,added_data=None):
+def render_page_help(net_request_handler, config: dict, added_data=None):
+    """Render the help page."""
     WebResponse = config.get('iface').get('WebResponse')
     version = config.get("credentials:version")
     version = f'{version}'.strip()
@@ -306,7 +322,8 @@ try {
         headers = [],
     )
 
-def render_page_test(net_request_handler, config: dict,added_data=None):
+def render_page_test(net_request_handler, config: dict, added_data=None):
+    """Render the test page."""
     WebResponse = config.get('iface').get('WebResponse')
     page_body = '''
 <!doctype html>

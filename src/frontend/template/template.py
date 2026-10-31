@@ -1,3 +1,9 @@
+"""Runtime template strings for the HTML page shell.
+
+This is the development-time source; the bundled build uses
+``GENERATED.TEMPLATE_COMPILED`` instead.
+"""
+
 
 
 

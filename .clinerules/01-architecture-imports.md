@@ -1,6 +1,6 @@
 # Architecture & imports (pinliner constraints)
 
-The program is bundled with `pinliner` (submodule `src_dev_build/lib/pinliner`) into a single self-contained `apqa_bundle.py`. Everything here exists so that bundle keeps working.
+The program is bundled with `pinliner` (submodule `src_dev_build/lib/pinliner`) into a single self-contained `gitgui_bundle.py`. Everything here exists so that bundle keeps working.
 
 ## Imports
 
@@ -16,6 +16,6 @@ The program is bundled with `pinliner` (submodule `src_dev_build/lib/pinliner`) 
 
 ## Bundling & submodules
 
-- The distributable is produced by `build.sh` (output: `dist/apqa_bundle.py`). `build.sh` also generates the `GENERATED/` artifacts needed even for development runs.
+- The distributable is produced by `build.sh` (output: `dist/gitgui_bundle.py`). `build.sh` also generates the `GENERATED/` artifacts needed even for development runs.
 - `build.sh` "patches" the bundle by appending the pytest entry point at the end. Do **not** patch the bundle anywhere else — pinliner hard-codes module start/end positions.
 - Reusable code is deliberately extracted into git submodules (an established habit in this repo). Prefer submodules for separable pieces.

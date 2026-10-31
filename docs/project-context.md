@@ -73,9 +73,26 @@ add a templater (e.g. Jinja2):
   reserved module names — and fixed a latent bug where aliased imports emitted
   invalid destructuring. Submodule suite: 405 passed, 0 xfailed; the real
   `src/frontend/app_js` bundle still builds.
+- Fixed `.clinerules/` doc drift (bundle name `apqa_bundle.py` →
+  `gitgui_bundle.py`; "minimal chanes" → "minimal changes") and refreshed
+  `docs/project-context.md` (dropped the resolved bundle-name gotcha, added the
+  CSS-naming tension note and the rules-vs-Zen review).
 
 ## Known gotchas
 
-- `.clinerules/01-architecture-imports.md` still says the bundle is
-  `apqa_bundle.py` (copy-pasted from apqa); `build.sh` actually produces
-  `dist/gitgui_bundle.py`. The rules text should be updated to match.
+- The CSS rules tolerate two naming conventions — `mdm-*` (current) and the
+  legacy `mdmreport-*` (report feature "built first"). A mild tension with
+  "one obvious way to do it", justified in the rules by reading `mdmreport-`
+  as brand `mdm` + feature `report`.
+
+## Last review: rules vs. Zen of Python
+
+- Scanned all `.clinerules/` files against `import this`. Verdict: aligned;
+  no substantive violations. The rules map cleanly onto the Zen lines —
+  `04-code-style-errors.md` → "Errors should never pass silently (unless
+  explicitly silenced)"; the CSS prefix system, Python packages and submodules
+  → "Namespaces are one honking great idea"; the stable-features-only CSS rule
+  → "never is often better than *right* now"; the documented "practicality
+  beats purity" carve-outs (launcher.py, unprefixed globals, double error
+  reporting) are explicit, not accidental. Only real tensions are tradeoffs
+  that the rules themselves acknowledge (see Known gotchas).

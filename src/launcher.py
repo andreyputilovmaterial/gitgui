@@ -8,22 +8,15 @@ import traceback, sys
 
 
 # necessary adjustment for pinliner, as how I am using it
-if __name__ == '__main__':
-    # run as a program
-    from src.GENERATED.VERSION import _VERSION as gitgui_script_version
-    # from src.GENERATED.HELP import _MD as help_md
-    from src.main_print_help import print_help
-    from src.main_gitgui_program import main as call_gitgui_program
-    from src.main_gitgui_project_selector import main as call_gitgui_project_selector_program
-elif '.' in __name__:
-    # package
+if __package__:
+    # inside the src package (-m / bundle)
     from .GENERATED.VERSION import _VERSION as gitgui_script_version
     # from .GENERATED.HELP import _MD as help_md
     from .main_print_help import print_help
     from .main_gitgui_program import main as call_gitgui_program
     from .main_gitgui_project_selector import main as call_gitgui_project_selector_program
 else:
-    # included with no parent package
+    # no parent package
     from GENERATED.VERSION import _VERSION as gitgui_script_version
     # from GENERATED.HELP import _MD as help_md
     from main_print_help import print_help

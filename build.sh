@@ -191,23 +191,7 @@ echo -
 
 
 echo "Calling pinliner..."
-"$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o "$DIST_DIR/gitgui_bundle.py"
-echo "done"
-echo "Patching gitgui_bundle.py..."
-printf '%s' "
-# ...
-# print('within gitgui_bundle')
-" >> "$DIST_DIR/gitgui_bundle.py"
-# no need for this, the root package is loaded automatically
-# printf '%s' "
-# # import gitgui_bundle
-# " >> "$DIST_DIR/gitgui_bundle.py"
-printf '%s' "
-from src import launcher
-launcher.main()
-# print('out of gitgui_bundle')
-
-" >> "$DIST_DIR/gitgui_bundle.py"
+"$pythonexecutable" "src_dev_build/lib/pinliner/pinliner/pinliner.py" src -o "$DIST_DIR/gitgui_bundle.py" --main src.launcher --main-attr main
 echo "done"
 echo -
 echo -

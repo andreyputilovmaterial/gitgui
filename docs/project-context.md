@@ -33,6 +33,9 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
   dependencies, the `common.css` changelog rule, and this project-context rule.
 - Global CSS `src/frontend/template/templates/common.css` is a shared "skin";
   every change must be logged in the adjacent `common.css.changelog.md`.
+- `docs/maintenance-log.md` holds cross-project structural notes (import style,
+  bundling/call conventions) shared with sibling projects of the same shape;
+  repo-specific notes stay in `docs/project-context.md`.
 
 ## Templating (no Jinja2)
 
@@ -77,6 +80,12 @@ add a templater (e.g. Jinja2):
   `gitgui_bundle.py`; "minimal chanes" → "minimal changes") and refreshed
   `docs/project-context.md` (dropped the resolved bundle-name gotcha, added the
   CSS-naming tension note and the rules-vs-Zen review).
+- Adopted `docs/maintenance-log.md` from the sibling `apqa` repo and implemented
+  its entries: pulled the `pinliner` submodule to `7152465` (adds
+  `--main`/`--main-attr`), converted `src/launcher.py` from the three-branch
+  `__name__` split to a two-branch `__package__` split, and switched `build.sh`
+  to generate the bundle entry point via `--main src.launcher --main-attr main`
+  instead of hand-patching `launcher.main()`.
 
 ## Known gotchas
 
@@ -84,6 +93,11 @@ add a templater (e.g. Jinja2):
   legacy `mdmreport-*` (report feature "built first"). A mild tension with
   "one obvious way to do it", justified in the rules by reading `mdmreport-`
   as brand `mdm` + feature `report`.
+- `build_templates.py` (build-time tool, repo root) and
+  `src/frontend/template/make_html.py` (bundled) still use the older
+  three-branch `__name__` import split. They are not entry-point modules, so the
+  `__package__` split does not apply to them; `make_html.py`'s split is a
+  dev-vs-bundle asset-sourcing choice, not an entry-point pattern.
 
 ## Last review: rules vs. Zen of Python
 

@@ -28,6 +28,18 @@ import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js
 // }
 
 
+// cat-file is the canonical example of the streaming "job / pipe" pattern.
+// See docs/streaming-jobs.md for the full model. The golden rule here:
+//
+//   START DRAINING THE NEXT PARTICIPANT BEFORE AWAITING THE CURRENT ONE.
+//
+// `catFileTextconvRawtext` pipes  git cat-file | textconv  by (1) starting the
+// producer job, (2) waiting only for its download URL, (3) PUTting the textconv
+// request onto that URL to attach the consumer, (4) waiting only for the
+// consumer's download URL, (5) GETting the consumer's output to drain it, and
+// only then (6) awaiting all promises together with Promise.all. Awaiting a job's
+// completion before its output is being consumed would block the producer on a
+// full OS pipe buffer (deadlock).
 const useCatFile = (getAppSetupExports) => {
 
     async function catFileBinary(resourceSpec,filename=null) {
@@ -45,7 +57,13 @@ const useCatFile = (getAppSetupExports) => {
 
         const response = await fetch( downloadUrl );
         if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
-        const bufferPromise = response.arrayBuffer(); // start download before waiting for jobData.promise - important! We need to start consuming output stream, otherwise we can get stuck
+        // Start consuming the producer's stdout NOW, before awaiting jobData.promise.
+        // The job's output is streamed over this GET; if nothing reads it the
+        // producer fills its OS pipe buffer and blocks — consume before await.
+        const bufferPromise = response.arrayBuffer();
+        // Only now that the stream is being drained do we await the producer's
+        // completion and the buffered download together. Awaiting in creation order
+        // (jobData.promise first) would deadlock for the reason above.
         const [ jobDataFinal, buffer ] = await Promise.all([
             jobData.promise,
             bufferPromise,
@@ -69,12 +87,18 @@ const useCatFile = (getAppSetupExports) => {
         filename = filename || `${resourceSpec}`.replace(/^\w+:/ig,'').replace(/\/\\/ig,'/').split('/').pop();
         const gitCommandArgs = isFromWorkTree ? ['cat',resourceSpec.replace(/^worktree:/,'')] : ['git','cat-file','blob',resourceSpec];
         const jobData = await repoActions.executeGitBinaryCommand(gitCommandArgs,{is_binary:true,is_interactive:true,stdout_chunk_size:8192,stderr_chunk_size:8192});
-        await jobData.promiseDownloadLinkReady; // start download before waiting for jobData.promise - important! We need to start consuming output stream, otherwise we can get stuck
+        // Wait only until the producer's stream endpoint is known — NOT for the
+        // producer to finish. We need the URL so the next step can start draining
+        // its output while it is still running (consume before await).
+        await jobData.promiseDownloadLinkReady;
         const downloadUrl = jobData.getDownloadUrl(filename);
 
         const pipeArgs = [ 'textconv', '--filename', filename ];
+        // Attach the next pipe participant (textconv) to the producer's stdout by
+        // PUTting its request onto the producer's download URL. This must happen
+        // before awaiting jobData.promise — it's what starts consuming the
+        // producer's output so it doesn't block (consume before await).
         const pipeRequest = await fetch(
-             // start piping it to consumer before waiting for jobData.promise - important! We need to start consuming output stream, otherwise we can get stuck
             downloadUrl,
             {
             method: 'PUT',
@@ -95,9 +119,16 @@ const useCatFile = (getAppSetupExports) => {
 
         await pipeJobData.promiseDownloadLinkReady;
         const pipeJobDownloadUrl = pipeJobData.getDownloadUrl(filename);
-        const response = await fetch( pipeJobDownloadUrl ); // start download before waiting for jobData.promise AND before waiting for pipeJobData.promise - important! We need to start consuming output stream, otherwise we can get stuck
+        // Start draining the consumer's stdout NOW, before awaiting either the
+        // producer's or the consumer's completion. This final GET consumes the
+        // textconv output; without it the consumer would block writing its own
+        // pipe buffer (consume before await, one stage down).
+        const response = await fetch( pipeJobDownloadUrl );
         if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
         const bufferPromise = response.arrayBuffer();
+        // Now that every participant is running and its output is being drained,
+        // gather all final results at once. We do NOT await these in creation
+        // order — that would deadlock (see the consume-before-await rule above).
         const [ jobDataFinal, pipeJobDataFinal, buffer ] = await Promise.all([
             jobData.promise,
             pipeJobData.promise,

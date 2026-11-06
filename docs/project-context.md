@@ -123,6 +123,22 @@ add a templater (e.g. Jinja2):
   to generate the bundle entry point via `--main src.launcher --main-attr main`
   instead of hand-patching `launcher.main()`.
 
+## Streaming jobs (pipe) model
+
+- Canonical reference: `docs/streaming-jobs.md`. Long-running work is modeled as
+  **jobs** (`src/cli_proxy_caller`), each with an id, a status, and a promise the
+  frontend polls. A multi-step task is a **pipe** of jobs
+  (`producer | consumer | …`), each running concurrently.
+- Three job kinds, all looking identical to the frontend: sync
+  (`subprocess.run`), interactive (`subprocess.Popen`), and pure-Python fn
+  (`fn(stdin, stdout, stderr, *args)`, used by `output_postprocessors` such as
+  `tar`/`textconv`).
+- Golden rule: **consume before await** — start draining the next participant's
+  output *before* awaiting the current one's completion, else the producer fills
+  its OS pipe buffer and deadlocks. The frontend expresses this by awaiting
+  `promiseDownloadLinkReady` → `fetch`/`PUT` first, then a single
+  `Promise.all([...])` at the end (never in creation order).
+
 ## Known gotchas
 
 - The CSS rules tolerate two naming conventions — `mdm-*` (current) and the

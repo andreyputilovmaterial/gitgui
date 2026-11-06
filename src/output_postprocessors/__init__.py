@@ -1,3 +1,23 @@
+"""
+Pipe participants implemented as pure-Python functions (no subprocess).
+
+A postprocessor registered here (`register_output_postprocessor(name, fn)`) is a
+*participant* in a pipe, executed as a "python-fn" job by
+`cli_proxy_caller/job_task_processors/handle_task_from_function.py`. Its
+signature is:
+
+    fn(stdin_stream, stdout_stream, stderr_stream, *args)
+
+where all three streams are file objects. `stdin_stream` is the *previous*
+participant's stdout (the producer), and `stdout_stream`/`stderr_stream` are
+this participant's output, which the next participant (or the final download
+GET) drains.
+
+The producer and this function run concurrently, so whoever wires the pipe must
+start draining this function's stdout before awaiting the producer's completion.
+See docs/streaming-jobs.md.
+"""
+
 
 # from dataclasses import dataclass, field
 from typing import Callable # , Any

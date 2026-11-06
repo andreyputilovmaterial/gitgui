@@ -22,6 +22,13 @@
         - but is implemented from arbitrary function passed in argument
         - for example, the function that handles tar, or textconv
 
+    All three kinds look identical to the frontend: a job object with an id, a
+    status, and (for streamed output) a stdout reader. A "pipe" is a chain of such
+    jobs where each participant consumes the previous participant's stdout. Every
+    participant runs concurrently, so whoever wires the pipe must start draining
+    the next participant's output *before* awaiting the current one's completion —
+    otherwise the producer fills its OS pipe buffer and blocks. See
+    docs/streaming-jobs.md for the full model.
 """
 
 from .handle_run_cli_command import handler as process_run_cli_command

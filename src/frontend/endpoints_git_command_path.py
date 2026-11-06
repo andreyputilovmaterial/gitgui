@@ -249,7 +249,13 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
             )
 
     def handle_send_binary_data(net_request_handler):
-        """Handle a request for binary data and prepare a response to stream it."""
+        """Stream this job's stdout back to the caller (GET /command/{id}/stdout/{filename}).
+
+        This is the *consumer* side of a pipe: the returned response body is the
+        job's live stdout, streamed with `Transfer-Encoding: chunked`. Callers
+        must start this GET (and begin reading the body) *before* awaiting the
+        job's completion promise, otherwise the job fills its OS pipe buffer and
+        blocks. See docs/streaming-jobs.md."""
 
         def parse_path(path_parts):
             # path_parts[0] == ''
@@ -320,10 +326,16 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
         )
 
     def handle_pipe_binary_data(net_request_handler):
-        """Handle a request by piping its output to another component for processing.
-For example, tar, or textconv, or other consumer.
-Somewhat similar to what "piping"/"redirecting output" does in command line tools.
-Response is HTTP 202 with job dict that contains new job id."""
+        """Attach the next pipe participant to this job's stdout (PUT /command/{id}/stdout/...).
+
+        Grabs the job's `stdout_reader` and passes it as `inp` to
+        `initiate_from_function(...)`, which starts a *new* job (the consumer) that
+        reads the producer's stdout as its stdin. The producer and consumer run
+        concurrently. Response is HTTP 202 with a job dict containing the new job id.
+
+        This is the backend's "consume before await" step: by handing the
+        producer's output to a consumer now, the producer can keep writing without
+        blocking on a full pipe. See docs/streaming-jobs.md."""
 
         def parse_path(path_parts):
             # path_parts[0] == ''

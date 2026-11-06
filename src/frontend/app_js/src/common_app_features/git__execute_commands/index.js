@@ -9,6 +9,14 @@ import cliCommandRaw from '@/common_defs/cli';
 import ConcurrencyManager from '@/common_defs/concurrency/semaphore.js';
 // import ReplayEvent from '@/common_defs/concurrency/subscribe.js';
 
+// This module is the Vue/app-facing wrapper around the Vue-agnostic
+// `cliCommandRaw` (src/frontend/app_js/src/common_defs/cli.js). cli.js defines
+// the raw job contract (start/poll/stream/pipe); this file adds the app concerns:
+// a Vue-reactive command log (`commands`), a concurrency semaphore, friendly
+// entry points (executeGitCommand / executeGitAsyncCommand /
+// executeGitBinaryCommand / attachToRunningCommand), and the flag semantics
+// documented on _executeGitCommand below.
+
 
 
 
@@ -77,9 +85,41 @@ function useGitCommands(getAppSetupExports) {
 
     const gitCommandConcurrencyManager = new ConcurrencyManager(5);
 
-    // a bit confusing arg name,
-    // with "is_binary" style (with underscore) - because it maps to what is directly sent to backend
-    // and "attachExistingJob" (camel-case) - for purely internal flags, dispatch and caught here in js
+    // _executeGitCommand is the SINGLE base entry point for every command in this
+    // module. Sync text commands, streamed async/binary commands, and "attach to an
+    // existing job" all funnel through here; the other exported functions are thin
+    // shorthands (see below). Behavior is controlled entirely by flags:
+    //
+    //   is_binary  (snake_case) — whether the output is TEXT or BYTES. Very
+    //              important. Kept snake_case deliberately: it is forwarded to the
+    //              backend as a query param, and the job JSON returned by the backend
+    //              uses the same snake_case keys (is_binary, is_interactive,
+    //              download_url, ...). We did NOT map to isBinary/isInteractive
+    //              because the shape round-trips the backend as-is.
+    //
+    //   is_interactive  (snake_case, passed via ...options, same reason) — the MOST
+    //              important flag. It changes the RETURN SHAPE of this function:
+    //                false -> returns the FINAL job result (the resolved promise,
+    //                         i.e. after the job has finished).
+    //                true  -> returns the live job object immediately; the caller
+    //                         must await jobData.promise to reach the final result.
+    //              Typical pattern: text (is_binary=false) -> is_interactive=false;
+    //              binary (is_binary=true) -> is_interactive=true (streamed). That's
+    //              a convention, NOT a hard rule.
+    //
+    //   attachExistingJob  (camelCase) — NOT internal. Legally used for pipe pieces:
+    //              when true, `command` is actually an existing job_id, and instead
+    //              of starting a fresh process we adopt that job under the same
+    //              job-object contract (this is what repoActions.attachToRunningCommand
+    //              passes through).
+    //
+    //   parentJobId  (camelCase) — purely frontend bookkeeping: links this command's
+    //              record to its producer in the command log (the "source" of a pipe
+    //              participant).
+    //
+    // The flag-driven return-shape difference is admittedly not the cleanest design;
+    // it grew out of needing a working implementation and has been kept as-is rather
+    // than risk a larger refactor. See docs/streaming-jobs.md.
     function _executeGitCommand(command,{is_binary=false,attachExistingJob=false,parentJobId=null,...options} = {}) {
         
         const {repoStatus,repoActions,...exports} = getAppSetupExports();
@@ -196,6 +236,10 @@ function useGitCommands(getAppSetupExports) {
         if( is_binary ) {
             outputCommandRecord.stdout = new OutputPlaceholderBinaryStream({download_url: jobData.download_url || 'output'});
         }
+        // Interactive jobs hand back the live jobData object right away; callers are
+        // expected to start consuming the stream (GET/PUT on its download URL) and
+        // await jobData.promise later. Sync jobs have no live stream, so we return a
+        // promise that resolves with the final jobData. See docs/streaming-jobs.md.
         if( options.is_interactive ) {
             return Promise.resolve(jobData);
         } else {
@@ -206,6 +250,11 @@ function useGitCommands(getAppSetupExports) {
         }
     }
 
+    // Shorthands over _executeGitCommand — they exist only for readability; they
+    // are NOT new behavior. Both force is_interactive=true (a streamed job), so
+    // they return the live jobData object rather than the resolved result:
+    //   _executeGitAsyncCommand  -> interactive; text or binary per caller's is_binary
+    //   _executeGitBinaryCommand -> interactive + binary (is_binary=true)
     async function _executeGitAsyncCommand(args,{is_binary=false,...options} = {}) {
         return _executeGitCommand(args,{...options,is_interactive:true});
     }
@@ -226,6 +275,10 @@ function useGitCommands(getAppSetupExports) {
             executeGitCommand,
             executeGitAsyncCommand,
             executeGitBinaryCommand,
+            // attachToRunningCommand: adopt an already-running job (e.g. a pipe
+            // participant whose job_id came back from a PUT to the producer's stdout)
+            // under the same job-object contract, instead of starting a fresh process.
+            // This is a first-class entry point, not an internal helper.
             attachToRunningCommand: (job_id,options,...rest) => _executeGitCommand(job_id,{...options,attachExistingJob:true},...rest),
         },
     };

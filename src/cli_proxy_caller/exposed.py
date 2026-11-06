@@ -48,6 +48,11 @@ def initiate_command(command,config,is_binary=False,is_interactive=False,options
         Receives: cli command to execute, is_binary flag, is_interactive flag, other request options
 
         Returns: job dict that contains new job id
+
+        Streaming/pipe note: this only *starts* the job and returns its id; the
+        caller must poll for completion and, when output is streamed, must start
+        consuming the stdout (via the download endpoint) *before* waiting for the
+        job to finish. See docs/streaming-jobs.md.
     """
 
     def sanitize_command(command):
@@ -107,6 +112,12 @@ def initiate_from_function(fn: Callable, args, inp, config, options: dict | None
           - options - options object, to provide a comforrtable way to set oather parameters
 
         Returns: job dict that contains new job id
+
+        Pipe note: `inp` is the producer's stdout (a readable file object); the
+        function must read it as stdin and write to its stdout/stderr streams.
+        The producer and this function run concurrently, so whoever calls this
+        must start draining the function's stdout before awaiting the producer's
+        completion. See docs/streaming-jobs.md.
     """
 
     if not options:

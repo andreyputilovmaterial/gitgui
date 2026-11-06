@@ -203,6 +203,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // enriches with repoActions.attachToRunningCommand
       // enriches with exports.gitCommandConcurrencyManager
       // enriches with exports.commands
+      // (all four entry points funnel into _executeGitCommand, whose behavior is
+      //  controlled by flags — see git__execute_commands/index.js)
       registerResults(
         useGitCommands( () => ({
           ...exports,

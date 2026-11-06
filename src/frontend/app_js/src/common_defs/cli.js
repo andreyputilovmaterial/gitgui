@@ -1,4 +1,10 @@
 
+// This module is intentionally Vue-agnostic: it imports no Vue and knows nothing
+// about the app — just plain JS (genId/makeFetchResponseErrorMessage) and a
+// ReplayEvent for updates. It defines the raw "job" contract (start a backend
+// command, poll it, stream/pipe its output) as a self-contained unit.
+// src/frontend/app_js/src/common_app_features/git__execute_commands/index.js is
+// the Vue/app-facing wrapper around this script (see docs/streaming-jobs.md).
 import { genId, makeFetchResponseErrorMessage, } from './helper_functions.js';
 import ReplayEvent from './concurrency/subscribe';
 
@@ -23,6 +29,45 @@ function preparePayload(command) {
 
 
 
+// cliCommand() is the frontend half of the "job" abstraction (see docs/streaming-jobs.md).
+// It starts a backend job over POST /command. Its behavior is controlled by three flags:
+//
+//   is_binary  (snake_case) — whether output is TEXT or BYTES. Kept snake_case on
+//              purpose: it is forwarded to the backend as a query param, and the job
+//              fields we get back are the backend's JSON keys (is_binary,
+//              is_interactive, download_url, ...) — no camelCase mapping.
+//
+//   is_interactive  (snake_case, same reason) — THE most important flag. It changes
+//              the RETURN SHAPE of this function:
+//                false -> returns the FINAL result (the resolved job promise, after
+//                         the job has finished).
+//                true  -> returns the live job object immediately; the caller must
+//                         await jobData.promise to reach the final result.
+//              Typical pattern: text (is_binary=false) -> is_interactive=false;
+//              binary (is_binary=true) -> is_interactive=true (streamed) — a
+//              convention, NOT a hard rule.
+//
+//   attachExistingJob  (camelCase) — NOT internal; legally used for pipe pieces.
+//              When true, `command` is actually an existing job_id, and instead of
+//              starting a fresh process we adopt that job under the same job-object
+//              contract (this is what repoActions.attachToRunningCommand passes through).
+//
+// The returned job object exposes two promises plus helpers:
+//   jobData.promise                    resolves when the job reaches "done".
+//   jobData.promiseDownloadLinkReady   resolves when download_url is known — NOT
+//                                      completion, only that the stream endpoint exists.
+//   jobData.getDownloadUrl(name)       builds /command/{id}/stdout/{name}.
+//   jobData.configureStdoutReaderPipe(dest) PUTs to that URL to attach the next pipe
+//                                      participant; returns the new job id.
+//   jobData.getData()/downloadFullStdout()  drain the stream as a consumer.
+//
+// GOLDEN RULE: start draining the next participant *before* awaiting this job's
+// completion promise, otherwise the producer fills its OS pipe buffer and blocks.
+// Await all promises together at the end (Promise.all), never in creation order.
+//
+// The flag-driven return shape (bare promise vs live object) is admittedly not the
+// cleanest design; it grew out of needing a working implementation and has been kept
+// as-is rather than risk a larger refactor.
 function cliCommand(command,{is_binary=false,is_interactive=false,attachExistingJob=false,...options} = {}) {
   const timeRequestIssued = new Date();
   const requestId = genId([command,new Date()]);
@@ -57,6 +102,9 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
     for (const [key, value] of Object.entries(options)) {
       endpoint.searchParams.set(key, value);
     }
+    // is_binary / is_interactive are forwarded as-is (snake_case) because the
+    // backend expects exactly these query keys; the job JSON it returns reuses the
+    // same names, so there is no camelCase mapping on our side.
     if(is_binary)
       endpoint.searchParams.set("is_binary", !!is_binary?'1':'0');
     if(is_interactive)
@@ -151,6 +199,10 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
         context.numberOfPolls = 0;
         context.jobData.pollStatusUpdate = pollStatusUpdate;
 
+         // The download URL is the job's stdout stream. Fetching it (GET) drains the
+         // job's output; PUTting the next participant's request onto it attaches a
+         // consumer. Either way, do it *before* awaiting jobData.promise — consume
+         // before await, otherwise the producer blocks (see docs/streaming-jobs.md).
          // last part ("filename") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
         context.jobData.getDownloadUrl = (filename='file') => `${new URL(context.jobData.download_url, window.location.origin)}`.replace(encodeURIComponent('%FILENAME%'),encodeURIComponent(filename));
 
@@ -242,6 +294,10 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
         };
 
         context.jobData.configureStdoutReaderPipe = async dest => {
+          // Attaches a downstream participant to this job's stdout (PUT). The new
+          // job id comes back so the caller can keep chaining. Must be issued
+          // *before* awaiting this job's completion — this is what starts consuming
+          // the producer's output (consume before await, docs/streaming-jobs.md).
           const payload = dest;
           const downloadUrl = context.jobData.getDownloadUrl('pipe'); // last part ("pipe") is irrelevant and mostly used to indicate file name for the browser, when it downloads it, but does not make asny difference in fetch requests
           const response = await fetch(
@@ -292,6 +348,9 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
   //   result => { /* console.log can be placed here */ },
   //   err => { /* console.log can be placed here */ },
   // );
+  // The whole return-shape difference lives on this one line: non-interactive
+  // returns the resolved promise (the final job result), interactive returns the
+  // live job object (whose .promise the caller awaits for the final result).
   return !is_interactive ? context.jobData.promise : context.jobData;
 }
 

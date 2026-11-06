@@ -140,7 +140,7 @@ const StatisticsPane = {
 
     const fetchGitPacksFolderSize = async () => {
       try {
-        const sizeGitPackFilesHttpResponse = await fetch( '/functionality/dir-sizeof/git_pack_objects', { method: 'GET', payload: undefined, } );
+        const sizeGitPackFilesHttpResponse = await fetch( '/browse/pack:', { method: 'SIZE', payload: undefined, } );
         if( !sizeGitPackFilesHttpResponse.ok )
             throw new Error( await makeFetchResponseErrorMessage(sizeGitPackFilesHttpResponse) );
         const sizeGitPackFiles = await sizeGitPackFilesHttpResponse.json();;
@@ -153,7 +153,7 @@ const StatisticsPane = {
     };
     const fetchGitRepoFolderSize = async () => {
       try {
-        const sizeGitDirectoryHttpResponse = await fetch( '/functionality/dir-sizeof/git_directory', { method: 'GET', payload: undefined, } );
+        const sizeGitDirectoryHttpResponse = await fetch( '/browse/gitdir:', { method: 'SIZE', payload: undefined, } );
         if( !sizeGitDirectoryHttpResponse.ok )
             throw new Error( await makeFetchResponseErrorMessage(sizeGitDirectoryHttpResponse) );
         const sizeGitDirectory = await sizeGitDirectoryHttpResponse.json();;
@@ -166,7 +166,7 @@ const StatisticsPane = {
     };
     const fetchWorktreeFolderSize = async () => {
       try {
-        const sizeHttpResponse = await fetch( '/functionality/dir-sizeof/working_tree', { method: 'GET', payload: undefined, } );
+        const sizeHttpResponse = await fetch( '/browse/worktree:', { method: 'SIZE', payload: undefined, } );
         if( !sizeHttpResponse.ok )
             throw new Error( await makeFetchResponseErrorMessage(sizeHttpResponse) );
         const size = await sizeHttpResponse.json();;

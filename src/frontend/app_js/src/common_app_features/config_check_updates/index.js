@@ -26,7 +26,7 @@ function useConfigCheckUpdates(getAppSetupExports) {
     async function configCheckUpdates() {
         const {repoActions,repoStatus,...exports} = getAppSetupExports();
         try {
-            const httpResponse = await fetch('/functionality/config',{method:'GET'});
+            const httpResponse = await fetch('/config',{method:'GET'});
             if( !httpResponse.ok )
                 throw new Error( await makeFetchResponseErrorMessage(response) );
             const response = await httpResponse.json();

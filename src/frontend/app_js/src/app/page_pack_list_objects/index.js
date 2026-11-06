@@ -235,7 +235,7 @@ const View = {
 
     const initGetPackFiles = async () => {
       try {
-        const retrieveHttpResponse = await fetch( '/functionality/git-ls-pack-files', { method: 'GET', } );
+        const retrieveHttpResponse = await fetch( '/repo/git-ls-pack-files', { method: 'GET', } );
         if( !retrieveHttpResponse.ok )
           throw new Error( await makeFetchResponseErrorMessage(retrieveHttpResponse) );
         const retrievedPackFiles = await retrieveHttpResponse.json();

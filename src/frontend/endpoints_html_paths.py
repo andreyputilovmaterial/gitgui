@@ -240,7 +240,7 @@ try {
         target.append(style);
     }
     async function fetchHelpPage() {
-        const response = await fetch('/functionality/config');
+        const response = await fetch('/config');
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }

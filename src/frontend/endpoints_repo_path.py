@@ -5,8 +5,6 @@ import json # for responding, obviously
 from pathlib import Path # for resolving paths to resources
 import os # accessing physical files - gitignore, gitattributes, working tree path, git directory path...
 import subprocess # execute git rev-parse
-from datetime import datetime # format dates in json responses
-import re
 
 
 from .common_functions import JSONEncoder, get_matching_endpoint
@@ -25,7 +23,7 @@ def not_found(net_request_handler,config:dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
-    payload = {'status':'error','error':f'Can\'t handle functionality endpoint, path or resource not found: {path_parsed}'}
+    payload = {'status':'error','error':f'Can\'t handle repo endpoint, path or resource not found: {path_parsed}'}
     return WebResponse(
         status_code = 404,
         content_type = 'application/json',
@@ -148,68 +146,6 @@ def handle_gitattributes(net_request_handler, config: dict,added_data=None):
             status_code = 405,
             content_type = 'application/json',
             body = json.dumps('', cls=JSONEncoder),
-            headers = [],
-        )
-
-def handle_config(net_request_handler, config: dict,added_data=None):
-    def clean_config(obj, path="root"):
-        if isinstance(obj, Path):
-            return str(obj)
-
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-
-        if isinstance(obj, dict):
-            return {
-                key: clean_config(value, f"{path}.{key}")
-                for key, value in obj.items()
-            }
-
-        if isinstance(obj, (list, tuple)):
-            return [
-                clean_config(value, f"{path}[{index}]")
-                for index, value in enumerate(obj)
-            ]
-
-        if (
-            obj is None
-            or isinstance(obj, (str, int, float, bool))
-        ):
-            return obj
-
-        if callable(obj):
-            return '[ callable ]';
-
-        raise TypeError(
-            f"Object of type {type(obj).__name__} "
-            f"is not JSON serializable at {path}"
-        )
-    WebResponse = config.get('iface').get('WebResponse')
-    config_sanitized = json.loads(json.dumps(clean_config(config),cls=JSONEncoder))
-    payload = config_sanitized
-    return WebResponse(
-        status_code = 200,
-        content_type = 'application/json',
-        body = json.dumps(payload, cls=JSONEncoder),
-        headers = [],
-    )
-
-def handle_isup(net_request_handler, config: dict,added_data=None):
-    WebResponse = config.get('iface').get('WebResponse')
-    method = net_request_handler.command
-    payload = ''
-    if method=='HEAD':
-        return WebResponse(
-            status_code = 200,
-            content_type = 'application/json',
-            body = json.dumps(payload, cls=JSONEncoder),
-            headers = [],
-        )
-    else:
-        return WebResponse(
-            status_code = 405,
-            content_type = 'application/json',
-            body = json.dumps(payload, cls=JSONEncoder),
             headers = [],
         )
 
@@ -341,55 +277,6 @@ def handle_git_list_pack_files(net_request_handler, config: dict,added_data=None
                 content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
         )
 
-def handle_dir_sizeof_files(net_request_handler, config: dict,added_data=None):
-    def parse_path(path_parts):
-        return path_parts[3]
-    WebResponse = config.get('iface').get('WebResponse')
-    method = net_request_handler.command
-    path_git_directory = Path(config.get("git_directory")).resolve()
-    path_working_tree = Path(config.get("working_tree")).resolve()
-    path_with_query = net_request_handler.path
-    path_parsed = f'{urlparse(path_with_query).path}'
-    path_parts = [ unquote(p) for p in path_parsed.split('/') ]
-    resource_id = None
-    try:
-        resource_id = parse_path(path_parts)
-    except:
-        resource_id = None
-    if not resource_id:
-        return WebResponse(
-            status_code = 404,
-                content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: mno resource_id parsed',}, cls=JSONEncoder), headers = [],
-        )
-    known_paths = {
-        'git_directory': lambda : path_git_directory,
-        'working_tree': lambda : path_working_tree,
-        'git_pack_objects': lambda : path_git_directory / 'objects' / 'pack',
-    }
-    path_fs_fn = known_paths.get(resource_id,None)
-    if not path_fs_fn:
-        return WebResponse(
-            status_code = 404,
-                content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: resource not recognized: {resource_id}',}, cls=JSONEncoder), headers = [],
-        )
-    path_fs = path_fs_fn()
-    if not path_fs:
-        return WebResponse(
-            status_code = 404,
-                content_type = 'application/json', body = json.dumps({'status': 'error','error':f'reading resource disk usage: resource not recognized: {resource_id}',}, cls=JSONEncoder), headers = [],
-        )
-    if method=='GET':
-        size = sum(file.stat().st_size for file in path_fs.rglob("*") if file.is_file())
-        return WebResponse(
-            status_code = 200,
-                content_type = 'application/json', body = json.dumps(size, cls=JSONEncoder), headers = [],
-        )
-    else:
-        return WebResponse(
-            status_code = 405,
-                content_type = 'application/json', body = json.dumps('', cls=JSONEncoder), headers = [],
-        )
-
 
 endpoints = {
     # for each path, we need to know: 1. which command to execute, 2. how to process results (note: command is platform-dependent)
@@ -399,12 +286,9 @@ endpoints = {
     '/existence-working-tree': handle_fspath_worktingree,
     '/existence-git-directory': handle_fspath_gitdirectory_parent,
     '/git-ls-pack-files': handle_git_list_pack_files,
-    re.compile(r'^/dir-sizeof\b.*'): handle_dir_sizeof_files,
-    '/config': handle_config,
-    '/health': handle_isup,
 }
 
-def handle_request_functionality_endpoint(net_request_handler, config: dict,added_data=None):
+def handle_request_repo_endpoint(net_request_handler, config: dict,added_data=None):
     path_with_query = net_request_handler.path
     path_parsed = f'{urlparse(path_with_query).path}'
     path = path_parsed.split('/')

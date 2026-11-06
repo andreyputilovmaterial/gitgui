@@ -56,14 +56,16 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
-- Renamed the is-online health-check endpoint from `/functionality/isup.txt` to
-  `/functionality/health` in the main app backend
-  (`src/frontend/endpoints_functionality_path.py`, key `'/isup.txt'` → `'/health'`)
-  and the frontend poller
-  (`src/frontend/app_js/src/common_app_features/app__is_online/index.js`). The
-  `handle_isup` handler name was left unchanged. Note: the `src/lib/webinput`
-  submodule (project-selector) has its own separate `/functionality/isup.txt`
-  endpoint and was intentionally left out of scope.
+- Restructured the backend endpoint groups: the `/functionality/` group is now
+  `/repo/` (gitignore, gitattributes, is-git-repo, existence-*, git-ls-pack-files).
+  `config` and `health` moved to root (`/config`, `/health`). Folder-size
+  (`dir-sizeof/*`) moved into the files endpoint as a `SIZE` method on
+  `/browse/<namespace>:` with new `gitdir`/`pack` namespaces. Backend module
+  renamed `endpoints_functionality_path.py` → `endpoints_repo_path.py`; new
+  `endpoints_app_path.py` holds `handle_config`/`handle_health` (was
+  `handle_isup`). All frontend fetch call sites and the Vite proxy updated.
+  Note: the `src/lib/webinput` submodule (project-selector) still has its own
+  separate `/functionality/isup.txt` endpoint, left out of scope.
 - Added docstrings + light type hints to `src/frontend/endpoints_html_paths.py`
   and the `src/frontend/template` helpers; fixed HTML escaping at the right
   boundary (escaped `pagename`/`version`, removed double-escaping of `title`/`h1`).

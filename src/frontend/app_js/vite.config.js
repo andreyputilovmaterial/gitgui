@@ -20,7 +20,15 @@ export default defineConfig({
         target: 'http://localhost:5180',
         changeOrigin: true
       },
-      '/functionality': {
+      '/config': {
+        target: 'http://localhost:5180',
+        changeOrigin: true
+      },
+      '/health': {
+        target: 'http://localhost:5180',
+        changeOrigin: true
+      },
+      '/repo': {
         target: 'http://localhost:5180',
         changeOrigin: true
       },

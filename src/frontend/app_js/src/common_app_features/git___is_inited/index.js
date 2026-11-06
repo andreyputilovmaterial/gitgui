@@ -29,7 +29,7 @@ function useCheckRepoExistence(getAppSetupExports) {
     async function updateGitRepoExistence() {
         const {repoActions,repoStatus,...exports} = getAppSetupExports();
         try {
-            const httpResponse = await fetch('/functionality/is-git-repo',{method: 'HEAD',},);
+            const httpResponse = await fetch('/repo/is-git-repo',{method: 'HEAD',},);
             handleResponse(httpResponse.ok);
             return httpResponse.ok;
         } catch (e) {

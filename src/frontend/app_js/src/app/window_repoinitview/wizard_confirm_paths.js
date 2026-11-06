@@ -125,14 +125,14 @@ const WizardConfirmPaths = {
           return FSPathStatus.REQUESTERROR;
       }
       const fetchResultWorkTree = fetch(
-        '/functionality/existence-working-tree',
+        '/repo/existence-working-tree',
         {
           method: 'HEAD',
           headers: { "Content-Type": "application/json" },
         },
       );
       const fetchResultGitRepoDir = fetch(
-        '/functionality/existence-git-directory',
+        '/repo/existence-git-directory',
         {
           method: 'HEAD',
           headers: { "Content-Type": "application/json" },

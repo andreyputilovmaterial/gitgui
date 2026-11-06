@@ -14,6 +14,8 @@ from .common_functions import JSONEncoder
 
 known_namespaces = {
     'worktree': lambda config: config.get("working_tree"),
+    'gitdir': lambda config: config.get("git_directory"),
+    'pack': lambda config: str(Path(config.get("git_directory")) / 'objects' / 'pack'),
 }
 
 
@@ -117,6 +119,23 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
             headers = headers,
             is_binary = is_binary,
             options = options,
+        )
+    if method=='SIZE':
+        if not file_path.is_dir():
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'size requested for non-directory path: {file_path}'}, cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
+        size = sum(file.stat().st_size for file in file_path.rglob("*") if file.is_file())
+        return WebResponse(
+            status_code = 200,
+            content_type = 'application/json',
+            body = json.dumps(size, cls=JSONEncoder),
+            headers = [],
+            is_binary = False,
         )
     else:
         return WebResponse(

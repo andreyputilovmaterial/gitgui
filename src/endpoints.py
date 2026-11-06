@@ -10,7 +10,9 @@ from .frontend.endpoints import (
     renderer_assets,
     handle_git_command,
     handle_textconv_request,
-    handle_request_functionality_endpoint,
+    handle_config,
+    handle_health,
+    handle_request_repo_endpoint,
     handle_request_files_endpoint,
 )
 
@@ -24,13 +26,16 @@ endpoints = {
     '/help': render_page_help,
     '/testpage': render_page_test,
 
+    '/config': handle_config,
+    '/health': handle_health,
+
     re.compile('^/assets/.*'): renderer_assets,
 
     re.compile(r'/command\b(.*)'): handle_git_command,
 
     re.compile(r'/textconv\b(.*)'): handle_textconv_request,
 
-    re.compile(r'/functionality\b(.*)'): handle_request_functionality_endpoint,
+    re.compile(r'/repo\b(.*)'): handle_request_repo_endpoint,
 
     re.compile(r'/browse\b(.*)'): handle_request_files_endpoint,
 }

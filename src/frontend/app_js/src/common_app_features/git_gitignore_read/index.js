@@ -14,7 +14,7 @@ function useGitignore(getAppSetupExports) {
     async function gitignoreRead() {
         const {repoStatus,repoActions,...exports} = getAppSetupExports();
         try {
-            const httpResponse = await fetch('/functionality/gitignore',{method:'GET',},);
+            const httpResponse = await fetch('/repo/gitignore',{method:'GET',},);
             if( !httpResponse.ok )
                 throw new Error( await makeFetchResponseErrorMessage(httpResponse) );
             const response = await httpResponse.text();

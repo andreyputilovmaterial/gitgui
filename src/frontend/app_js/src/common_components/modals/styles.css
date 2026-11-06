@@ -27,7 +27,8 @@
   container-type: inline-size;
 }
 .mdm-ui-modals-site .mdm-git-ui-modal-wrapper {
-  display: block;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   background: #ffffff;
   border: 1px solid #dddddd;
@@ -36,12 +37,24 @@
   left: 50%;
   top: 56px;
   width: 92%;
+  /* 56px = top offset, 30px = bottom gap so the window never touches the bottom edge */
+  max-height: calc(100vh - 56px - 30px);
+  max-height: calc(100dvh - 56px - 30px);
   transform: translateX(-50%);
   padding: 15px;
   container-type: inline-size;
 }
 .mdm-ui-modals-site .mdm-git-ui-modal-wrapper  iframe {
   margin: -4px -15px 0 -15px;
+}
+/* Only the inner content scrolls, so the dismiss "x" stays pinned to the
+   window's top-right corner. When the content is short there is nothing to
+   scroll here, so the page behind keeps scrolling (the desired behavior). */
+.mdm-ui-modals-site .mdm-git-ui-modal-wrapper .mdm-git-ui-modal-inner {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 @media all and (min-width: 1300px) {
     .mdm-ui-modals-site .mdm-git-ui-modal-wrapper {

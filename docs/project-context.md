@@ -54,8 +54,34 @@ add a templater (e.g. Jinja2):
   minimal and simple and seeing whether maintenance/readability actually
   suffers. Either outcome is useful knowledge.
 
+## Modals (frontend)
+
+- Modal infrastructure lives in `src/frontend/app_js/src/common_components/modals/`
+  and is exposed to components as `repoActions.createModal(ComponentOrVNode)` via
+  `common_app_features/app_modals` (mounted once as `<modals>` in `app.js`).
+- API: `const result = await repoActions.createModal(Comp)`. The modal component
+  receives `resolve`/`reject` props; `resolve(value)` resolves the promise with
+  `value`, `reject(reason)` rejects it. **Idiom:** rejecting with a non-Error
+  value means "user cancelled" (dismiss button / "x"); rejecting with an `Error`
+  means a real error. Callers `try/catch` the `await` and drop non-Error
+  rejections; real errors bubble up to `repoActions.logError` at root call sites.
+- The promise in `modals/_context.js` is the bridge between the global
+  `createModal()` entry point and the mounted `<modals>` placeholder (two
+  "parallel universes"). It resolves to the site's own `createModal` when the
+  site mounts; calls before mount are simply deferred until then.
+- Modal scrolling: `.mdm-git-ui-modal-wrapper` is `position: fixed; top: 56px`
+  with `max-height: calc(100vh - 86px)` (dvh fallback); only
+  `.mdm-git-ui-modal-inner` scrolls (`overflow-y: auto`). Small modals keep the
+  page-behind-scroll behavior; tall modals scroll internally and never clip
+  below the viewport.
+
 ## Last state
 
+- Documented the modal design contract across its participants (modals/index.js,
+  _context.js, component.js, app_modals, app.js) and fixed modal scrolling: the
+  wrapper now has `max-height` and only the inner content scrolls, so tall
+  modals scroll internally while small modals keep the page-behind-scroll
+  behavior.
 - Restructured the backend endpoint groups: the `/functionality/` group is now
   `/repo/` (gitignore, gitattributes, is-git-repo, existence-*, git-ls-pack-files).
   `config` and `health` moved to root (`/config`, `/health`). Folder-size

@@ -122,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'page-gitignore': PageGitignore,
       'page-packcompression': PagePackcompression,
       'terminalsession-view': TerminalSessionView,
+      // Single mounted placeholder where repoActions.createModal() renders each modal window.
       'modals': ModalsSite,
       'nav-links-manipulate-dummy-wrapper': ManipulateNavLinksDummyWrapper,
       'online-indicator': AppOnlineIndicator,
@@ -250,6 +251,9 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       // enriches with repoActions.createModal
+      // createModal(ComponentOrVNode) returns a promise; the modal component gets
+      // resolve/reject props (reject with a non-Error = cancel, reject with an
+      // Error = real error). Windows render into the single <modals> site above.
       registerResults(
         useModals( () => ({
           ...exports,

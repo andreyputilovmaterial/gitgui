@@ -14,6 +14,20 @@ import './styles.css';
 
 
 
+/*
+ * ModalsSite / Modal — the "placeholder" side of the modal system.
+ *
+ * The app root template renders a single `<modals>` element (see app.js); that
+ * element is ModalsSite. On mount it registers its own `createModal` function
+ * into the shared appContext (see _context.js), which connects the globally
+ * callable createModal() entry point (index.js) to this mounted site.
+ *
+ * Each modal window is rendered by `Modal`, which passes `resolve`/`reject`
+ * props to the modal component. The component calls:
+ *   resolve(value)  -> close with a value (resolves the createModal promise)
+ *   reject(reason)  -> cancel (non-Error) or error (Error) - rejects the promise
+ * See index.js for the full resolve/reject contract.
+ */
 const Modal = {
   props: [
     'component',
@@ -106,6 +120,8 @@ export const ModalsSite = {
     onMounted(async () => {
       await Promise.all([
         (function(){
+          // Connect this mounted site to the global createModal() (see _context.js).
+          // Until this runs, createModal() calls are deferred on appContext.modalsSitePromise.
           appContext.modalsSitePromiseResolve(createModal);
           appContext.modalsSitePromise = Promise.resolve(createModal);
         })(),

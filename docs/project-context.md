@@ -56,6 +56,14 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- Renamed the is-online health-check endpoint from `/functionality/isup.txt` to
+  `/functionality/health` in the main app backend
+  (`src/frontend/endpoints_functionality_path.py`, key `'/isup.txt'` → `'/health'`)
+  and the frontend poller
+  (`src/frontend/app_js/src/common_app_features/app__is_online/index.js`). The
+  `handle_isup` handler name was left unchanged. Note: the `src/lib/webinput`
+  submodule (project-selector) has its own separate `/functionality/isup.txt`
+  endpoint and was intentionally left out of scope.
 - Added docstrings + light type hints to `src/frontend/endpoints_html_paths.py`
   and the `src/frontend/template` helpers; fixed HTML escaping at the right
   boundary (escaped `pagename`/`version`, removed double-escaping of `title`/`h1`).

@@ -401,7 +401,7 @@ endpoints = {
     '/git-ls-pack-files': handle_git_list_pack_files,
     re.compile(r'^/dir-sizeof\b.*'): handle_dir_sizeof_files,
     '/config': handle_config,
-    '/isup.txt': handle_isup,
+    '/health': handle_isup,
 }
 
 def handle_request_functionality_endpoint(net_request_handler, config: dict,added_data=None):

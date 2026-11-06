@@ -20,7 +20,7 @@ function useIsOnline(getAppSetupExports) {
     const pollUpdates = async function () {
         const {repoStatus,repoActions,...exports} = getAppSetupExports();
         try {
-            const response = await fetch('/functionality/isup.txt',{method:'HEAD'});
+            const response = await fetch('/functionality/health',{method:'HEAD'});
             isOnlineData.isOnline = response.ok;
         } catch(e) {
             // repoActions.logError(`isOnline polling task failed: ${e}`);

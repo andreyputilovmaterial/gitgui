@@ -249,6 +249,13 @@ add a templater (e.g. Jinja2):
   .gitgui-button-close { margin: 0 }`. This concerns the confirm/cancel *pairs*
   (bulk restore, init-paths) that still use `gitgui-button-close`; the dedicated
   bottom Close buttons now use `mdm-btn mdm-modal-close` instead.
+- `myers-diff` (`repoActions.diff`) defaults to `compare: 'sequence'`: arrays are
+  compared element-by-element and strings character-by-character. String
+  line/word splitting is opt-in via `compare: 'lines'` / `compare: 'words'`
+  (`compare: 'chars'` is an alias for `'sequence'`). `diffview.js` relies on this
+  default for its array inputs; the terminal `grabAdditionsFromCommandString`
+  slices `rhs` by `at`/`add`, which are character indexes under the default
+  (line mode would mis-slice).
 
 ## Last review: rules vs. Zen of Python
 

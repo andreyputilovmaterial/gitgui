@@ -32,24 +32,3 @@
 .mdm-textconv-failed .mdm-git-gui-filecontents {
   color: #661111;
 }
-
-
-.mdm-git-gui-fileview .gitgui-button-close {
-  display: block;
-  min-width: 200px;
-  max-width: 600px;
-  background: #fff;
-  padding: 6px;
-  border-radius: 7px;
-  border-color: #ddd;
-  margin: 14px auto 0 0;
-  font-size: 15px;
-  font-weight: 300;
-  color: #555;
-  transition: 600ms all ease;
-}
-.mdm-git-gui-fileview .gitgui-button-close:hover{
-  /* background: #e0e0e0; */
-  /* border-color: #000; */
-  color: #000;
-}

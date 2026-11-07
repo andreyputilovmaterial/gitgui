@@ -75,6 +75,12 @@ add a templater (e.g. Jinja2):
   `.mdm-git-ui-modal-inner` scrolls (`overflow-y: auto`). Small modals keep the
   page-behind-scroll behavior; tall modals scroll internally and never clip
   below the viewport.
+- The bottom-of-modal **Close** button wears `mdm-btn mdm-modal-close` (standard
+  button skin + modal-close role). `.mdm-modal-close` lives in
+  `common_components/modals/styles.css` and sizes the button consistently while
+  adding `--mdm-space-0-5x` (15px) breathing room above it. Every modal with a
+  dedicated Close button (list-changed-files, show-message, file viewer,
+  gitignore help, ajax-page-view) uses these two classes.
 
 ## Records filter component (frontend)
 
@@ -240,7 +246,9 @@ add a templater (e.g. Jinja2):
   margin) overrides a component's `margin: 0` and spreads sibling buttons apart
   (one left, one center). Component button overrides must raise specificity,
   e.g. `.git-repo-modal-form-bulk-restore-choose-path .buttons-confirm
-  .gitgui-button-close { margin: 0 }`.
+  .gitgui-button-close { margin: 0 }`. This concerns the confirm/cancel *pairs*
+  (bulk restore, init-paths) that still use `gitgui-button-close`; the dedicated
+  bottom Close buttons now use `mdm-btn mdm-modal-close` instead.
 
 ## Last review: rules vs. Zen of Python
 

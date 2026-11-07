@@ -30,7 +30,7 @@ const View = {
       <div class="stats" v-if="['number','string'].includes(typeof size)"><span title="How many bytes were read by textconv utility - not necessarily the full size of file">File size<sup>*</sup>: </span><component-format-filesize :size="size" /></div>
       <div class="stats" v-if="!!headersRecognized?.type">Textconv processor: {{ headersRecognized?.type }}</div>
       <textarea readonly disabled class="mdm-git-gui-filecontents">{{ contentAsText }}</textarea>
-      <div><input type="submit" value="Close" class="gitgui-button-close"></input></div>
+      <div><button type="submit" class="mdm-btn mdm-modal-close">Close</button></div>
     </fieldset>
   </form>
 </div>

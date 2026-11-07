@@ -121,3 +121,15 @@
   /* border-color: #000; */
   color: #000;
 }
+
+/* Close button inside a modal window: the standard `mdm-btn` skin plus this
+   role class, which sizes it consistently across modal windows and leaves
+   modular breathing room above it. */
+.mdm-btn.mdm-modal-close {
+  display: block;
+  min-width: 200px;
+  max-width: 600px;
+  margin: var(--mdm-space-0-5x) 0 0;
+  padding: 0.5em 1.2em;
+  font-size: 16px;
+}

@@ -30,7 +30,7 @@
     max-height: 600px;
 }
 
-.mdm-git-gui-popupview-list-changed-files .gitgui-button-close:hover {
+.mdm-git-gui-popupview-list-changed-files .mdm-modal-close:hover {
     color: #385;
 }
 

@@ -32,7 +32,7 @@ const View = {
       </section>
     </div>
   </fieldset>
-  <div class="mdmreport-controls"><input type="button" value="Close" @click.prevent="reject" class="mdmreport-buttom mdm-git-gui-button-close gitgui-button-close"></input></div>
+  <div class="mdmreport-controls"><button type="button" @click.prevent="reject" class="mdm-btn mdm-modal-close">Close</button></div>
 </div>
 `,
   setup() {

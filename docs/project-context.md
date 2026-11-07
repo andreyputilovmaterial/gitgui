@@ -29,8 +29,9 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 ## Conventions
 
 - `.clinerules/` holds the machine rules: architecture/imports, frontend/build,
-  testing, code style & errors, JS, CSS, commit messages, dates & time, optional
-  dependencies, the `common.css` changelog rule, and this project-context rule.
+  testing, code style & errors, JS, CSS, commit messages, GitHub issues in
+  commits, dates & time, optional dependencies, the `common.css` changelog rule,
+  and this project-context rule.
 - Global CSS `src/frontend/template/templates/common.css` is a shared "skin";
   every change must be logged in the adjacent `common.css.changelog.md`.
 - `docs/maintenance-log.md` holds cross-project structural notes (import style,
@@ -109,6 +110,16 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- Adopted `.clinerules/09-github-issues.md` (scan open GitHub issues and match
+  them against pending changes when writing commit messages) from the sibling
+  MDM-Diff-py project.
+- Verified and closed issue #77 ("Clarify/refactor executeCliCommand method in
+  app.js"): commit c1466e2 documents the command flags (`is_binary`,
+  `is_interactive`, `attachExistingJob`) and the `cli.js` vs app-wrapper
+  separation; the old method is now `_executeGitCommand` plus
+  `executeGitCommand`/`executeGitAsyncCommand`/`executeGitBinaryCommand`/
+  `attachToRunningCommand` in `git__execute_commands/index.js`. Closed via the
+  GitHub API with a comment.
 - `src/lib/webinput` submodule: added a `/assets/<name>` endpoint. Static,
   non-importable files live in `src/lib/webinput/src/endpoints/assets_static/`; a
   build-time `build_assets.py` turns them into the gitignored

@@ -131,6 +131,20 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- History page (`app/page_revisions_list/`): added a **"Find within history"** box
+  directly below "Compare selected versions" — its own `<form>` holding a
+  regex-capable search input (`component-input-regextext`, `v-model` on
+  `searchQuery`) + "Search" submit button on one line, so Enter / button click /
+  any standard trigger fires the form's `submit` event. `handleFindInHistory` is
+  a TODO placeholder for the future activity; the input's placeholder hints at
+  the intended pickaxe-style search ("Search for added or removed code, e.g. a
+  function name…"). The compare form was split so it no longer wraps
+  `<history-records>` (the compare radio boxes use `v-model`, not form
+  serialization), which lets the new form be a *sibling* instead of an invalid
+  nested `<form>`; the busy overlay now covers only the compare box. The search
+  row uses a flex container (`.mdm-git-gui-history-search-row` in `style.css`)
+  rather than a `.mdmreport-controls-group`, so the input stays inline instead
+  of being stretched to `width: 100%` by the group rules.
 - Added a 6th app-level tab **Tools** (`id="tools"`) as a grab-bag for ad-hoc
   ideas. It renders `apptab_tools/index.js`, which pushes `page_tools_home` — a
   data-driven list of tool "sections" — onto a `pages-site`. Each section is one

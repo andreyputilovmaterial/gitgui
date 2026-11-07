@@ -161,3 +161,27 @@
   border-color: transparent;
 }
 
+/* "Find within history" box: one row with a label, an expanding regex-capable
+   search input and a Search submit button. The row is its own flex container
+   (not a .mdmreport-controls-group), so the input stays inline instead of
+   being stretched to 100% width by the group rules. */
+.mdm-git-gui-page-history-overview .mdm-git-gui-history-search .mdm-git-gui-history-search-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mdm-space-0-25x);
+}
+.mdm-git-gui-page-history-overview .mdm-git-gui-history-search .mdm-git-gui-history-search-row label {
+  flex: 0 0 auto;
+  padding: 0;
+  line-height: 1.5;
+}
+.mdm-git-gui-page-history-overview .mdm-git-gui-history-search .mdm-git-gui-history-search-row .mdm-git-gui-history-search-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.mdm-git-gui-page-history-overview .mdm-git-gui-history-search .mdm-git-gui-history-search-row button {
+  flex: 0 0 auto;
+}
+

@@ -22,14 +22,32 @@ const View = {
   template: `
 <div class="mdm-git-gui-historyoverview mdm-git-gui-page-history-overview">
   <p v-if="!isCompactView" class="description">History of revisions. Each is a snapshot of your files at that point in time.</p>
-  <form v-if="!isCompactView" @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+  <template v-if="!isCompactView">
     <div class="error">{{ error }}</div>
     <div class="error">{{ validationMessage }}</div>
     <template v-if="!repoStatus?.historyData?.history && !error">
       Querying data, please wait...
     </template>
     <template v-else-if="!!repoStatus?.historyData?.history">
-      <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
+      <form @submit.prevent="handleCompare" :class="\`mdmreport-controls \${isBusy ? 'mdmreport-form-busy' : ''}\`">
+        <div class="top-row mdmreport-banner"><fieldset class="mdmreport-controls">Compare selected versions: <button type="submit">Compare</button></fieldset></div>
+      </form>
+      <form @submit.prevent="handleFindInHistory" class="mdmreport-controls mdm-git-gui-history-search">
+        <div class="top-row mdmreport-banner">
+          <fieldset class="mdmreport-controls">
+            <div class="mdm-git-gui-history-search-row">
+              <label for="find-in-history-query">Find within history:</label>
+              <component-input-regextext
+                id="find-in-history-query"
+                v-model="searchQuery"
+                class="mdm-git-gui-history-search-input"
+                placeholder="Search for added or removed text"
+              />
+              <button type="submit">Search</button>
+            </div>
+          </fieldset>
+        </div>
+      </form>
       <history-records
         :history="repoStatus?.historyData?.history"
         :formVerCompareFields="formVerCompareFields"
@@ -37,7 +55,7 @@ const View = {
         :repoActions="repoActions"
       />
     </template>
-  </form>
+  </template>
   <history-records-compact
     v-else
     :history="repoStatus?.historyData?.history"
@@ -60,6 +78,7 @@ const View = {
     });
     const validationMessage = ref('');
     const error = ref('');
+    const searchQuery = ref('');
     const isCompactView = computed(()=>props.viewMode==='compact');
 
     const navigateVersionComparePage = async () => {
@@ -93,13 +112,20 @@ const View = {
       }
     };
 
+    const handleFindInHistory = async () => {
+      // TODO: launch the "find within history" activity here. The submitted
+      // query is available as `searchQuery.value`.
+    };
+
     return {
       isBusy,
       error,
       isCompactView,
       formVerCompareFields: formFields,
       validationMessage,
+      searchQuery,
       handleCompare,
+      handleFindInHistory,
     };
   },
 };

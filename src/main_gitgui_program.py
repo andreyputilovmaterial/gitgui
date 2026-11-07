@@ -30,6 +30,7 @@ from .GENERATED.VERSION import _VERSION as script_version
 from .GENERATED.HELP import _MD as help_md
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
 from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner, assess_python_ver
+from .helper_webserve_logging import WebserveLogger
 
 from .endpoints import endpoints
 
@@ -174,8 +175,16 @@ def main(*argcs,**kwargs):
     }
     print(f'CONFIG:\n{prettyprint_config(cfg_to_print_verify)}')
     print('\n')
-    server = Webserver(config,is_threading=CONFIG_WEBSERVER_MULTITHREADED) # a wrapper around python http.server - no flask or django
+    server = Webserver(config,is_threading=CONFIG_WEBSERVER_MULTITHREADED, logging_enabled=False) # a wrapper around python http.server - no flask or django
     server.assign_handlers(endpoints)
+
+    # webserve's built-in console logging is off (logging_enabled=False above); we
+    # re-implement it here by subscribing to webserve's events. The log is also
+    # captured in config so an endpoint can expose it later.
+    webserve_logger = WebserveLogger(config)
+    server.events.subscribe(webserve_logger.handle_event)
+    config['webserve_log_records'] = webserve_logger.records
+
     # print(f'{STDOUT_COLOR_GREEN}starting webserver at {config.get("http_address")}{STDOUT_COLOR_RESET}')
 
     launch_browser(f'{config.get("http_address")}/')

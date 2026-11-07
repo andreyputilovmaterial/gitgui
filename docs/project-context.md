@@ -38,6 +38,26 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
   bundling/call conventions) shared with sibling projects of the same shape;
   repo-specific notes stay in `docs/project-context.md`.
 
+## webserve logging & events
+
+- `src/webserver_engine/webserve` now **emits structured events** instead of
+  printing to the console, and its built-in console logging is behind a
+  `logging_enabled` constructor arg (default `True`).
+- Events (via `Webserver.events.subscribe(listener(event_name, payload))`):
+  `webserver_start`, `webserver_stop`, `request` (method/path/status_code/
+  timestamp/remote_address/request_line/response_size), and `error`
+  (message + traceback). Fail-loud errors (`as_chunks` chunk-size parse,
+  body-drain notice) stay as direct `print(..., file=sys.stderr)` and are never
+  silenced.
+- The caller (`src/main_gitgui_program.py`) creates the webserver with
+  `logging_enabled=False`, subscribes `src/helper_webserve_logging.py`'s
+  `WebserveLogger` to the events, and stores the capped (10k) JSON-safe log in
+  `config['webserve_log_records']` (a live list, like `info`/`warnings`).
+- `WebserveLogger` uses the stdlib `logging` module with two handlers — INFO →
+  stdout (start/request/stop), WARNING+ → stderr (errors/notices) — and
+  reproduces the old coloring. The submodule documents this change in
+  `src/webserver_engine/webserve/docs/maintenance-log.md`.
+
 ## Templating (no Jinja2)
 
 HTML pages are rendered by a small self-rolled layer

@@ -113,6 +113,21 @@ add a templater (e.g. Jinja2):
   (case-insensitive substring when off, `new RegExp(text)` when on; invalid
   regexes while typing match nothing). It is now the default input for text and
   unspecified/"uncertain type" columns, with regex mode **off** by default.
+- The filter-field row is now a responsive CSS **grid** (was a flex-wrap row):
+  `.mdm-ui-recordsfilter .mdm-ui-recordsfilter-form .mdmreport-controls-group`
+  uses `grid-template-columns: 1fr` (mobile-first, one field per line) and, via
+  `@container (min-width: 220px)`, `repeat(auto-fill, minmax(220px, 1fr))`. Each
+  column `<label>` is a vertical flex stack, so every control — text, number,
+  datetime — is the **same width** (the old mismatch: regex boxes were wider,
+  date/number narrower). The group's shared negative side margins are
+  neutralized (`margin: 0`) inside this row; the label's `0 7px` padding still
+  provides the horizontal gap. Effectively a new column every ~220px of the row
+  (~660/880/1100 container widths minus the banner's 28px padding), with 5
+  columns (20% each) at a 1200px container. Removed the now-dead compact-view
+  `flex: 0 0 33.31%` override in `page_files_local_list/style.css` (a no-op on
+  grid items). The layout resolves against the nearest ancestor `container-type`
+  (page root / `.mdm-ui-pages` / modal wrapper), which every consumer already
+  provides.
 
 ## Last state
 

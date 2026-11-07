@@ -132,8 +132,6 @@
 
 
 
-@container (min-width: 450px) and (max-width: 750px) {
-  .mdm-git-gui-fileslistview.mdm-git-gui-fileslistview-compact > form > .mdm-ui-recordsfilter-form > .mdmreport-controls-group > *{
-    flex: 0 0 33.31%;
-  }
-}
+/* The filter form's own styles.css now lays the filter fields out as a
+   responsive grid, so the compact files list inherits that layout instead of
+   overriding `flex` here (a no-op on grid items). */

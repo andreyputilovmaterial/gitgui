@@ -9,8 +9,32 @@
 
 
 
-.mdm-ui-recordsfilter-form .mdmreport-controls-group {
-  display: flex; flex-direction: row; flex-wrap: wrap;
+/* The per-column filter fields form a responsive grid. Each field is a full row
+   on the narrowest containers, then wraps into as many equal-width columns as
+   fit at a minimum of 220px per field (1 -> 2 -> 3 -> 4 -> 5 ... as the
+   container grows), so every control - text, number, datetime - ends up the
+   same width. The shared `.mdmreport-controls-group` negative side margins are
+   neutralized here (they are only meant for the inline label+control rows);
+   the label side-padding keeps supplying the horizontal gap. */
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-form .mdmreport-controls-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+@container (min-width: 220px) {
+  .mdm-ui-recordsfilter .mdm-ui-recordsfilter-form .mdmreport-controls-group {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+/* Each column label is a vertical stack - label text on top, control below -
+   that stretches to fill its grid cell, so all filter boxes line up regardless
+   of the input type. */
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-form .mdmreport-controls-group label {
+  display: flex;
+  flex-direction: column;
 }
 
 .mdm-ui-recordsfilter-content > .hidden, .mdm-ui-recordsfilter-content > * > .hidden {

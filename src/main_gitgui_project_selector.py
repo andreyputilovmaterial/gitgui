@@ -55,12 +55,12 @@ def prep_qre(choices):
             QuestionTypeSinglePunch(
                 name = 'project',
                 label = 'Please select a project to open',
-                categories = set(
+                categories = [
                     Category(
                         name = record.get('name'),
                         label = make_project_label(record),
                     ) for record in choices
-                )
+                ]
             )
         ],
     )

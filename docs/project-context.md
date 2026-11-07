@@ -104,9 +104,8 @@ add a templater (e.g. Jinja2):
   that turns green (`--mdm-color-green`) when regex mode is on. It emits
   `{ text, regex }`; `filter_records_form/match/regex_text.js` interprets it
   (case-insensitive substring when off, `new RegExp(text)` when on; invalid
-  regexes while typing match nothing). Regex mode is now the **default** for
-  text and unspecified/"uncertain type" columns (`regexDefault: true` is passed
-  by the filter component).
+  regexes while typing match nothing). It is now the default input for text and
+  unspecified/"uncertain type" columns, with regex mode **off** by default.
 
 ## Last state
 

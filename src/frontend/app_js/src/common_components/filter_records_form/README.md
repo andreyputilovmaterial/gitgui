@@ -23,7 +23,7 @@ the filter/sort controls and hands you back the processed list.
 
 | Prop            | Type    | Meaning |
 |-----------------|---------|---------|
-| `columns`       | object  | Filterable columns in display order. Each value is a label string (a `text` column) or `{ label, type }` where `type` is `'text'` (default), `'number'`, or `'datetime'`. Text and unspecified ("uncertain type") columns are regex-capable and match by regex by default — the `.*` toggle switches to case-insensitive substring. |
+| `columns`       | object  | Filterable columns in display order. Each value is a label string (a `text` column) or `{ label, type }` where `type` is `'text'` (default), `'number'`, or `'datetime'`. Text and unspecified ("uncertain type") columns use the regex-capable input but match by case-insensitive substring by default — the `.*` toggle switches to regex matching. |
 | `keyField`      | string  | Unique key per record, used to track per-record visibility across re-renders. Defaults to the first column. |
 | `records`       | array   | The records to filter / sort / paginate. |
 | `needSort`      | boolean | Show the "Sort by" controls. |
@@ -121,10 +121,10 @@ returns:
 
 Text columns (including unspecified/"uncertain type" columns) use the
 regex-capable text input: a normal-looking text box with a `.*` toggle on the
-right. Regex mode is **on by default** (the `.*` is green), so the typed value is
-treated as a regular expression (`new RegExp(text)`); an invalid expression while
-typing simply matches nothing. Clicking the `.*` switches to case-insensitive
-substring matching, exactly like the old `text` behavior.
+right. Regex mode is **off by default**, so the typed value filters by
+case-insensitive substring, exactly like the old `text` behavior. Clicking the
+`.*` (it turns green) switches to regular-expression matching
+(`new RegExp(text)`); an invalid expression while typing simply matches nothing.
 
 The input emits `{ text, regex }` as its value, so the column's stored filter
 value is that object — see `match/regex_text.js`. `type: 'regextext'` is still

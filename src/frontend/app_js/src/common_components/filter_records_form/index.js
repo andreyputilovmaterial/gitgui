@@ -75,13 +75,6 @@ const FormWrapper = {
                   )
                 )
               "
-              v-bind="
-                (
-                  ['number','datetime'].includes( columnsSanitized[col].type )
-                  ? {}
-                  : { regexDefault: true }
-                )
-              "
               :value="formFields.columns[col]"
               class="mdmreport-control"
               @input="handleFilterChange(col, $event)"

@@ -7,3 +7,4 @@ from .exposed import (
     terminate_job,
 )
 from .worker import initiate_worker_loop
+from .perf import get_jobs_perf_stats

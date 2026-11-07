@@ -51,6 +51,25 @@ def handle_config(net_request_handler, config: dict, added_data=None):
     )
 
 
+def handle_perf(net_request_handler, config: dict, added_data=None):
+    """Return live job perf statistics (counts + approximate memory sizes).
+
+    See src/cli_proxy_caller/perf.py for the measurement model.
+    """
+    WebResponse = config.get('iface').get('WebResponse')
+    get_jobs_perf_stats = config.get('iface').get('get_jobs_perf_stats')
+    if get_jobs_perf_stats is None:
+        payload = {'status': 'error', 'error': 'jobs perf stats are not available'}
+    else:
+        payload = get_jobs_perf_stats()
+    return WebResponse(
+        status_code = 200,
+        content_type = 'application/json',
+        body = json.dumps(payload, cls=JSONEncoder),
+        headers = [],
+    )
+
+
 def handle_health(net_request_handler, config: dict, added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     method = net_request_handler.command

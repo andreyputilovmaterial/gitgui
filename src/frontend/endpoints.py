@@ -15,6 +15,7 @@ from .endpoints_git_command_path import (
 from .endpoints_app_path import (
     handle_config,
     handle_health,
+    handle_perf,
 )
 from .endpoints_repo_path import (
     handle_request_repo_endpoint,

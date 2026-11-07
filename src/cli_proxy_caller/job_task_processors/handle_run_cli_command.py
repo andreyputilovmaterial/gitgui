@@ -55,18 +55,19 @@ def handler(context,task,job):
             job.stdout = result.stdout
             job.stdout_reader  = None
         else:
+            # Binary: expose the captured bytes through a single shared
+            # io.BytesIO. subprocess.run() has already buffered the full output
+            # into result.stdout, so wrapping it once (and reusing that wrapper
+            # across reader calls) avoids re-copying the payload on every call.
+            # Capturing only the buffer — not `result` itself — also releases
+            # result.stdout/result.stderr (the raw bytes) once this block exits,
+            # since job.stderr already holds the decoded text; that keeps the
+            # retained graph minimal (see perf.py, which measures it).
+            stdout_buf = io.BytesIO(result.stdout)
+
             def stdout_reader():
-                # # result = '' if not is_binary else b''
-                # # while True:
-                # #     chunk = result.stdout.read(8192)
-                # #     if not chunk:
-                # #         break
-                # #     result += chunk
-                # # return result
-                # chunks = [result.stdout]
-                # yield from chunks
-                return io.BytesIO(result.stdout if is_binary else result.stdout.encode('utf-8'))
-            # job.stdout = None
+                return stdout_buf
+
             job.stdout_reader = stdout_reader
         if not is_binary:
             job.stderr = result.stderr

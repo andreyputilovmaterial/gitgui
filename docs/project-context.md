@@ -297,6 +297,30 @@ add a templater (e.g. Jinja2):
   `promiseDownloadLinkReady` → `fetch`/`PUT` first, then a single
   `Promise.all([...])` at the end (never in creation order).
 
+## Job memory monitoring (`cli_proxy_caller/perf.py`)
+
+- `get_jobs_perf_stats()` returns a JSON-safe per-job + total memory-footprint
+  snapshot of `context.jobs`, exposed as `GET /perf` (`handle_perf` in
+  `src/frontend/endpoints_app_path.py`, route in `src/endpoints.py`).
+- `deep_size` is a stdlib-only deep-size estimator: it walks containers,
+  dataclass `__dict__`/`__slots__`, and — crucially — function `__closure__`
+  captures, because a `stdout_reader` closure is where buffered output (e.g. a
+  `subprocess.run(capture_output=True)` result) is pinned. It never walks
+  `__globals__`/`__class__`.
+- It measures *footprint*, not *throughput*: child-process memory (`Popen`) and
+  kernel pipe buffers are counted only as their small Python wrappers; total
+  bytes passed through a stream would need an instrumented counter, not a
+  snapshot.
+- `BytesIO` already reports its buffer via `getsizeof`; only `memoryview` needs
+  `nbytes` added. `str`/`bytes`/`bytearray` payloads are exact.
+- No-retention guarantee: measuring returns only ints/strings and holds refs only
+  for the duration of the call, so it can't extend a job's lifetime (covered by
+  `tests/test_cli_proxy_caller_perf.py`).
+- Improvement in `handle_run_cli_command.py`: the binary reader now caches a
+  single `BytesIO` and captures only the buffer (not the whole `subprocess.run`
+  result), so the raw `result.stdout`/`result.stderr` bytes are released when the
+  handler exits instead of being pinned by the reader closure.
+
 ## Known gotchas
 
 - The CSS rules tolerate two naming conventions — `mdm-*` (current) and the

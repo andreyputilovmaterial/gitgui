@@ -12,6 +12,7 @@ from .frontend.endpoints import (
     handle_textconv_request,
     handle_config,
     handle_health,
+    handle_perf,
     handle_request_repo_endpoint,
     handle_request_files_endpoint,
 )
@@ -28,6 +29,7 @@ endpoints = {
 
     '/config': handle_config,
     '/health': handle_health,
+    '/perf': handle_perf,
 
     re.compile('^/assets/.*'): renderer_assets,
 

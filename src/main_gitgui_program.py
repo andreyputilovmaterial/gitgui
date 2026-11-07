@@ -18,6 +18,7 @@ from .cli_proxy_caller import (
     get_job as cli_command_get_job,
     get_job_stdout_reader as cli_command_get_job_stdout_reader,
     terminate_job as cli_command_terminate_job,
+    get_jobs_perf_stats,
 )
 from .textconv import (
     textconv_from_data,
@@ -118,6 +119,7 @@ def main(*argcs,**kwargs):
             'cli_command_get_job': cli_command_get_job,
             'cli_command_get_job_stdout_reader': cli_command_get_job_stdout_reader,
             'cli_command_terminate_job': cli_command_terminate_job,
+            'get_jobs_perf_stats': get_jobs_perf_stats,
             'WebResponse': WebResponse,
             'HTTP403': HTTP403,
             'HTTP404': HTTP404,

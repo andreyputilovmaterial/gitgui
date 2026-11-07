@@ -69,14 +69,6 @@ echo -
 
 
 
-echo "Pull necessary project submodules"
-git submodule update --init --recursive
-echo "done"
-echo -
-echo -
-
-
-
 echo "Produce \"$DIST_DIR\" - clear up and re-create"
 rm -rf -- "$DIST_DIR" || true
 mkdir -p -- "$DIST_DIR"

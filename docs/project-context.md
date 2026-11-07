@@ -13,7 +13,7 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 ## Build & test
 
 - `build.sh` is the single build entry point; it works after a fresh clone
-  (`git submodule update --init --recursive`) and does not require Node.
+  and does not require Node.
 - Node/Vite/Vitest may be used only to speed up frontend development/tests.
 - Development tests live in `tests/` (not bundled). `tests-real-sensitive-data/`
   is gitignored and must never be committed.
@@ -110,6 +110,9 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- Removed `git submodule update --init --recursive` from `build.sh` (submodule
+  initialization is no longer part of the build; the outer `build.sh` still runs
+  the webinput submodule's own `build.sh`).
 - Adopted `.clinerules/09-github-issues.md` (scan open GitHub issues and match
   them against pending changes when writing commit messages) from the sibling
   MDM-Diff-py project.

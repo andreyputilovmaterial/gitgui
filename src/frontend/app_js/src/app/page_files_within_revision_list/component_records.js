@@ -23,7 +23,7 @@ const Records = {
   <div class="error">{{ bulkRestoreValidationMessage }}</div>
   <p class="note bulk-restore-notice mdmreport-banner" v-if="!inBulkRestoreMode">Or <a href="#!" class="build-restore-link" @click.prevent="inBulkRestoreMode=true">bulk-restore</a> files directly to disk, without downloading large files from operating memory.</p>
   <div v-if="inBulkRestoreMode" class="bulk-restore-submit-controls mdmreport-banner mdmreport-controls">
-    <div class="mdmreport-controls-group restore-submit-controls-line">
+    <div class="mdmreport-controls-group restore-submit-controls-line mdmreport-controls-group-nonegmargin">
       <button
         type="button"
         class="mdmreport-control button-check-all"

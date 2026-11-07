@@ -15,7 +15,7 @@ const ModalConfirmContinueIfPathsNotVerified = {
   template: `
 <form  @submit.prevent="handleSubmit" class="gitgui-modal-form git-repo-modal-form-bulk-restore-choose-path mdmreport-controls">
   <p>Please paste the path where you want your files saved.</p>
-  <div class="mdmreport-controls-group">
+  <div class="mdmreport-controls-group mdmreport-controls-group-nonegmargin">
     <div class="error">{{ validationMessage }}</div>
     <input v-model="formFields.dest" class="mdmreport-control" ref="refInput" />
   </div>

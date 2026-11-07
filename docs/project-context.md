@@ -222,6 +222,25 @@ add a templater (e.g. Jinja2):
   three-branch `__name__` import split. They are not entry-point modules, so the
   `__package__` split does not apply to them; `make_html.py`'s split is a
   dev-vs-bundle asset-sourcing choice, not an entry-point pattern.
+- `.mdmreport-controls-group` carries negative side margins to cancel the 7px
+  side padding that its `label`/`legend` children add. Only use it for that
+  label+control pattern. A group holding a bare full-width control (e.g. a
+  single `<input class="mdmreport-control">` or a row of `.mdmreport-control`
+  buttons) must add `mdmreport-controls-group-nonegmargin`, or the negative
+  margins make the control 14px too wide and any `overflow` ancestor (like the
+  modal `.mdm-git-ui-modal-inner`) clips its left/right borders. Note the
+  component CSS `margin: 0` overrides (e.g. in `style_bulk_restore_form.css`)
+  are silently defeated: `app_form_control_adjustments.css` is emitted later in
+  the bundle with equal specificity, so its `-7px` margins win — the
+  `nonegmargin` class is the reliable opt-out (it has a `.mdm-git-ui-app`-scoped
+  `0,3,0` override).
+- Same cascade shape bites modal buttons: the generic
+  `.gitgui-modal-form .gitgui-button-close` (in `modals/styles.css`) is emitted
+  *after* component CSS, so its `margin: 14px auto 0 0` (the `auto` right
+  margin) overrides a component's `margin: 0` and spreads sibling buttons apart
+  (one left, one center). Component button overrides must raise specificity,
+  e.g. `.git-repo-modal-form-bulk-restore-choose-path .buttons-confirm
+  .gitgui-button-close { margin: 0 }`.
 
 ## Last review: rules vs. Zen of Python
 

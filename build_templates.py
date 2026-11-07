@@ -17,18 +17,8 @@ from bs4 import BeautifulSoup
 
 
 
-if __name__ == '__main__':
-    # run as a program
-    from src.frontend.template.minify_assets import minify_js, minify_css
-    from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
-elif '.' in __name__:
-    # package
-    from .src.frontend.template.minify_assets import minify_js, minify_css
-    from .src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
-else:
-    # included with no parent package
-    from src.frontend.template.minify_assets import minify_js, minify_css
-    from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
+from src.frontend.template.minify_assets import minify_js, minify_css
+from src.frontend.bundler_engine.lib.py_js_bundler.src.run import process as pack_js
 
 
 

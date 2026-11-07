@@ -284,10 +284,14 @@ add a templater (e.g. Jinja2):
   "one obvious way to do it", justified in the rules by reading `mdmreport-`
   as brand `mdm` + feature `report`.
 - `build_templates.py` (build-time tool, repo root) and
-  `src/frontend/template/make_html.py` (bundled) still use the older
-  three-branch `__name__` import split. They are not entry-point modules, so the
-  `__package__` split does not apply to them; `make_html.py`'s split is a
-  dev-vs-bundle asset-sourcing choice, not an entry-point pattern.
+  `src/frontend/template/make_html.py` (bundled) used to carry the older
+  three-branch `__name__` import split, but that split never did anything for
+  them: neither is an entry-point module, and the `__package__` split does not
+  apply to them. They are now plain imports — `build_templates.py` uses absolute
+  `src.*` imports (it always runs as a script), and `make_html.py` uses relative
+  imports, keeping only its `is_in_pinliner()` dev-vs-bundle asset-sourcing
+  choice (`from . import template` in dev vs
+  `from .GENERATED.TEMPLATE_COMPILED import TEMPLATE` in the bundle).
 - `.mdmreport-controls-group` carries negative side margins to cancel the 7px
   side padding that its `label`/`legend` children add. Only use it for that
   label+control pattern. A group holding a bare full-width control (e.g. a

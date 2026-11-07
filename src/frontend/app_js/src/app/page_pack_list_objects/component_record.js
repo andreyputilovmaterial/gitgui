@@ -4,6 +4,7 @@ import { h, computed } from 'vue';
 import './style.css';
 
 import PageFilesList from '@/app/page_files_within_revision_list/index.js';
+import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 
 
@@ -67,7 +68,7 @@ const PackRecord = {
     'componentRecordsFiltData',
   ],
   template: `
-<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...(componentRecordsFiltData?.cssClasses||[])]">
+<div :class="['mdm-ui-record','mdm-git-gui-pack-object-record',...recordsFilterClasses(componentRecordsFiltData)]">
   <span class="blob-record-element hash" title="Pack object hash">
     <span class="label">Pack object hash: </span>
     <component-format-hash :hash="hash" highlight="auto" />
@@ -163,6 +164,7 @@ const PackRecord = {
       navigateRevisionPage,
       objectSizeWarningColor,
       objectSizeWarningLevel,
+      recordsFilterClasses,
     };
 
   },

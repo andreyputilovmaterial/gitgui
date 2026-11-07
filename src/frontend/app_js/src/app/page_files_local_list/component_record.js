@@ -2,6 +2,7 @@
 import { ref, h, computed } from 'vue';
 
 import PageFileView from '@/app/window_fileviewer/index.js';
+import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 import './style.css';
 
@@ -31,7 +32,7 @@ const Record = {
     ...(!!fileModifiedWorkingTree||!!fileModifiedIndex ? ['files-record-mod'] : []),
     ...(!!fileMergeConflict ? ['files-record-mergeconflict'] : []),
     ...(!!fileTracked ? ['files-record-tracked'] : []),
-    ...(componentRecordsFiltData?.cssClasses||[]),
+    ...recordsFilterClasses(componentRecordsFiltData),
   ]"
   :key="filepath"
   :data-recordsfilter-filepath="filepath"
@@ -147,6 +148,7 @@ const Record = {
       fileMergeConflict,
       fileTracked,
       error,
+      recordsFilterClasses,
     };
   },
 };

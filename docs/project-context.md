@@ -75,8 +75,40 @@ add a templater (e.g. Jinja2):
   page-behind-scroll behavior; tall modals scroll internally and never clip
   below the viewport.
 
+## Records filter component (frontend)
+
+- `src/frontend/app_js/src/common_components/filter_records_form/` is the uniform
+  filter + sort + paginate wrapper (`<component-filter-records-form>`) used by
+  every record list. See its README for the full usage contract.
+- Refactored to a **scoped slot** API: the component computes the processed list
+  and exposes it as the slot prop `{ records }`. Consumers no longer need a
+  template `ref` + a `computed` calling `paginateAndSort`.
+- The leaf-side "apply my classes" requirement is a single helper,
+  `recordsFilterClasses(componentRecordsFiltData)` (named export of the same
+  module), spread into each record's root `:class` — replacing the inline
+  `...(componentRecordsFiltData?.cssClasses||[])`.
+- Gotcha: the helper must be **returned from `setup()`** (or registered globally);
+  a Vue template cannot call a bare imported function. A missing return is a
+  runtime *render* error, not a bundling error — the bundler only tokenizes JS
+  and does not compile Vue templates.
+- Two-layer filtering is intentional and preserved: never-shown records are
+  dropped from the rendered array; previously-shown records are CSS-hidden
+  (`display:none`) so re-showing is instant while typing. The keep-alive grace
+  period is now a named constant `RECORDS_VISIBILITY_GRACE_MS` = 15000 ms
+  (was a hardcoded 300000 / "5 minutes").
+- Fixed latent bugs in the component: undefined `len`, `Exception`, and `logErr`
+  (now `records.length`, `Error`, and `import logErr from '../_log_error_proxy'`).
+
 ## Last state
 
+- Fixed a runtime render error where `recordsFilterClasses` wasn't returned from
+  `setup()` (templates can't call bare imports); now returned by all 8 leaf record
+  components. Added a global safety net in `app__error_reporting` that routes
+  uncaught `error`/`unhandledrejection` events to the error banner + console
+  (skipping resource-load errors and non-Error "user cancelled" rejections).
+- Reworked the records-filter component into a scoped-slot API and documented the
+  usage pattern (see "Records filter component" above); fixed the `len`/
+  `Exception`/`logErr` bugs; made the CSS-hide grace period a named 15 s constant.
 - Documented the modal design contract across its participants (modals/index.js,
   _context.js, component.js, app_modals, app.js) and fixed modal scrolling: the
   wrapper now has `max-height` and only the inner content scrolls, so tall

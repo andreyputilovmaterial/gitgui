@@ -4,6 +4,7 @@ import { ref, h } from 'vue';
 import FormCompareVersionsControls from './component_ver_compare_radioboxes.js';
 
 import PageFilesList from '@/app/page_files_within_revision_list/index.js';
+import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 import './style.css';
 
@@ -63,7 +64,7 @@ const Record = {
   ],
   template: `
 <div
-  :class="['mdm-git-gui-history-record','history-record','history-record-compact','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...(componentRecordsFiltData?.cssClasses||[])]"
+  :class="['mdm-git-gui-history-record','history-record','history-record-compact','mdm-ui-record',...(isHEAD?['history-record-HEAD']:[]),...recordsFilterClasses(componentRecordsFiltData)]"
   :key="hash"
   :data-recordsfilter-hash="hash"
   :data-recordsfilter-author="author"
@@ -119,6 +120,7 @@ const Record = {
       isHEAD,
       isWorktree,
       isIndex,
+      recordsFilterClasses,
     };
   },
 };

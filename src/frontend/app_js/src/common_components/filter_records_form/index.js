@@ -6,6 +6,8 @@ import matchText from './match/text';
 import matchNumericRange from './match/numeric_range';
 import matchDatetimeRange from './match/datetime_range';
 
+import logErr from '../_log_error_proxy';
+
 // import { genId } from './helpers';
 
 import './styles.css';
@@ -13,6 +15,19 @@ import './styles.css';
 
 
 const DEFAULT_RECORDS_PER_PAGE = 25;
+
+// How long a record that was already shown stays mounted (hidden via CSS) after it
+// stops matching the filter — so it can be re-shown instantly without re-rendering
+// the row while the user keeps typing.
+const RECORDS_VISIBILITY_GRACE_MS = 15000;
+
+// Convenience for record (leaf) components: the filter component marks rows it wants
+// to hide in place (the second, CSS-based filtering layer) with
+// `componentRecordsFiltData.cssClasses = ['hidden']`. Spread this into the record's
+// root `:class` so the global `.mdm-ui-recordsfilter-content .hidden` rule hides it.
+export function recordsFilterClasses(componentRecordsFiltData) {
+  return componentRecordsFiltData?.cssClasses || [];
+}
 
 
 
@@ -102,7 +117,7 @@ const FormWrapper = {
     </span>
   </div>
   <div class="mdm-ui-recordsfilter-content">
-    <slot />
+    <slot :records="recordsSorted" />
   </div>
   <div class="mdm-ui-recordsfilter-pagination mdm-ui-recordsfilter-pagination-repeat-bottom mdmreport-banner mdmreport-controls">
     Page: <span class="pagination-page-indices">
@@ -202,7 +217,7 @@ const FormWrapper = {
 
     const recordsPerPage = ref((()=>{
       if(props.recordsPerPage==0)
-        return len(props.records);
+        return props.records.length;
       else if(props.recordsPerPage>0)
         return props.recordsPerPage|0;
       else
@@ -289,7 +304,7 @@ const FormWrapper = {
           return true;
         else if( rec.isHidden && !rec.wasEverShown )
           return false;
-        else if( !!rec.visibilityLastChanged && ( (+rec.visibilityLastChanged) - (+datetimeNow) < 300000 ) ) // 5 minutes
+        else if( !!rec.visibilityLastChanged && ( (+rec.visibilityLastChanged) - (+datetimeNow) < RECORDS_VISIBILITY_GRACE_MS ) )
           return true;
         else
           return false;
@@ -306,6 +321,8 @@ const FormWrapper = {
         componentRecordsFiltData: {...record.componentRecordsFiltData}, // need a new object for vue to detect update <-- critical
       }));
     };
+
+    const recordsSorted = computed(() => paginateAndSort(props.records));
 
     const handleFilterChange = async (col,$event) => {
       try{
@@ -339,7 +356,7 @@ const FormWrapper = {
         else if( value==='desc')
           formFields.value.sortingAscending = false;
         else
-          throw new Exception(`mdm-ui-recordsfilter component: unrecognized sort order: "${value}"`);
+          throw new Error(`mdm-ui-recordsfilter component: unrecognized sort order: "${value}"`);
       } catch(e) {
         logErr(e);
         logErr('mdm-ui-recordsfilter component: failed when handling sort order onChange');
@@ -350,18 +367,14 @@ const FormWrapper = {
     const handleSubmit = () => undefined;
 
     return {
-      // thisId,
       handleSubmit,
       handleFilterChange,
       handleSortColChange,
       handleSortOrderChange,
       formFields,
       columnsSanitized,
-      shouldRecordBeShown,
-      paginateAndSort,
-      recordsPerPage,
-      numPages,
       pagination,
+      recordsSorted,
     };
   },
 };

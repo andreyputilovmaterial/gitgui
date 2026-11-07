@@ -34,6 +34,33 @@ function useErrorReporting(getAppSetupExports) {
 
     _logErrorProxyContext.promiseResolve(logError);
 
+    // Global safety net: errors that escape normal try/catch (fire-and-forget
+    // promises, unguarded event handlers) are routed to the same banner + console
+    // path. Vue's own render/watcher errors are NOT captured here — Vue logs them
+    // itself and they are treated as "rendering code" (see project-context).
+    let handlingGlobalError = false;
+    const captureGlobalError = (e) => {
+      if( handlingGlobalError )
+        return;
+      handlingGlobalError = true;
+      try {
+        logError(e);
+      } finally {
+        handlingGlobalError = false;
+      }
+    };
+    window.addEventListener('error', (event) => {
+      // Skip resource-load errors (missing images/scripts): they have no `.error`.
+      if( event.error )
+        captureGlobalError(event.error);
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+      // Only real errors; a rejected non-Error value means "user cancelled" (see
+      // project-context "Modals (frontend)").
+      if( event.reason instanceof Error )
+        captureGlobalError(event.reason);
+    });
+
     return {
         repoActions: {
             logError,

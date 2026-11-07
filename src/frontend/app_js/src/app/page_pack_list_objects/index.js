@@ -77,31 +77,32 @@ const View = {
             :keyField="'hash'"
             :records="packObjects"
             :needSort="true"
-            ref="filteringComponent"
           >
-            <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
-              <packobject-record
-                v-for="h in packObjectsSorted"
-                :key="h.hash"
-                :hash="h.hash"
-                :objectType="h.objectType"
-                :revisionHash="h.revisionHash"
-                :revisionAuthor="h.revisionAuthor"
-                :revisionTimestamp="h.revisionTimestamp"
-                :revisionMessage="h.revisionMessage"
-                :blobHash="h.blobHash"
-                :filePath="h.filePath"
-                :fileMode="h.fileMode"
-                :sizeSource="h.sizeSource"
-                :sizeCompressed="h.sizeCompressed"
-                :deltaDepth="h.deltaDepth"
-                :deltaBase="h.deltaBase"
-                :statistics="statistics"
-                :componentRecordsFiltData="h.componentRecordsFiltData"
-                :repoStatus="repoStatus"
-                :repoActions="repoActions"
-              />
-            </div>
+            <template #default="{ records }">
+              <div class="mdm-git-gui-pack-files pack-file-records mdm-ui-records">
+                <packobject-record
+                  v-for="h in records"
+                  :key="h.hash"
+                  :hash="h.hash"
+                  :objectType="h.objectType"
+                  :revisionHash="h.revisionHash"
+                  :revisionAuthor="h.revisionAuthor"
+                  :revisionTimestamp="h.revisionTimestamp"
+                  :revisionMessage="h.revisionMessage"
+                  :blobHash="h.blobHash"
+                  :filePath="h.filePath"
+                  :fileMode="h.fileMode"
+                  :sizeSource="h.sizeSource"
+                  :sizeCompressed="h.sizeCompressed"
+                  :deltaDepth="h.deltaDepth"
+                  :deltaBase="h.deltaBase"
+                  :statistics="statistics"
+                  :componentRecordsFiltData="h.componentRecordsFiltData"
+                  :repoStatus="repoStatus"
+                  :repoActions="repoActions"
+                />
+              </div>
+            </template>
           </component-filter-records-form>
         </template>
       </div>
@@ -462,17 +463,6 @@ const View = {
       }
     });
 
-    const filteringComponent = ref(null);
-
-    const packObjectsSorted = computed(()=> {
-      if( filteringComponent.value?.paginateAndSort ) {
-        return filteringComponent.value?.paginateAndSort(packObjects.value);
-      } else {
-        // return packObjects.value; // returning all unfiltered results in full list rendered and crash on memory
-        return [];
-      }
-    });
-
     return {
       error,
       isBusy,
@@ -494,9 +484,6 @@ const View = {
       packObjects,
 
       statistics,
-
-      filteringComponent,
-      packObjectsSorted,
     };
   },
 };

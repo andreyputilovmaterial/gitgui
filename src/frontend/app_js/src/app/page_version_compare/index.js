@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 
 
 import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functions.js';
@@ -40,12 +40,12 @@ const View = {
       :keyField="'path'"
       :records="changedFiles"
       :needSort="true"
-      ref="filteringComponent"
     >
-      <div class="mdm-git-gui-diff-records diff-records mdm-ui-records">
-        <div v-if="!(changedFiles.length>0)">Nothing to show</div>
-        <diff-record
-          v-for="h in changedFilesSorted"
+      <template #default="{ records }">
+        <div class="mdm-git-gui-diff-records diff-records mdm-ui-records">
+          <div v-if="!(changedFiles.length>0)">Nothing to show</div>
+          <diff-record
+            v-for="h in records"
           :key="\`\${h.old_mode}-\${h.new_mode}-\${h.old_oid}-\${h.new_oid}-\${h.status}-\${h.path}\`"
           :componentRecordsFiltData="h.componentRecordsFiltData"
           :repoStatus="repoStatus"
@@ -58,8 +58,9 @@ const View = {
           :path="h.path || h.new_path"
           :old_path="h.old_path"
           :new_path="h.new_path"
-        />
-      </div>
+          />
+        </div>
+      </template>
     </component-filter-records-form>
   </template>
 </div>
@@ -209,17 +210,6 @@ const View = {
       }
     };
 
-    const filteringComponent = ref(null);
-
-    const changedFilesSorted = computed(()=> {
-      if( filteringComponent.value?.paginateAndSort ) {
-        return filteringComponent.value?.paginateAndSort(changedFiles.value);
-      } else {
-        return [];
-        // return changedFiles.value; // returning all unfiltered results in full list rendered and crash on memory
-      }
-    });
-
     onMounted(async () => {
       await Promise.all([
         getFiles(),
@@ -229,8 +219,6 @@ const View = {
     return {
       error,
       changedFiles,
-      changedFilesSorted,
-      filteringComponent,
     };
   },
 };

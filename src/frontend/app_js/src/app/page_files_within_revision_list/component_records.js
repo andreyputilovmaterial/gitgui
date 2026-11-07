@@ -1,6 +1,6 @@
 
 
-import { ref, computed, reactive } from 'vue';
+import { ref, reactive } from 'vue';
 
 import ModalChooseDestPath from './component_bulk_restore_choose_path_modal.js';
 
@@ -54,21 +54,22 @@ const Records = {
     :keyField="'filepath'"
     :records="files"
     :needSort="true"
-    ref="filteringComponent"
   >
-    <div class="files-records mdm-ui-records">
-      <files-record
-        v-for="h in filesSorted"
-        :key="h.filepath"
-        :filepath="h.filepath"
-        :componentRecordsFiltData="h.componentRecordsFiltData"
-        :repoStatus="repoStatus"
-        :repoActions="repoActions"
-        :hash="hash"
-        :bulkRestoreVModel="formFields.rows[h.filepath]"
-        :showBulkRestoreCheckbox="inBulkRestoreMode"
-      />
-    </div>
+    <template #default="{ records }">
+      <div class="files-records mdm-ui-records">
+        <files-record
+          v-for="h in records"
+          :key="h.filepath"
+          :filepath="h.filepath"
+          :componentRecordsFiltData="h.componentRecordsFiltData"
+          :repoStatus="repoStatus"
+          :repoActions="repoActions"
+          :hash="hash"
+          :bulkRestoreVModel="formFields.rows[h.filepath]"
+          :showBulkRestoreCheckbox="inBulkRestoreMode"
+        />
+      </div>
+    </template>
   </component-filter-records-form>
 </form>
 `,
@@ -76,8 +77,6 @@ const Records = {
     'files-record': Record,
   },
   setup(props) {
-
-    const filteringComponent = ref(null);
 
     const isBusy = ref(false);
     const formFields = reactive({
@@ -174,15 +173,6 @@ const Records = {
       }
     };
 
-    const filesSorted = computed(() => {
-      if( filteringComponent.value?.paginateAndSort ) {
-        return filteringComponent.value?.paginateAndSort(props.files);
-      } else {
-        // return props.files; // returning all unfiltered results in full list rendered and crash on memory
-        return [];
-      }
-    });
-
     return {
       isBusy,
       error,
@@ -190,8 +180,6 @@ const Records = {
       bulkRestoreSuccessMessage,
       handleBulkRestore,
       formFields,
-      filteringComponent,
-      filesSorted,
       inBulkRestoreMode,
     };
   },

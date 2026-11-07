@@ -1,6 +1,6 @@
 
 
-import { ref, computed, } from 'vue';
+import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 
 
@@ -27,7 +27,7 @@ const Record = {
 <div
   :class="[
     ...['mdm-git-gui-git-status-record','git-status-record','mdm-ui-record'],
-    ...(componentRecordsFiltData?.cssClasses||[]),
+    ...recordsFilterClasses(componentRecordsFiltData),
   ]"
   :key="path"
 >
@@ -49,7 +49,7 @@ const Record = {
 </div>
 `,
   setup() {
-    return {};
+    return { recordsFilterClasses };
   },
 }
 
@@ -87,30 +87,31 @@ const View = {
     :records="records"
     :needSort="true"
     :recordsPerPage="15"
-    ref="filteringComponent"
   >
-    <div class="mdm-git-gui-git-status-records git-status-records mdm-ui-records">
-      <git-status-record
-        v-for="h in recordsSorted"
-        :key="h.path"
-        :type="h.type"
-        :index="h.index"
-        :worktree="h.worktree"
-        :xy="h.xy"
-        :submodule="h.submodule"
-        :headMode="h.headMode"
-        :indexMode="h.indexMode"
-        :worktreeMode="h.worktreeMode"
-        :headObject="h.headObject"
-        :indexObject="h.indexObject"
-        :path="h.path"
-        :diffLeft="diffLeft"
-        :diffRight="diffRight"
-        :componentRecordsFiltData="h.componentRecordsFiltData"
-        :repoStatus="repoStatus"
-        :repoActions="repoActions"
-      />
-    </div>
+    <template #default="{ records }">
+      <div class="mdm-git-gui-git-status-records git-status-records mdm-ui-records">
+        <git-status-record
+          v-for="h in records"
+          :key="h.path"
+          :type="h.type"
+          :index="h.index"
+          :worktree="h.worktree"
+          :xy="h.xy"
+          :submodule="h.submodule"
+          :headMode="h.headMode"
+          :indexMode="h.indexMode"
+          :worktreeMode="h.worktreeMode"
+          :headObject="h.headObject"
+          :indexObject="h.indexObject"
+          :path="h.path"
+          :diffLeft="diffLeft"
+          :diffRight="diffRight"
+          :componentRecordsFiltData="h.componentRecordsFiltData"
+          :repoStatus="repoStatus"
+          :repoActions="repoActions"
+        />
+      </div>
+    </template>
   </component-filter-records-form>
   <div class="mdmreport-controls"><input type="button" value="Close" @click.prevent="reject" class="mdmreport-buttom mdm-git-gui-button-close gitgui-button-close"></input></div>
 </div>
@@ -120,21 +121,7 @@ const View = {
   },
   setup(props) {
 
-    const filteringComponent = ref(null);
-
-    const recordsSorted = computed(() => {
-      if( filteringComponent.value?.paginateAndSort ) {
-        return filteringComponent.value?.paginateAndSort(props.records);
-      } else {
-        // return props.files; // returning all unfiltered results in full list rendered and crash on memory
-        return [];
-      }
-    });
-
-    return {
-      filteringComponent,
-      recordsSorted,
-    };
+    return {};
   },
 };
 

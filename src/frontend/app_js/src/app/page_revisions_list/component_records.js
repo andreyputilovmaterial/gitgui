@@ -24,29 +24,29 @@ const Records = {
   :keyField="'hash'"
   :records="historyWithRecordsForWorktreeAndIndex"
   :needSort="true"
-  ref="filteringComponent"
 >
-  <div class="history-records mdm-ui-records">
-    <history-record
-      v-for="h in historySorted"
-      :key="h.hash"
-      :hash="h.hash"
-      :author="h.author"
-      :timestamp="h.timestamp"
-      :message="h.message"
-      :formVerCompareFields="formVerCompareFields"
-      :componentRecordsFiltData="h.componentRecordsFiltData"
-      :repoStatus="repoStatus"
-      :repoActions="repoActions"
-    />
-  </div>
+  <template #default="{ records }">
+    <div class="history-records mdm-ui-records">
+      <history-record
+        v-for="h in records"
+        :key="h.hash"
+        :hash="h.hash"
+        :author="h.author"
+        :timestamp="h.timestamp"
+        :message="h.message"
+        :formVerCompareFields="formVerCompareFields"
+        :componentRecordsFiltData="h.componentRecordsFiltData"
+        :repoStatus="repoStatus"
+        :repoActions="repoActions"
+      />
+    </div>
+  </template>
 </component-filter-records-form>
 `,
   components: {
     'history-record': Record,
   },
   setup(props) {
-    const filteringComponent = ref(null);
     const worktreeTimestamp = ref(new Date());
     const indexTimestamp = ref(new Date());
     const isSomethingInStagingArea = computed(()=> Array.isArray(props.repoStatus?.statusData?.status) && (props.repoStatus?.statusData?.status.filter(f=>f.index!=='.').length>0) );
@@ -56,19 +56,8 @@ const Records = {
       ...props.history,
     ]);
 
-    const historySorted = computed(()=> {
-      if( filteringComponent.value?.paginateAndSort ) {
-        return filteringComponent.value?.paginateAndSort(historyWithRecordsForWorktreeAndIndex.value);
-      } else {
-        // return historyWithRecordsForWorktreeAndIndex.value; // returning all unfiltered results in full list rendered and crash on memory
-        return [];
-      }
-    });
-
     return {
-      filteringComponent,
       historyWithRecordsForWorktreeAndIndex,
-      historySorted,
     };
   },
 };

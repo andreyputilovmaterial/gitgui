@@ -2,6 +2,7 @@
 import { h, ref } from 'vue';
 
 import DiffView from './diffview.js';
+import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 import './style.css';
 
@@ -119,7 +120,7 @@ const Record = {
     'repoActions',
   ],
   template: `
-<div :class="['diff-record','mdm-ui-record','mdm-git-gui-diff-record',...(isBusy?['is-busy']:[]),...(componentRecordsFiltData?.cssClasses||[])]">
+<div :class="['diff-record','mdm-ui-record','mdm-git-gui-diff-record',...(isBusy?['is-busy']:[]),...recordsFilterClasses(componentRecordsFiltData)]">
   <component-section-rollup :header="h(RecordHeader,{status,filepath:path,old_path,new_path})" :condensed="false">
     <form class="choose-textconv-params mdm-git-gui-diff-record-inner" action="#!" @submit.prevent="()=>undefined">
       <div class="error" style="color: #900; font-weight: 500;">{{ error }}</div>
@@ -210,6 +211,7 @@ const Record = {
       RecordHeader,
       getTextconvOutputsLeft,
       getTextconvOutputsRight,
+      recordsFilterClasses,
     };
 
   },

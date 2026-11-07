@@ -30,26 +30,27 @@ v-else
   :keyField="'filepath'"
   :records="files"
   :needSort="true"
-  ref="filteringComponent"
 >
-  <div class="files-records mdm-ui-records">
-    <files-record
-        v-for="h in filesSorted"
-        :key="h.filepath"
-        :filepath="h.filepath"
-        :namespace="namespace"
-        :fullFilepath="h.fullFilepath"
-        :type="h.type"
-        :size="h.size"
-        :modifiedAt="h.modifiedAt"
-        :metadataChangedAt="h.metadataChangedAt"
-        :createdAt="h.createdAt"
-        :componentRecordsFiltData="h.componentRecordsFiltData"
-        :navigate="navigate"
-        :repoStatus="repoStatus"
-        :repoActions="repoActions"
-    />
-  </div>
+  <template #default="{ records }">
+    <div class="files-records mdm-ui-records">
+      <files-record
+          v-for="h in records"
+          :key="h.filepath"
+          :filepath="h.filepath"
+          :namespace="namespace"
+          :fullFilepath="h.fullFilepath"
+          :type="h.type"
+          :size="h.size"
+          :modifiedAt="h.modifiedAt"
+          :metadataChangedAt="h.metadataChangedAt"
+          :createdAt="h.createdAt"
+          :componentRecordsFiltData="h.componentRecordsFiltData"
+          :navigate="navigate"
+          :repoStatus="repoStatus"
+          :repoActions="repoActions"
+      />
+    </div>
+  </template>
 </component-filter-records-form>
 `,
   components: {
@@ -57,26 +58,13 @@ v-else
   },
   setup(props) {
 
-    const filteringComponent = ref(null);
-
     const isBusy = ref(false);
     const error = ref('');
     const fileStatusInfoReady = computed(()=>Array.isArray(props.repoStatus?.statusData?.status)&&Array.isArray(props.repoStatus?.statusData?.trackedFiles));
 
-    const filesSorted = computed(() => {
-      if( filteringComponent.value?.paginateAndSort ) {
-        return filteringComponent.value?.paginateAndSort(props.files);
-      } else {
-        // return props.files; // returning all unfiltered results in full list rendered and crash on memory
-        return [];
-      }
-    });
-
     return {
       isBusy,
       error,
-      filteringComponent,
-      filesSorted,
       fileStatusInfoReady,
     };
   },

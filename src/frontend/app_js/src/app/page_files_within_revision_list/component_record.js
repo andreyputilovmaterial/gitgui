@@ -4,6 +4,7 @@ import { ref, h } from 'vue';
 import { makeFetchResponseErrorMessage } from '@/common_defs/helper_functions.js';
 
 import PageFileView from '@/app/window_fileviewer/index.js';
+import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 import './style.css';
 
@@ -23,7 +24,7 @@ const Record = {
   ],
   // <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
   template: `
-<div :class="[...['files-record','mdm-ui-record'],...(componentRecordsFiltData?.cssClasses||[])]" :key="filepath" :data-recordsfilter-filepath="filepath">
+<div :class="[...['files-record','mdm-ui-record'],...recordsFilterClasses(componentRecordsFiltData)]" :key="filepath" :data-recordsfilter-filepath="filepath">
   <div class="error">{{ error }}</div>
   <div v-if="showBulkRestoreCheckbox" class="mdmreport-controls-group bulk-restore-checkbox-outer"><input v-model="bulkRestoreVModel.checked" class="bulk-restore-checkbox mdmreport-control" type="checkbox" :value="filepath"></div>
   <span class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-1" title="View file"><component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" /><span class="label">View file: </span><a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a></span>
@@ -132,6 +133,7 @@ const Record = {
       fileViewLinkWindowIsOpen,
       fileDownloadLinkBusy,
       error,
+      recordsFilterClasses,
     };
   },
 };

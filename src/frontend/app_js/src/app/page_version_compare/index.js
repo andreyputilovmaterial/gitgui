@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 
 import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functions.js';
@@ -25,6 +25,26 @@ const View = {
   template: `
 <div class="mdm-git-gui-historydiff">
   <p class="description">Compare revisions {{ hashLeft }} and {{ hashRight }}</p>
+  <div class="mdm-git-gui-historydiff-revision-info">
+    <div class="revision revision-left">
+      <div class="revision-title">Left</div>
+      <div class="revision-fields">
+        <div class="revision-field revision-field-hash"><span class="label">Hash: </span><component-format-hash v-if="leftRevision.isLocal" :hash="leftRevision.label" :highlight="'full'" /><component-format-hash v-else :hash="leftRevision.hash" :highlight="'auto'" /></div>
+        <div v-if="hasText(leftRevision.author)" class="revision-field revision-field-author"><span class="label">Author: </span><span class="value">{{ leftRevision.author }}</span></div>
+        <div v-if="hasText(leftRevision.timestamp)" class="revision-field revision-field-timestamp"><span class="label">Date/time: </span><component-format-datetime :dt="leftRevision.timestamp" /></div>
+        <div v-if="hasText(leftRevision.message)" class="revision-field revision-field-message"><span class="label">Commit message: </span><span class="value">{{ leftRevision.message }}</span></div>
+      </div>
+    </div>
+    <div class="revision revision-right">
+      <div class="revision-title">Right</div>
+      <div class="revision-fields">
+        <div class="revision-field revision-field-hash"><span class="label">Hash: </span><component-format-hash v-if="rightRevision.isLocal" :hash="rightRevision.label" :highlight="'full'" /><component-format-hash v-else :hash="rightRevision.hash" :highlight="'auto'" /></div>
+        <div v-if="hasText(rightRevision.author)" class="revision-field revision-field-author"><span class="label">Author: </span><span class="value">{{ rightRevision.author }}</span></div>
+        <div v-if="hasText(rightRevision.timestamp)" class="revision-field revision-field-timestamp"><span class="label">Date/time: </span><component-format-datetime :dt="rightRevision.timestamp" /></div>
+        <div v-if="hasText(rightRevision.message)" class="revision-field revision-field-message"><span class="label">Commit message: </span><span class="value">{{ rightRevision.message }}</span></div>
+      </div>
+    </div>
+  </div>
   <div class="error">{{ error }}</div>
   <template v-if="!changedFiles && !error">Querying data, please wait...</template>
   <template v-else-if="!!changedFiles">
@@ -72,6 +92,25 @@ const View = {
 
     const error = ref('');
     const changedFiles = ref(null);
+
+    const getRevisionInfo = hash => {
+      if (hash === 'worktree')
+        return { hash, label: 'Worktree', author: null, message: null, timestamp: null, isLocal: true };
+      if (hash === 'index')
+        return { hash, label: 'Index', author: null, message: null, timestamp: null, isLocal: true };
+      const history = Array.isArray(props.repoStatus?.historyData?.history)
+        ? props.repoStatus.historyData.history
+        : [];
+      const found = history.find(h => h && h.hash === hash);
+      return found
+        ? { ...found, label: hash, isLocal: false }
+        : { hash, label: hash, author: null, message: null, timestamp: null, isLocal: false };
+    };
+
+    const leftRevision = computed(() => getRevisionInfo(props.hashLeft));
+    const rightRevision = computed(() => getRevisionInfo(props.hashRight));
+
+    const hasText = value => value !== null && value !== undefined && `${value}`.trim().length > 0;
 
     const getFiles = async data => {
       function parseDiffOutputs(data) {
@@ -219,6 +258,9 @@ const View = {
     return {
       error,
       changedFiles,
+      leftRevision,
+      rightRevision,
+      hasText,
     };
   },
 };

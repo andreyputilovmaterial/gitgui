@@ -1,4 +1,51 @@
 
+.mdm-git-gui-historydiff {
+  position: relative;
+  container-type: inline-size;
+}
+
+.mdm-git-gui-historydiff-revision-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mdm-space-0-5x);
+  margin: var(--mdm-space-0-5x) 0 var(--mdm-space);
+}
+
+.mdm-git-gui-historydiff-revision-info .revision {
+  border: 1px solid #dbdbdb;
+  padding: var(--mdm-space-0-5x);
+}
+
+.mdm-git-gui-historydiff-revision-info .revision-title {
+  font-weight: 700;
+  margin: 0 0 var(--mdm-space-0-25x);
+}
+
+.mdm-git-gui-historydiff-revision-info .revision-field {
+  padding: 3px 0;
+  overflow-wrap: anywhere;
+}
+
+.mdm-git-gui-historydiff-revision-info .revision-field .label {
+  color: #666;
+  font-size: 92%;
+  margin-right: 7px;
+}
+
+.mdm-git-gui-historydiff-revision-info .revision-field-message .value {
+  display: block;
+  margin-top: 3px;
+  border: 1px solid #eee;
+  padding: 7px 14px;
+  box-shadow: inset 4px 0 0 0 #385;
+}
+
+@container (min-width: 700px) {
+  .mdm-git-gui-historydiff-revision-info {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .mdm-git-gui-diff-records .diff-record {
   grid-template-columns: subgrid;
 }

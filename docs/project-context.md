@@ -201,6 +201,21 @@ add a templater (e.g. Jinja2):
   to generate the bundle entry point via `--main src.launcher --main-attr main`
   instead of hand-patching `launcher.main()`.
 
+## Version compare page (frontend)
+
+- `src/frontend/app_js/src/app/page_version_compare/` renders the "compare
+  revisions" diff. It now shows a two-column commit-summary block
+  (`.mdm-git-gui-historydiff-revision-info`) above the diff records: `Left`/`Right`,
+  each with hash, author, date/time and commit message (author/date/message are
+  only rendered when present, via a `hasText` helper returned from `setup`).
+- Metadata is looked up from `repoStatus.historyData.history` (the same
+  `git log --pretty=format:%H%x1f%an%x1f%s%x1f%ad` payload the history overview
+  uses), so no extra git call is made. `worktree`/`index` are handled as
+  local-only entries (label shown in full highlight, no author/date/message).
+- The block stacks on narrow widths and goes `1fr 1fr` at
+  `@container (min-width: 700px)`; the root `.mdm-git-gui-historydiff` gained
+  `container-type: inline-size` to provide that container query.
+
 ## Streaming jobs (pipe) model
 
 - Canonical reference: `docs/streaming-jobs.md`. Long-running work is modeled as

@@ -23,7 +23,7 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 - `src_dev_build/lib/pinliner` (bundling)
 - `src/frontend/bundler_engine/lib/py_js_bundler` (self-written JS bundler)
 - `src/webserver_engine/webserve` (self-written webserver)
-- `src/lib/webinput`
+- `src/lib/webinput` (its own `.clinerules/`, `docs/`, `build.sh`, `build_assets.py`; the outer `build.sh` runs its `build.sh` before pinliner)
 - `src/frontend/app_js/src/lib/myers-diff` (diff library)
 
 ## Conventions
@@ -109,6 +109,14 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- `src/lib/webinput` submodule: added a `/assets/<name>` endpoint. Static,
+  non-importable files live in `src/lib/webinput/src/endpoints/assets_static/`; a
+  build-time `build_assets.py` turns them into the gitignored
+  `src/lib/webinput/src/endpoints/GENERATED/ASSETS.py` (`ASSETS = {name: content}`),
+  imported by `src/lib/webinput/src/endpoints/handle_assets.py`. Both `build.sh` scripts
+  wire it in: the submodule's own `build.sh` runs `build_assets.py`, and the outer
+  `build.sh` invokes the submodule's `build.sh` before pinliner. Smoke-tested with
+  `something_to_test.txt` (temporary).
 - Records filter: fixed a pre-existing sort crash — sorting a `text` column
   (e.g. "message") threw `localeCompare` on `undefined` for records missing that
   field (the history "worktree"/"index" pseudo-records). `sortComparator` now

@@ -153,6 +153,17 @@ echo -
 
 
 
+echo "Build webinput submodule (runs its own build.sh)"
+(
+  cd src/lib/webinput
+  ./build.sh
+)
+echo "done"
+echo -
+echo -
+
+
+
 echo "Bring run.sh and requirements.txt to \"$DIST_DIR\""
 cp "requirements.txt" "$DIST_DIR/"
 # Optional per-processor dependencies are copied into

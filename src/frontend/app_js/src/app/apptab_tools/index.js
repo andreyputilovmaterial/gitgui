@@ -4,7 +4,7 @@ import { ref, onMounted, h } from 'vue';
 
 import PagesSite from '@/common_components/pages/index';
 
-import PageToolsHome from './page_tools_home';
+import PageToolsHome from './page_tools_home/index';
 
 import './style.css';
 

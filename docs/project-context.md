@@ -116,6 +116,17 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- Added a 6th app-level tab **Tools** (`id="tools"`) as a grab-bag for ad-hoc
+  ideas. It renders `apptab_tools/index.js`, which pushes `page_tools_home` — a
+  data-driven list of tool "sections" — onto a `pages-site`. Each section is one
+  idea; opening it calls `repoActions.createPage(h(tool.component, …))`. The
+  first wired tool is "Search in history" (`app/page_tool_search_in_history/`),
+  a client-side filter over `repoStatus.historyData.history` (hash/author/message)
+  that loads history via `repoActions.updateHistory()` on mount. **To add a new
+  idea:** create its page component (a folder with `index.js`/`style.css`) and
+  push one entry into the `TOOLS` array in `page_tools_home/index.js`. Gotcha:
+  the bundler resolves directory imports only with an explicit `/index` suffix
+  (`import X from './page_tools_home/index'`, not `'./page_tools_home'`).
 - Files endpoint (`src/frontend/endpoints_files_path.py`): the GET directory
   listing sorter now ranks unknown object types first (`0`), then directories
   (`1`), then files (`2`), so unexpected entries surface at the top instead of

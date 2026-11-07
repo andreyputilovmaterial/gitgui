@@ -37,6 +37,7 @@ import PageFiles from './app/apptab_filesview/index';
 import PageHistory from './app/apptab_historyview/index';
 import PageGitignore from './app/window_repoinitview/section_gitignore';
 import PagePackcompression from './app/apptab_packcompression/index';
+import PageTools from './app/apptab_tools/index';
 
 // functions and methods defined in app setup
 import useErrorReporting          from './common_app_features/app__error_reporting/index';
@@ -94,6 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <component-tabbed-pane id="packstatus" title="Disk usage">
             <page-packcompression :repoStatus="repoStatus" :repoActions="repoActions" />
           </component-tabbed-pane>
+          <component-tabbed-pane id="tools" title="Tools">
+            <page-tools :repoStatus="repoStatus" :repoActions="repoActions" />
+          </component-tabbed-pane>
         </component-tabbed-panes>
       </template>
     </div>
@@ -122,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       'page-history': PageHistory,
       'page-gitignore': PageGitignore,
       'page-packcompression': PagePackcompression,
+      'page-tools': PageTools,
       'terminalsession-view': TerminalSessionView,
       // Single mounted placeholder where repoActions.createModal() renders each modal window.
       'modals': ModalsSite,

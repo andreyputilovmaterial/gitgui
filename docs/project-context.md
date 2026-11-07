@@ -101,6 +101,16 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- Records filter: fixed a pre-existing sort crash — sorting a `text` column
+  (e.g. "message") threw `localeCompare` on `undefined` for records missing that
+  field (the history "worktree"/"index" pseudo-records). `sortComparator` now
+  null-guards text and datetime values and validates the column before reading
+  its type.
+- Records filter: hide the pagination rows when the list fits on a single page
+  (`v-if="pagination.length > 1"`), and restructure the controls into a single
+  `.mdmreport-banner` wrapper whose inner rows (`.mdm-ui-recordsfilter-controls-row`)
+  are spaced with a `+`-sibling `margin-top` (except the first) — replacing the old
+  "un-stick" banner hacks so the banner keeps its border/padding on the outer sides.
 - Fixed a runtime render error where `recordsFilterClasses` wasn't returned from
   `setup()` (templates can't call bare imports); now returned by all 8 leaf record
   components. Added a global safety net in `app__error_reporting` that routes

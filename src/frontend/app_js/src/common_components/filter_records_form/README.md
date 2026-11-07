@@ -9,7 +9,8 @@ the filter/sort controls and hands you back the processed list.
 
 - One filter input per column (text / number / datetime), all looking the same.
 - Sorting by any column, ascending/descending.
-- Pagination (default 25 per page; `recordsPerPage="0"` = no pagination).
+- Pagination (default 25 per page; `recordsPerPage="0"` = no pagination). The
+  page row is hidden when the list fits on a single page.
 - **Two-layer filtering**, so typing is instant and rows don't re-render on every
   keystroke:
   1. Records that have **never** matched are dropped from the rendered list

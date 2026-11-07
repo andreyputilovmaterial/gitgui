@@ -1,13 +1,10 @@
 
 
 
-.mdm-ui-recordsfilter .mdm-ui-recordsfilter-form.mdmreport-banner, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby.mdmreport-banner {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-.mdm-ui-recordsfilter .mdm-ui-recordsfilter-sortby.mdmreport-banner, .mdm-ui-recordsfilter .mdm-ui-recordsfilter-pagination-top.mdmreport-banner {
-  border-top: none;
+/* The controls sit in a single .mdmreport-banner wrapper; its inner rows are plain
+   blocks. Space consecutive rows apart, except the first. */
+.mdm-ui-recordsfilter .mdm-ui-recordsfilter-controls-row + .mdm-ui-recordsfilter-controls-row {
+  margin-top: var(--mdm-space-0-5x);
 }
 
 

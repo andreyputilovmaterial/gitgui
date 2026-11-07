@@ -58,68 +58,70 @@ const FormWrapper = {
   ],
   template: `
 <form :class="{'mdm-ui-recordsfilter': true,'mdm-ui-recordsfilter-filtering': true,}" @submit.prevent="handleSubmit">
-  <div class="mdm-ui-recordsfilter-form mdmreport-banner mdmreport-controls">
-    <div class="mdmreport-controls-group">
-      <div v-for="col in Object.keys(columnsSanitized)" :key="col">
-        <label>{{ columnsSanitized[col].label }}:
-          <component
-            :is="
-              (
-                columnsSanitized[col].type === 'number'
-                ? 'component-input-numericrange'
-                : (
-                  columnsSanitized[col].type === 'datetime'
-                  ? 'component-input-datetimerange'
-                  : 'input'
+  <div class="mdmreport-banner mdmreport-controls">
+    <div class="mdm-ui-recordsfilter-form mdm-ui-recordsfilter-controls-row">
+      <div class="mdmreport-controls-group">
+        <div v-for="col in Object.keys(columnsSanitized)" :key="col">
+          <label>{{ columnsSanitized[col].label }}:
+            <component
+              :is="
+                (
+                  columnsSanitized[col].type === 'number'
+                  ? 'component-input-numericrange'
+                  : (
+                    columnsSanitized[col].type === 'datetime'
+                    ? 'component-input-datetimerange'
+                    : 'input'
+                  )
                 )
-              )
-            "
-            v-bind="
-              (
-                ['number','datetime'].includes( columnsSanitized[col].type )
-                ? {}
-                : { type: columnsSanitized[col].type }
-              )
-            "
-            :value="formFields.columns[col]"
-            class="mdmreport-control"
-            @input="handleFilterChange(col, $event)"
-            placeholder="Type to filter..."
-          />
+              "
+              v-bind="
+                (
+                  ['number','datetime'].includes( columnsSanitized[col].type )
+                  ? {}
+                  : { type: columnsSanitized[col].type }
+                )
+              "
+              :value="formFields.columns[col]"
+              class="mdmreport-control"
+              @input="handleFilterChange(col, $event)"
+              placeholder="Type to filter..."
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="mdm-ui-recordsfilter-sortby mdm-ui-recordsfilter-controls-row">
+      <div class="mdmreport-controls-group">
+        <label>
+          <span>Sort by: </span>
+          <select class="mdmreport-control" @input="handleSortColChange(undefined, $event)">
+            <option :value="''">not sorted</option>
+            <option v-for="col in Object.keys(columnsSanitized)" :key="col" :value="col">{{ columnsSanitized[col].label }}</option>
+          </select>
+          <select class="mdmreport-control" @input="handleSortOrderChange(undefined, $event)">
+            <option :value="'asc'">ascending order</option>
+            <option :value="'desc'">descending order</option>
+          </select>
         </label>
       </div>
     </div>
-  </div>
-  <div class="mdm-ui-recordsfilter-sortby mdmreport-banner mdmreport-controls">
-    <div class="mdmreport-controls-group">
-      <label>
-        <span>Sort by: </span>
-        <select class="mdmreport-control" @input="handleSortColChange(undefined, $event)">
-          <option :value="''">not sorted</option>
-          <option v-for="col in Object.keys(columnsSanitized)" :key="col" :value="col">{{ columnsSanitized[col].label }}</option>
-        </select>
-        <select class="mdmreport-control" @input="handleSortOrderChange(undefined, $event)">
-          <option :value="'asc'">ascending order</option>
-          <option :value="'desc'">descending order</option>
-        </select>
-      </label>
+    <div v-if="pagination.length > 1" class="mdm-ui-recordsfilter-pagination mdm-ui-recordsfilter-pagination-top mdm-ui-recordsfilter-controls-row">
+      Page: <span class="pagination-page-indices">
+        <page-nav
+          v-for="p in pagination"
+          :key="p.index"
+          :index="p.index"
+          :active="p.active"
+          :selectPage="()=>{ formFields.page = p.index }"
+        />
+      </span>
     </div>
-  </div>
-  <div class="mdm-ui-recordsfilter-pagination mdm-ui-recordsfilter-pagination-top mdmreport-banner mdmreport-controls">
-    Page: <span class="pagination-page-indices">
-      <page-nav
-        v-for="p in pagination"
-        :key="p.index"
-        :index="p.index"
-        :active="p.active"
-        :selectPage="()=>{ formFields.page = p.index }"
-      />
-    </span>
   </div>
   <div class="mdm-ui-recordsfilter-content">
     <slot :records="recordsSorted" />
   </div>
-  <div class="mdm-ui-recordsfilter-pagination mdm-ui-recordsfilter-pagination-repeat-bottom mdmreport-banner mdmreport-controls">
+  <div v-if="pagination.length > 1" class="mdm-ui-recordsfilter-pagination mdm-ui-recordsfilter-pagination-repeat-bottom mdmreport-banner mdmreport-controls">
     Page: <span class="pagination-page-indices">
       <page-nav
         v-for="p in pagination"
@@ -166,36 +168,45 @@ const FormWrapper = {
     });
 
     const sortComparator = (a,b) => {
-      const type = columnsSanitized.value[[formFields.value.sortingColumn]].type;
-      if( !formFields.value.sortingColumn || !Object.keys(columnsSanitized.value).includes(formFields.value.sortingColumn) ) {
-        const e = new Error(`mdm-ui-recordsfilter component: sort: impossible column ("${formFields.value.sortingColumn}")`);
+      const sortingColumn = formFields.value.sortingColumn;
+      if( !sortingColumn || !Object.keys(columnsSanitized.value).includes(sortingColumn) ) {
+        const e = new Error(`mdm-ui-recordsfilter component: sort: impossible column ("${sortingColumn}")`);
         logErr(e);
         throw e;
       }
+      const type = columnsSanitized.value[sortingColumn].type;
       if( type==='text' ) {
+        const aVal = `${a[sortingColumn] ?? ''}`;
+        const bVal = `${b[sortingColumn] ?? ''}`;
         if( formFields.value.sortingAscending )
-          return a[formFields.value.sortingColumn].localeCompare(b[formFields.value.sortingColumn]);
+          return aVal.localeCompare(bVal);
         else
-          return b[formFields.value.sortingColumn].localeCompare(a[formFields.value.sortingColumn]);
+          return bVal.localeCompare(aVal);
       } else if( type==='number' ) {
-        const aSize = a[formFields.value.sortingColumn];
+        const aSize = a[sortingColumn];
         const aSizeOrNull = isFinite(aSize) ? aSize : 0;
-        const bSize = b[formFields.value.sortingColumn];
+        const bSize = b[sortingColumn];
         const bSizeOrNull = isFinite(bSize) ? bSize : 0;
         if( formFields.value.sortingAscending ) {
           return aSizeOrNull - bSizeOrNull;
         } else
           return bSizeOrNull - aSizeOrNull;
       } else if( type==='datetime' ) {
+        const aTime = a[sortingColumn];
+        const aTimeOrZero = isFinite(aTime) ? aTime : 0;
+        const bTime = b[sortingColumn];
+        const bTimeOrZero = isFinite(bTime) ? bTime : 0;
         if( formFields.value.sortingAscending )
-          return a[formFields.value.sortingColumn] - b[formFields.value.sortingColumn];
+          return aTimeOrZero - bTimeOrZero;
         else
-          return b[formFields.value.sortingColumn] - a[formFields.value.sortingColumn];
+          return bTimeOrZero - aTimeOrZero;
       } else {
+        const aVal = `${a[sortingColumn]}`;
+        const bVal = `${b[sortingColumn]}`;
         if( formFields.value.sortingAscending )
-          return `${a[formFields.value.sortingColumn]}`.localeCompare(`${b[formFields.value.sortingColumn]}`);
+          return aVal.localeCompare(bVal);
         else
-          return `${b[formFields.value.sortingColumn]}`.localeCompare(`${a[formFields.value.sortingColumn]}`);
+          return bVal.localeCompare(aVal);
       }
     };
 

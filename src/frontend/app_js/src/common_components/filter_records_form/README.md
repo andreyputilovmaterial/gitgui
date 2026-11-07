@@ -23,7 +23,7 @@ the filter/sort controls and hands you back the processed list.
 
 | Prop            | Type    | Meaning |
 |-----------------|---------|---------|
-| `columns`       | object  | Filterable columns in display order. Each value is a label string (a `text` column) or `{ label, type }` where `type` is `'text'` (default), `'number'`, or `'datetime'`. |
+| `columns`       | object  | Filterable columns in display order. Each value is a label string (a `text` column) or `{ label, type }` where `type` is `'text'` (default), `'number'`, or `'datetime'`. Text and unspecified ("uncertain type") columns are regex-capable and match by regex by default — the `.*` toggle switches to case-insensitive substring. |
 | `keyField`      | string  | Unique key per record, used to track per-record visibility across re-renders. Defaults to the first column. |
 | `records`       | array   | The records to filter / sort / paginate. |
 | `needSort`      | boolean | Show the "Sort by" controls. |
@@ -116,6 +116,19 @@ returns:
 2. Import it in `index.js` and add a branch in `shouldRecordBeShown`.
 3. Add a branch in the template's `:is` switch to pick the input component for
    that type.
+
+## Text columns
+
+Text columns (including unspecified/"uncertain type" columns) use the
+regex-capable text input: a normal-looking text box with a `.*` toggle on the
+right. Regex mode is **on by default** (the `.*` is green), so the typed value is
+treated as a regular expression (`new RegExp(text)`); an invalid expression while
+typing simply matches nothing. Clicking the `.*` switches to case-insensitive
+substring matching, exactly like the old `text` behavior.
+
+The input emits `{ text, regex }` as its value, so the column's stored filter
+value is that object — see `match/regex_text.js`. `type: 'regextext'` is still
+accepted as an alias for `type: 'text'`.
 
 ## Gotchas
 

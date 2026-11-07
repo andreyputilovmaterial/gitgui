@@ -1,0 +1,58 @@
+
+/* Regex-capable text input.
+   The wrapper wears the shared .mdmreport-control look (border, padding,
+   background), the inner input is chrome-less and fills it, and the `.*`
+   toggle sits at the right inside the box. */
+
+.mdm-ui-regex-input {
+  position: relative;
+}
+
+/* Kill the shared-control chrome that .mdmreport-controls input would
+   otherwise re-add to the inner input: only the wrapper draws the box. */
+.mdm-ui-regex-input.mdmreport-control input {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 1.8em 0 0; /* reserve room for the `.*` toggle */
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.mdm-ui-regex-input.mdmreport-control input:hover,
+.mdm-ui-regex-input.mdmreport-control input:focus {
+  border: none;
+  outline: none;
+}
+
+.mdm-ui-regex-input .mdm-ui-regex-input-toggle {
+  position: absolute;
+  right: 0.65em; /* matches .mdmreport-control side padding */
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  line-height: 1;
+  color: var(--mdm-color-muted);
+  transition: color var(--mdm-transition);
+}
+
+.mdm-ui-regex-input .mdm-ui-regex-input-toggle:hover {
+  color: var(--mdm-color-green-hover);
+}
+
+/* Regex mode is on: highlight the `.*` in the standard green. */
+.mdm-ui-regex-input .mdm-ui-regex-input-toggle-active,
+.mdm-ui-regex-input .mdm-ui-regex-input-toggle-active:hover {
+  color: var(--mdm-color-green);
+  font-weight: 700;
+}

@@ -2,9 +2,9 @@
 import { ref, computed, watch, toRaw } from 'vue';
 
 
-import matchText from './match/text';
 import matchNumericRange from './match/numeric_range';
 import matchDatetimeRange from './match/datetime_range';
+import matchRegexText from './match/regex_text';
 
 import logErr from '../_log_error_proxy';
 
@@ -71,7 +71,7 @@ const FormWrapper = {
                   : (
                     columnsSanitized[col].type === 'datetime'
                     ? 'component-input-datetimerange'
-                    : 'input'
+                    : 'component-input-regextext'
                   )
                 )
               "
@@ -79,7 +79,7 @@ const FormWrapper = {
                 (
                   ['number','datetime'].includes( columnsSanitized[col].type )
                   ? {}
-                  : { type: columnsSanitized[col].type }
+                  : { regexDefault: true }
                 )
               "
               :value="formFields.columns[col]"
@@ -214,7 +214,7 @@ const FormWrapper = {
       var result = true;
       Object.keys(columnsSanitized.value).forEach(col=>{
         const value = formFields.value.columns[col];
-        let match = matchText;
+        let match = matchRegexText;
         if( columnsSanitized.value[col].type==='number' )
           match = matchNumericRange;
         else if( columnsSanitized.value[col].type==='datetime' )

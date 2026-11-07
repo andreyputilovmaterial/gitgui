@@ -20,6 +20,7 @@ import ComponentFormatHash from './common_components/format_hash/index';
 import ComponentFormatLocalFilePath from './common_components/format_local_file_path/index';
 import ComponentInputNumericRange from './common_components/input_numeric_range/index';
 import ComponentInputDatetimeRange from './common_components/input_datetime_range/index';
+import ComponentInputRegexText from './common_components/input_regex_text/index';
 import ComponentLoaderSpinner from './common_components/loader_spinner/index';
 import ComponentLoaderInProgress from './common_components/loader_inprogress/index';
 import './common_components/css_grid/styles.css';
@@ -323,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-format-local-file-path', ComponentFormatLocalFilePath);
   app.component('component-input-numericrange',ComponentInputNumericRange);
   app.component('component-input-datetimerange',ComponentInputDatetimeRange);
+  app.component('component-input-regextext',ComponentInputRegexText);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.component('component-loader-inprogress', ComponentLoaderInProgress);
   app.mount('#gitui_app');

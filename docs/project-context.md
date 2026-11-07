@@ -98,6 +98,15 @@ add a templater (e.g. Jinja2):
   (was a hardcoded 300000 / "5 minutes").
 - Fixed latent bugs in the component: undefined `len`, `Exception`, and `logErr`
   (now `records.length`, `Error`, and `import logErr from '../_log_error_proxy'`).
+- Added a regex-capable text filter input (`common_components/input_regex_text`,
+  registered as `component-input-regextext`) that looks like the shared
+  `.mdmreport-control` text box but shows a clickable `.*` toggle at the right
+  that turns green (`--mdm-color-green`) when regex mode is on. It emits
+  `{ text, regex }`; `filter_records_form/match/regex_text.js` interprets it
+  (case-insensitive substring when off, `new RegExp(text)` when on; invalid
+  regexes while typing match nothing). Regex mode is now the **default** for
+  text and unspecified/"uncertain type" columns (`regexDefault: true` is passed
+  by the filter component).
 
 ## Last state
 

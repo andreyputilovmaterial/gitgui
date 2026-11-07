@@ -116,6 +116,11 @@ add a templater (e.g. Jinja2):
 
 ## Last state
 
+- Files endpoint (`src/frontend/endpoints_files_path.py`): the GET directory
+  listing sorter now ranks unknown object types first (`0`), then directories
+  (`1`), then files (`2`), so unexpected entries surface at the top instead of
+  being buried last (was directories/files/other with other at `999`). Renamed
+  `dir_first_key` → `type_sort_key` to match its new meaning.
 - Removed `git submodule update --init --recursive` from `build.sh` (submodule
   initialization is no longer part of the build; the outer `build.sh` still runs
   the webinput submodule's own `build.sh`).

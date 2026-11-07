@@ -80,9 +80,9 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
     if method=='GET':
         if file_path.is_dir():
             def sorter(file_info):
-                dir_first_key = 0 if file_info.type=='directory' else 1 if file_info.type=='file' else 999
+                type_sort_key = 0 if file_info.type not in ('directory', 'file') else 1 if file_info.type=='directory' else 2
                 str_path = str(file_info.name)
-                return ( dir_first_key, str_path.lower(), str_path )
+                return ( type_sort_key, str_path.lower(), str_path )
             files = sorted(
                 [ FileInfo(f) for f in file_path.iterdir() ],
                 key = sorter,

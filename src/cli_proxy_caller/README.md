@@ -48,8 +48,10 @@ dict currently holds, per job and in total:
 }
 ```
 
-It is exposed over HTTP as `GET /perf` (handler `handle_perf` in
-`src/frontend/endpoints_app_path.py`, route in `src/endpoints.py`).
+It is exposed over HTTP via the `/perf` tree (handler `handle_perf` in
+`src/frontend/endpoints_app_path.py`, route in `src/endpoints.py`): `GET /perf`
+lists the resources, `GET /perf/cli_jobs` serves these stats, and
+`GET /perf/network` serves `config['webserve_log_records']`.
 
 ### What it measures — footprint, not throughput
 

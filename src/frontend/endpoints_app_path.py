@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 from .common_functions import JSONEncoder
 
@@ -52,16 +53,42 @@ def handle_config(net_request_handler, config: dict, added_data=None):
 
 
 def handle_perf(net_request_handler, config: dict, added_data=None):
-    """Return live job perf statistics (counts + approximate memory sizes).
+    """Perf/introspection endpoint tree.
 
-    See src/cli_proxy_caller/perf.py for the measurement model.
+    - ``/perf``           -> index of the available resources
+    - ``/perf/cli_jobs``  -> cli job memory stats (see src/cli_proxy_caller/perf.py)
+    - ``/perf/network``   -> webserve request/error log records
+      (``config['webserve_log_records']``)
     """
     WebResponse = config.get('iface').get('WebResponse')
-    get_jobs_perf_stats = config.get('iface').get('get_jobs_perf_stats')
-    if get_jobs_perf_stats is None:
-        payload = {'status': 'error', 'error': 'jobs perf stats are not available'}
+    path_parsed = urlparse(net_request_handler.path).path
+
+    if path_parsed in ('/perf', '/perf/'):
+        payload = {
+            'resources': {
+                'cli_jobs': '/perf/cli_jobs',
+                'network': '/perf/network',
+            },
+        }
+    elif path_parsed == '/perf/cli_jobs':
+        get_jobs_perf_stats = (config.get('iface') or {}).get('get_jobs_perf_stats')
+        if get_jobs_perf_stats is None:
+            payload = {'status': 'error', 'error': 'jobs perf stats are not available'}
+        else:
+            payload = get_jobs_perf_stats()
+    elif path_parsed == '/perf/network':
+        payload = config.get('webserve_log_records', [])
     else:
-        payload = get_jobs_perf_stats()
+        return WebResponse(
+            status_code = 404,
+            content_type = 'application/json',
+            body = json.dumps(
+                {'status': 'error', 'error': f'unknown perf resource: {path_parsed}'},
+                cls=JSONEncoder,
+            ),
+            headers = [],
+        )
+
     return WebResponse(
         status_code = 200,
         content_type = 'application/json',

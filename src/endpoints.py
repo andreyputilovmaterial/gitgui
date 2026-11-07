@@ -29,7 +29,8 @@ endpoints = {
 
     '/config': handle_config,
     '/health': handle_health,
-    '/perf': handle_perf,
+
+    re.compile(r'/perf\b(.*)'): handle_perf,
 
     re.compile('^/assets/.*'): renderer_assets,
 

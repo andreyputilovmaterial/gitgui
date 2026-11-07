@@ -300,8 +300,10 @@ add a templater (e.g. Jinja2):
 ## Job memory monitoring (`cli_proxy_caller/perf.py`)
 
 - `get_jobs_perf_stats()` returns a JSON-safe per-job + total memory-footprint
-  snapshot of `context.jobs`, exposed as `GET /perf` (`handle_perf` in
-  `src/frontend/endpoints_app_path.py`, route in `src/endpoints.py`).
+  snapshot of `context.jobs`, exposed via the `/perf` endpoint tree
+  (`handle_perf` in `src/frontend/endpoints_app_path.py`, route in
+  `src/endpoints.py`): `/perf` lists resources, `/perf/cli_jobs` serves the job
+  stats, and `/perf/network` serves `config['webserve_log_records']`.
 - `deep_size` is a stdlib-only deep-size estimator: it walks containers,
   dataclass `__dict__`/`__slots__`, and — crucially — function `__closure__`
   captures, because a `stdout_reader` closure is where buffered output (e.g. a

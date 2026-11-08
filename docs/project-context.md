@@ -18,13 +18,60 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 - Development tests live in `tests/` (not bundled). `tests-real-sensitive-data/`
   is gitignored and must never be committed.
 
+## Frontend: two ways to run
+
+The Vue app (`src/frontend/app_js`) is served in two ways; **both must keep
+working**, and both should be exercised during development when their
+requirements are met.
+
+### 1. Vite dev server (development only)
+
+- Launched from `src/frontend/app_js` with npm: `npm install`, then
+  `npm run dev`.
+- Requires **Node** (see `engines` in `package.json`) **and** the Python backend
+  running, because Vite serves only the frontend and proxies every API call to
+  the backend.
+- `vue` and `vue-router` resolve from `node_modules` (the `vue` alias in
+  `vite.config.js`); `vite.config.js` proxies `/command`, `/repo`, `/config`,
+  `/health`, `/files`, `/browse`, `/textconv` and `/assets` to
+  `http://localhost:5180` (the backend's default port, `PORT_START_WITH`).
+- This is the fast hot-reload path (and the one that enables Vitest/lint); use
+  it while iterating on UI code.
+
+### 2. Backend-served bundle (the normal/final app)
+
+- Only the **Python backend** runs (`python -m src.launcher --program gitgui
+  --working-tree <path> --git-directory-location <path>`); no Node.
+- The backend renders the page (`endpoints_html_paths.py render_page_home`); its
+  `<head>` maps `vue` and `vue-router` to `/assets/vendorlibs/...` via an
+  **importmap** and then loads `/assets/app.js` as an ES module.
+- `build.sh` produces these assets **without Node**: `py_js_bundler`
+  (`src/frontend/bundler_engine/lib/py_js_bundler`) bundles `app_js` into
+  `src/frontend/GENERATED/app.js`, and `vue.js` / `vue-router.js` / fonts are
+  packaged into `src/frontend/GENERATED/ASSETS.py`, served at runtime by the
+  `/assets/*` endpoint.
+
+### Requirements & the both-must-work rule
+
+- Both modes need the backend running; the backend needs the `GENERATED/`
+  artifacts that `build.sh` produces (run it once after a fresh clone).
+- Mode 1 additionally needs Node; mode 2 additionally needs a `build.sh` run
+  whenever JS changes.
+- Every JS change must work under **both** modes: JS that npm/Vite accepts must
+  also pass `py_js_bundler`. When valid JS is accepted by npm but rejected by
+  `py_js_bundler`, **update `py_js_bundler`** instead of bending the JS: for
+  common, widespread, not-too-tricky syntax the bundler should follow standard
+  JS rather than the JS being contorted to fit the still-incomplete bundler.
+  Only fall back to a JS-side compromise when the construct is genuinely exotic
+  and a bundler update would be disproportionately complicated.
+
 ## Releases
 
 - Version tags are annotated and follow `vX.YYY.ZZZ` (e.g. `v0.018.000`).
 - The tag message is a release note: first line is the version, then a summary
   of the changes since the previous tag, grouped by theme (Features / Streaming
   / Performance & observability / Fixes & housekeeping).
-- Latest tag: `v0.018.000` (pushed to origin, points at `9204694`).
+- Latest tag: `v0.019.000` (pushed to origin, points at `0beb151`).
 
 ## Submodules
 
@@ -461,6 +508,12 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
   default for its array inputs; the terminal `grabAdditionsFromCommandString`
   slices `rhs` by `at`/`add`, which are character indexes under the default
   (line mode would mis-slice).
+- When force-updating an annotated tag (`git tag -f -a <tag> <object>`), the
+  `<object>` must be the **commit** hash, not the tag object hash. `git rev-parse
+  v0.018.000` returns the *tag object* id; use `v0.018.000^{}` (or `^{commit}`)
+  to peel to the commit. Pointing a tag at another tag object makes a nested
+  "tag of a tag", so `git show` prints both messages. (2026-11-08: `v0.018.000`
+  was un-nested to commit `9204694` and force-pushed.)
 
 ## Last review: rules vs. Zen of Python
 

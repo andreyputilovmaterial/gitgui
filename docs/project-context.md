@@ -243,6 +243,14 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
 - The app code now imports `vue-router` (from `app/router.js` etc.), so add it to
   `app_js/package.json` to let `vite` dev resolve it (Node-only dev speed; the
   production build still uses the committed artifact).
+- **Now v5 everywhere (2026-11-08):** `app_js/package.json` declares `"vue-router": "^5.4.0"`
+  and the committed artifact `vue-router.browser.js` is re-vendored to **v5.4.0**
+  (was 4.6.4). The rolldown rebuild inlines `@vue/devtools-api` **and `nostics`**
+  (a new v5 dependency) and keeps only `vue` external. The app uses only stable
+  APIs (`createRouter`, `createWebHashHistory`, `<router-link>`/`<router-view>`,
+  named routes/redirects/catch-all params), so no app-code changes were needed.
+- Vendored `vue.esm-browser.js` is Vue **3.5.41**; `package.json` allows `^3.5.40`.
+  Left unchanged this task (the one prod advisory is SSR-only, app is client-side).
 
 ## Records filter component (frontend)
 
@@ -514,6 +522,25 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
   to peel to the commit. Pointing a tag at another tag object makes a nested
   "tag of a tag", so `git show` prints both messages. (2026-11-08: `v0.018.000`
   was un-nested to commit `9204694` and force-pushed.)
+
+## npm / frontend dependency review (2026-11-08)
+
+- The recurring `npm warn EBADENGINE` blocks (json-parse-even-better-errors,
+  npm-normalize-package-bin, which, read-package-json-fast + npm-run-all2@9) all
+  shared one root cause: **Node 25 is a non-LTS odd release** (EOL since ~June 2026).
+  npm 11's own deps and `npm-run-all2` v9 declare `^22.22.2 || ^24.15.0 ||
+  >=26.0.0` — even/LTS lines only, so 25.x is excluded. **Decided: develop on Node
+  26** (the even "current" line; LTS in Oct 2027). Four of the five were
+  npm-internal (not project deps); only `npm-run-all2` is a project devDependency.
+- `npm audit`: 20 findings (13 moderate / 6 high / 1 critical) are **all
+  dev/build-tooling-only** (Vite, Vitest, ESLint, jsdom, js-beautify, …), never in
+  the shipped Python bundle. `npm audit fix` (non-breaking) would clear
+  high/critical + most moderate; the remaining `minimatch`/`glob` moderate DoS has
+  no patched release compatible with eslint/js-beautify's `minimatch < 11.0.1`
+  pins (patched is 11.0.1). Do not run `npm audit fix --force`. (Left as an
+  optional follow-up; not applied yet.)
+- The only prod-adjacent advisory is Vue's `@vue/server-renderer < 3.5.42` XSS;
+  the app is client-side-only (no SSR), so it is not reachable.
 
 ## Last review: rules vs. Zen of Python
 

@@ -17,7 +17,10 @@
 - Review this statement: I used module-level repoStatus/repoActions + vue-router's route props option rather than provide/inject. This keeps every existing component untouched (they still declare and receive repoStatus/repoActions as props), so it's much lower-risk. provide/inject remains an optional later cleanup — the module singleton is exactly how Pinia-style stores work, so this is a standard pattern.
 - (done) add vue-router in dev dependencies
 - (done) Clarify the use of npm for dev and py_js_bundler for final bundle - to make it clear that both can be legally used and both should work
-- Look through npm warnings.
+- (done) Look through npm warnings (2026-11-08). Findings: the `EBADENGINE` "unsupported engine" warnings were because Node 25 is a non-LTS odd release (EOL since ~Jun 2026); npm 11's internals and `npm-run-all2@9` only support even/LTS lines (`^22.22.2 || ^24.15.0 || >=26.0.0`). Decided: develop on Node 26 (even "current" line; LTS in Oct 2027). The 20 `npm audit` findings are dev-tooling-only (Vite/Vitest/ESLint/jsdom), not in the shipped bundle.
+- (done) Adopt vue-router v5: re-vendored `vue-router.browser.js` to v5.4.0 (rolldown inlines `@vue/devtools-api` + `nostics`, keeps `vue` external). `package.json` already declared `^5.4.0`; the app uses only stable APIs, so no app-code changes were needed.
+- (optional) Run `npm audit fix` in `app_js` (safe, within semver ranges); the ~2 remaining moderate `minimatch`/`glob` items have no compatible patched release yet (need eslint/js-beautify to move to minimatch >= 11.0.1).
+- (optional) Re-sync vendored `vue.esm-browser.js` to 3.5.45 (currently 3.5.41); the only prod advisory is SSR-only and the app is client-side, so not urgent.
 - I might want to review paths in frontend. For examples, from `/#/files/`, remove the `worktree` prefix. I think this tab pane is entirely for real physical files within work tree.
 - (Task to think of, not to implement) Revision view - decide if files need to be grouped into folders
 - Revision - decide exact paths. For example, the root is `/#/history`, files within revision are `/#/history/:hash/files/`, then, two questions: 1. where does compare go? 2. what should path show within revision but without `files` suffix? Like, `/#/history/:hash/files/`.

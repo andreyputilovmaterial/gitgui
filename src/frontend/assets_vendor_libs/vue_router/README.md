@@ -1,8 +1,9 @@
 # vue-router (pre-bundled)
 
-`vue-router.browser.js` is a pre-bundled ESM build of vue-router v4.6.4,
-produced with rolldown so that `@vue/devtools-api` is inlined and `vue` is left
-as an external bare import (resolved by the app's importmap).
+`vue-router.browser.js` is a pre-bundled ESM build of vue-router v5.4.0,
+produced with rolldown so that `@vue/devtools-api` and `nostics` (both added by
+v5) are inlined and `vue` is left as an external bare import (resolved by the
+app's importmap).
 
 The result has exactly one import:
 
@@ -13,7 +14,7 @@ import { ... } from "vue";
 ## Rebuild (requires Node + rolldown; NOT part of `build.sh`)
 
 ```bash
-npm install vue-router@4.6.4
+npm install vue-router@5.4.0
 rolldown node_modules/vue-router/dist/vue-router.esm-browser.js \
     --file vue-router.browser.js --format esm --external vue --platform browser
 ```

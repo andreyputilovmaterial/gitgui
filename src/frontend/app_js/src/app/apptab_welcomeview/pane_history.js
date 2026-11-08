@@ -1,6 +1,6 @@
 
 
-import PageHistory from '@/app/apptab_historyview/index';
+import PageRevisionsList from '@/app/page_revisions_list/index';
 
 // import './style.css';
 
@@ -14,7 +14,7 @@ const View = {
 <pane :repoStatus="repoStatus" :repoActions="repoActions" viewMode="compact" />
 `,
   components: {
-    'pane': PageHistory,
+    'pane': PageRevisionsList,
   },
   setup() {
     return {};

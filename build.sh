@@ -131,6 +131,7 @@ cat src/frontend/GENERATED/project-specific.css | "$pythonexecutable" build_temp
 cat src/frontend/GENERATED/vendorlibs/vue.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_vue_js >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/marked.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_marked_js >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/dompurify.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_dompurify_js >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/vue-router.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_vue_router_js >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-sans/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-mono/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 

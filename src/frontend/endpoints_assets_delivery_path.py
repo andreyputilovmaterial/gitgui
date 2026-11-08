@@ -16,6 +16,7 @@ from .GENERATED.ASSETS import (
     # app_css,
     project_specific_styles_css,
     vendorlibs_vue_js,
+    vendorlibs_vue_router_js,
     vendorlibs_marked_js,
     vendorlibs_dompurify_js,
     _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS,
@@ -79,6 +80,9 @@ def render_assets_vendorlibs_marked_js(net_request_handler, config: dict,added_d
 def render_assets_vendorlibs_dompurify_js(net_request_handler, config: dict,added_data=None):
     payload = vendorlibs_dompurify_js
     return render_payload(net_request_handler,config,added_data=payload)
+def render_assets_vendorlibs_vue_router_js(net_request_handler, config: dict,added_data=None):
+    payload = vendorlibs_vue_router_js
+    return render_payload(net_request_handler,config,added_data=payload)
 def render_assets_vendorlibs_font_ibmplexsans(net_request_handler, config: dict,added_data=None):
     WebResponse = config.get('iface').get('WebResponse')
     payload_dict = _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS
@@ -130,6 +134,7 @@ endpoints = {
     '/vendorlibs/vue.js': render_assets_vendorlibs_vue_js,
     '/vendorlibs/marked.js': render_assets_vendorlibs_marked_js,
     '/vendorlibs/dompurify.js': render_assets_vendorlibs_dompurify_js,
+    '/vendorlibs/vue-router.js': render_assets_vendorlibs_vue_router_js,
     re.compile('^/vendorlibs/fonts/ibm-plex-sans/.*'): render_assets_vendorlibs_font_ibmplexsans,
     re.compile('^/vendorlibs/fonts/ibm-plex-mono/.*'): render_assets_vendorlibs_font_ibmplexmono,
     '/app.js': render_assets_app_js,

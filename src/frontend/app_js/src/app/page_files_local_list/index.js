@@ -1,6 +1,7 @@
 
 
-import { ref, onMounted, computed, reactive, watch, } from 'vue';
+import { ref, onMounted, computed, watch, } from 'vue';
+import { useRouter } from 'vue-router';
 
 
 
@@ -57,50 +58,40 @@ const Breadcrumbs = {
 
 const NavbarButtons = {
   props: [
-    'path',
     'pathCurrentParts',
     'navigate',
-    'history',
     'navigateBack',
-    'repoStatus',
-    'repoActions',
   ],
   template: `
 <div class="mdm-git-gui-fileslist-navbuttons">
-  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canGoBack,}" title="Back">←</a>
+  <a href="#!" @click.prevent="handlerNavigateBack" class="navbtn navbtn-back active" title="Back">←</a>
   <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}" title="Up one level">⇧</a> 
 </div>
 `,
   setup(props) {
-    const nothing = ref(()=>false);
     const isRoot = computed(()=> props.pathCurrentParts.length>0 ? false : true );
     const canLevelUp = computed(()=>isRoot.value ? false : true );
-    const canGoBack = computed(()=> props.history.length>1 ? true : false );
     const navigateUp = event => props.navigate( props.pathCurrentParts.slice(0,props.pathCurrentParts.length-1).join('/') ) && false;
-    const handlerNavigateBack = event => {
-      if( canGoBack.value )
-        return props.navigateBack() && false;
-      else
-        return false;
-    };
+    const handlerNavigateBack = event => props.navigateBack() && false;
     const handlerNavigateUp = event => {
       if( canLevelUp.value )
         return navigateUp() && false;
       else
         return false;
     };
-    return { isRoot, canLevelUp, canGoBack, nothing, handlerNavigateBack, handlerNavigateUp, };
+    return { isRoot, canLevelUp, handlerNavigateBack, handlerNavigateUp, };
   },
 };
 
 
 const View = {
   props: [
+    'namespace',
     'path',
+    'navigateTo',
     'repoStatus',
     'repoActions',
     'viewMode',
-    'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
 <div :class="['mdm-git-gui-fileslistview',...(isCompactView?['mdm-git-gui-fileslistview-compact']:[])]">
@@ -110,12 +101,12 @@ const View = {
   </template>
   <template v-else>
     <breadcrumbs :pathCurrentParts="pathCurrentParts" :navigate="navigate" />
-    <navbar-buttons :pathCurrentParts="pathCurrentParts" :path="pathCurrent" :navigate="navigate" :navigateBack="navigateBack" :history="history" :repoStatus="repoStatus" :repoActions="repoActions" />
+    <navbar-buttons :pathCurrentParts="pathCurrentParts" :navigate="navigate" :navigateBack="navigateBack" />
     <div class="error">{{ error }}</div>
     <template v-if="!filesList && !error">Querying data, please wait...</template>
     <template v-else-if="!!filesList">
-      <files-records-compact v-if="isCompactView" :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
-      <files-records v-else :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="path" />
+      <files-records-compact v-if="isCompactView" :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="pathCurrent" />
+      <files-records v-else :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="pathCurrent" />
     </template>
   </template>
 </div>
@@ -128,31 +119,19 @@ const View = {
   },
   setup(props) {
 
+    const router = useRouter();
     const filesList = ref(null);
     const error = ref('');
-    const pathCurrent = ref(null);
-    const namespaceCurrent = ref(null);
+    const pathCurrent = computed(()=> props.path ?? '');
+    const namespaceCurrent = computed(()=> props.namespace);
     const isCompactView = computed(()=>props.viewMode==='compact');
-    (()=>{
-      const matches = props.path.match(/^(\w+):(.*)$/);
-      if( !matches ) {
-        const error = new Error('files view: path does not follow format of namespace:path/within/namespace');
-        props.repoActions.logError(error);
-        error.value = error;
-        Promise.resolve().then(()=>{ throw error; });
-        return { error };
-      }
-      namespaceCurrent.value = matches[1];
-      pathCurrent.value = matches[2].replace(/\/\\/ig,'/');
-    })();
-    const history = reactive([pathCurrent.value]);
-    const pathCurrentParts = computed(()=>pathCurrent.value===''?[]:[...pathCurrent.value.split(/\//ig)]);
+    const pathCurrentParts = computed(()=>pathCurrent.value===''?[]:[...pathCurrent.value.split('/')]);
     const navigate = newPath => {
       try {
         if( newPath===pathCurrent.value )
           return;
-        history.push(newPath);
-        pathCurrent.value = newPath;
+        const pathArray = (newPath||'').split('/').filter(Boolean);
+        router.push({ name: props.navigateTo, params: { path: pathArray } });
       } catch(e) {
         props.repoActions.logError(`failed navigating to path: ${newPath}: ${e}`);
         error.value = e;
@@ -160,29 +139,20 @@ const View = {
       }
     };
     const navigateBack = () => {
-      try {
-        if( history.length<=1 )
-          throw new Error('failed to navigate back in history: no more steps, there isn\'t anywhere to go back further');
-        const _ = history.pop();
-        const prevVal = history[history.length-1];
-        pathCurrent.value = prevVal;
-      } catch(e) {
-        props.repoActions.logError(`failed navigating to path: ${newPath}: ${e}`);
-        error.value = e;
-        throw e; 
-      }
+      router.back();
     };
 
-    const getFilesList = async (path) => {
+    const getFilesList = async () => {
       function norm(path) {
         const parts = path.split(/[\/\\]/ig);
         if( parts.includes('.') || parts.includes('..') )
           throw new Error(`path with "." or ".." cannot be accepted; please normalize/resolve the path on the backend first: ${path}`);
         return parts.join('/');
       }
+      const resourcePath = `${namespaceCurrent.value}:${pathCurrent.value}`;
       try {
         error.value = '';
-        const encodedPath = path
+        const encodedPath = resourcePath
           .split("/")
           .map(encodeURIComponent)
           .join("/");
@@ -212,7 +182,7 @@ const View = {
           createdAt: record.created_at ? new Date(record.created_at) : null,
         }));
       } catch(e) {
-        props.repoActions.logError(`Failed fetching file list for path "${props.path}": ${e}`);
+        props.repoActions.logError(`Failed fetching file list for path "${resourcePath}": ${e}`);
         error.value = e;
         throw e;
       }
@@ -220,14 +190,14 @@ const View = {
 
     onMounted(async () => {
       await Promise.all([
-        getFilesList(`${namespaceCurrent.value}:${pathCurrent.value}`),
+        getFilesList(),
         props.repoActions.getStatus(),
       ])
     });
 
     watch(
-      pathCurrent,
-      () => getFilesList(`${namespaceCurrent.value}:${pathCurrent.value}`),
+      () => [namespaceCurrent.value, pathCurrent.value],
+      () => getFilesList(),
     )
 
     return {
@@ -235,7 +205,6 @@ const View = {
       error,
       pathCurrent,
       namespaceCurrent,
-      history,
       navigate,
       navigateBack,
       pathCurrentParts,

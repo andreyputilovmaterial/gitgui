@@ -18,7 +18,6 @@ const View = {
     'hash',
     'repoStatus',
     'repoActions',
-    'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
 <div class="mdm-git-gui-historyfileslistview">

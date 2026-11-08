@@ -1,10 +1,9 @@
 
 
-import { ref, reactive, h, computed, } from 'vue';
+import { ref, reactive, computed, onMounted, } from 'vue';
+import { useRouter } from 'vue-router';
 
 import './style.css';
-
-import PageVersionCompare from '@/app/page_version_compare/index.js';
 
 import HistoryRecords from './component_records.js';
 import HistoryRecordsCompact from './component_records_compact.js';
@@ -17,7 +16,6 @@ const View = {
     'repoStatus',
     'repoActions',
     'viewMode',
-    'resolve','reject', /* could both be called to close this window - parent will destroy the component once called */
   ],
   template: `
 <div class="mdm-git-gui-historyoverview mdm-git-gui-page-history-overview">
@@ -56,13 +54,17 @@ const View = {
       />
     </template>
   </template>
-  <history-records-compact
-    v-else
-    :history="repoStatus?.historyData?.history"
-    :formVerCompareFields="formVerCompareFields"
-    :repoStatus="repoStatus"
-    :repoActions="repoActions"
-  />
+  <template v-else-if="!!repoStatus?.historyData?.history">
+    <history-records-compact
+      :history="repoStatus?.historyData?.history"
+      :formVerCompareFields="formVerCompareFields"
+      :repoStatus="repoStatus"
+      :repoActions="repoActions"
+    />
+  </template>
+  <template v-else>
+    Querying data, please wait...
+  </template>
 </div>
 `,
   components: {
@@ -71,6 +73,7 @@ const View = {
   },
   setup(props) {
 
+    const router = useRouter();
     const isBusy = ref(false);
     const formFields = reactive({
       compareLeft: '',
@@ -81,8 +84,8 @@ const View = {
     const searchQuery = ref('');
     const isCompactView = computed(()=>props.viewMode==='compact');
 
-    const navigateVersionComparePage = async () => {
-      await props.repoActions.createPage(h(PageVersionCompare,{...props,hashLeft:formFields.compareLeft,hashRight:formFields.compareRight}));
+    const navigateVersionComparePage = () => {
+      router.push({ name: 'history-compare', params: { left: formFields.compareLeft, right: formFields.compareRight } });
     };
 
     const handleCompare = async () => {
@@ -100,13 +103,11 @@ const View = {
           isBusy.value = false;
           return;
         }
-        await navigateVersionComparePage();
+        navigateVersionComparePage();
       } catch (err) {
         error.value = err;
         props.repoActions.logError(`Failed to call for version compare window: ${err}`);
         console.error('Failed to call for versioncompare window',err)
-        // Promise.resolve().then(()=>{throw err;});
-        return props.reject(err)
       } finally {
         isBusy.value = false
       }
@@ -116,6 +117,12 @@ const View = {
       // TODO: launch the "find within history" activity here. The submitted
       // query is available as `searchQuery.value`.
     };
+
+    onMounted(async () => {
+      await Promise.all([
+        props.repoActions.updateHistory(),
+      ])
+    });
 
     return {
       isBusy,

@@ -1,7 +1,8 @@
 
 
 
-import { ref, onMounted, markRaw } from 'vue';
+import { ref, onMounted, markRaw, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
 import appContext from './_context';
 import { generateUUID, } from './_util';
@@ -90,7 +91,12 @@ export const ModalsSite = {
   setup() {
     try{
 
+    const router = useRouter();
+    const route = useRoute();
     const modals = ref([])
+
+    const parseModalIds = value =>
+      (typeof value === 'string' && value !== '') ? value.split(',') : [];
 
 
     const createModal = (Component,promiseVars) => {
@@ -103,19 +109,43 @@ export const ModalsSite = {
       const id = generateUUID();
       const zindex = generateZindex(modals);
 
-      const del = function() {
+      const remove = () => {
         modals.value = modals.value.filter(m=>m.id!=id)
-      }
-      promise.then(del,del)
+      };
+      // When the modal closes (resolve/reject), drop it and, if the URL still
+      // lists it, go back one history entry to remove the modal param.
+      const onSettled = () => {
+        const wasInUrl = parseModalIds(route.query.modal).includes(id);
+        remove();
+        if (wasInUrl) router.back();
+      };
+      promise.then(onSettled, onSettled)
 
-      const newModal = {
+      modals.value.push({
         component: markRaw(Component),
         id: id,
         resolve:promiseResolve,reject:promiseReject,
         zindex: zindex,
-      }
-      modals.value.push(newModal);
+      });
+
+      // Push a history entry carrying the stack of open modal ids, so the
+      // browser Back button pops the top modal instead of navigating away.
+      router.push({
+        query: { ...route.query, modal: modals.value.map(m=>m.id).join(',') },
+      });
     }
+
+    // Browser Back (or any route change that drops a modal id) closes the
+    // affected modal(s) as a user cancel.
+    watch(() => route.query.modal, () => {
+      const listedIds = parseModalIds(route.query.modal);
+      while (modals.value.length > 0) {
+        const top = modals.value[modals.value.length-1];
+        if (listedIds.includes(top.id)) break;
+        modals.value.pop();
+        top.reject(); // non-Error -> cancel
+      }
+    });
 
     onMounted(async () => {
       await Promise.all([

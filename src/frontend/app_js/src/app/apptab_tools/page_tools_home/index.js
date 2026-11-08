@@ -1,18 +1,17 @@
-import { h, ref } from 'vue';
-
-import PageToolSearchInHistory from '@/app/page_tool_search_in_history/index.js';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import './style.css';
 
 // The Tools tab is a grab-bag: every entry below is one random idea, shown as a
-// section on this page. To add a new idea, import its page component and push
-// one more entry — nothing else needs to change.
+// section on this page. To add a new idea, register a route in router.js (name
+// `tools-<id>`) and push one entry here with that `routeName` — nothing else.
 const TOOLS = [
   {
     id: 'search-in-history',
     title: 'Search in history',
     description: 'Find saved revisions by hash, author or commit message.',
-    component: PageToolSearchInHistory,
+    routeName: 'tools-search-history',
   },
 ];
 
@@ -35,24 +34,12 @@ const View = {
 </div>
 `,
   setup(props) {
+    const router = useRouter();
     const tools = TOOLS;
     const error = ref('');
 
-    const openTool = async (tool) => {
-      try {
-        error.value = '';
-        await props.repoActions.createPage(h(tool.component, {
-          repoStatus: props.repoStatus,
-          repoActions: props.repoActions,
-        }));
-      } catch (e) {
-        if (e instanceof Error) {
-          error.value = e;
-          props.repoActions.logError(`Failed to open tool "${tool.title}": ${e}`);
-          throw e;
-        }
-        // Non-Error rejection = the tool page was closed via its Back button (cancel).
-      }
+    const openTool = (tool) => {
+      router.push({ name: tool.routeName });
     };
 
     return { tools, error, openTool };

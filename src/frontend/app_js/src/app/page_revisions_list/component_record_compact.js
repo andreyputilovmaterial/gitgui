@@ -1,9 +1,9 @@
 
-import { ref, h } from 'vue';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import FormCompareVersionsControls from './component_ver_compare_radioboxes.js';
 
-import PageFilesList from '@/app/page_files_within_revision_list/index.js';
 import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 import './style.css';
@@ -100,19 +100,13 @@ const Record = {
   },
   setup(props) {
 
+    const router = useRouter();
     const isHEAD = ref(props.repoStatus?.historyData?.head&&(props.repoStatus?.historyData?.head==props.hash));
     const isWorktree = ref(props.hash==='worktree');
     const isIndex = ref(props.hash==='index');
 
-    const navigateFilesListPage = async () => {
-      try {
-        await props.repoActions.createPage(h(PageFilesList,{...props,hash:props.hash}));
-      } catch(e) {
-        if( e instanceof Error ) {
-          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.hash}: ${e}`);
-          throw e;
-        }
-      }
+    const navigateFilesListPage = () => {
+      router.push({ name: 'history-revision', params: { hash: props.hash } });
     };
 
     return {

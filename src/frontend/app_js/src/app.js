@@ -1,6 +1,6 @@
 
 // import { Vue } from "./vue.js";
-import { createApp, reactive, onMounted, } from 'vue'
+import { createApp, onMounted, } from 'vue'
 
 
 import './app.css';
@@ -9,10 +9,12 @@ import './app_form_control_adjustments.css';
 // global tools
 import deepMerge from './common_defs/deep_merge';
 
+// app-wide reactive context (repoStatus/repoActions) + the router
+import { repoStatus, repoActions } from './app/app_context';
+import router from './app/router';
+
 // all from "common_components"
 import ComponentSectionRollup from './common_components/rollable_sections/index';
-import ComponentTabbedPanes from './common_components/tabbed_panes/tabbed_panes';
-import ComponentTabbedPane from './common_components/tabbed_panes/tabbed_pane';
 import ComponentFilterRecordsForm from './common_components/filter_records_form/index';
 import ComponentFormatDatetime from './common_components/format_datetime/index';
 import ComponentFormatFilesize from './common_components/format_filesize/index';
@@ -32,12 +34,6 @@ import ManipulateNavLinksDummyWrapper from './app/background_nav_links_enhancer/
 import ModalsSite from './common_components/modals/component';
 import TerminalSessionView from './app/apppane_terminalview/index';
 import RepoInitView from './app/window_repoinitview/init_repo';
-import PageWelcome from './app/apptab_welcomeview/index';
-import PageFiles from './app/apptab_filesview/index';
-import PageHistory from './app/apptab_historyview/index';
-import PageGitignore from './app/window_repoinitview/section_gitignore';
-import PagePackcompression from './app/apptab_packcompression/index';
-import PageTools from './app/apptab_tools/index';
 
 // functions and methods defined in app setup
 import useErrorReporting          from './common_app_features/app__error_reporting/index';
@@ -79,26 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Repo is not inited. Nothing to display.
       </template>
       <template v-else>
-        <component-tabbed-panes active="home">
-          <component-tabbed-pane id="home" title="Overview">
-            <page-welcome :repoStatus="repoStatus" :repoActions="repoActions" />
-          </component-tabbed-pane>
-          <component-tabbed-pane id="files" title="Files">
-            <page-files :repoStatus="repoStatus" :repoActions="repoActions" />
-          </component-tabbed-pane>
-          <component-tabbed-pane id="history" title="History">
-            <page-history :repoStatus="repoStatus" :repoActions="repoActions" />
-          </component-tabbed-pane>
-          <component-tabbed-pane id="gitignore" title="Gitignore (tracked files)">
-            <page-gitignore :repoStatus="repoStatus" :repoActions="repoActions" />
-          </component-tabbed-pane>
-          <component-tabbed-pane id="packstatus" title="Disk usage">
-            <page-packcompression :repoStatus="repoStatus" :repoActions="repoActions" />
-          </component-tabbed-pane>
-          <component-tabbed-pane id="tools" title="Tools">
-            <page-tools :repoStatus="repoStatus" :repoActions="repoActions" />
-          </component-tabbed-pane>
-        </component-tabbed-panes>
+        <router-view></router-view>
       </template>
     </div>
   </div>
@@ -121,12 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
       'errorbanner': ErrorView,
       'repo-init-form': RepoInitView,
       'repoinit-view': RepoInitView,
-      'page-welcome': PageWelcome,
-      'page-files': PageFiles,
-      'page-history': PageHistory,
-      'page-gitignore': PageGitignore,
-      'page-packcompression': PagePackcompression,
-      'page-tools': PageTools,
       'terminalsession-view': TerminalSessionView,
       // Single mounted placeholder where repoActions.createModal() renders each modal window.
       'modals': ModalsSite,
@@ -134,11 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
       'online-indicator': AppOnlineIndicator,
     },
     setup() {
-
-      const repoStatus = reactive({});
-      const repoActions = reactive({
-        logError: msg => { Promise.resolve().then(()=>{ throw new Error('logError not inited'); }); Promise.resolve().then(()=>{ throw e; }); },
-      });
 
       const exports = {};
 
@@ -320,8 +286,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // FORCE VUE DEVTOOLS TO ACTIVATE
   app.config.performance = true;
   app.component('component-section-rollup', ComponentSectionRollup);
-  app.component('component-tabbed-panes', ComponentTabbedPanes);
-  app.component('component-tabbed-pane', ComponentTabbedPane);
   app.component('component-filter-records-form', ComponentFilterRecordsForm);
   app.component('component-format-datetime', ComponentFormatDatetime);
   app.component('component-format-filesize', ComponentFormatFilesize);
@@ -332,6 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
   app.component('component-input-regextext',ComponentInputRegexText);
   app.component('component-loader-spinner', ComponentLoaderSpinner);
   app.component('component-loader-inprogress', ComponentLoaderInProgress);
+  app.use(router);
   app.mount('#gitui_app');
 
 

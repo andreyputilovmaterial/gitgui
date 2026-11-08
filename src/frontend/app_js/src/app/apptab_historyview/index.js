@@ -1,71 +1,16 @@
 
 
-import { ref, watch, onMounted, h } from 'vue';
-
-import PagesSite from '@/common_components/pages/index';
-
-import PageHistoryOverview from '@/app/page_revisions_list/index';
-
 import './style.css';
 
+// History tab layout: just the nested <router-view> that renders the current
+// history child route (the revisions list, or a version comparison). The old
+// per-tab <pages-site> + createPage dance is gone; history lives in the URL now.
 const View = {
-  props: [
-    'repoStatus',
-    'repoActions',
-    'viewMode',
-  ],
   template: `
 <div class="mdm-git-gui-historyview">
-  <template v-if="!repoStatus?.historyData?.history">
-    Fetching history...
-  </template>
-  <template v-else-if="!!repoStatus?.historyData?.history">
-    <pages-site ref="pagesSite"/>
-  </template>
+  <router-view></router-view>
 </div>
 `,
-  components: {
-    // 'page-history-overview': PageHistoryOverview,
-    'pages-site': PagesSite,
-  },
-  setup(props) {
-
-    const pagesSite = ref(null);
-    const createPage = ref(()=>{ try { throw new Error('calling createPage: pages site is not inited'); } catch(e) { props.repoActions.logError(e); throw e; } });
-
-    const promiseContextHistoryReady = {
-      resolve: () => {throw new Error('promise not inited')},
-      reject: () => {throw new Error('promise not inited')},
-      promise: undefined,
-    };
-    promiseContextHistoryReady.promise = new Promise((resolve,reject) => {
-      promiseContextHistoryReady.resolve = resolve;
-      promiseContextHistoryReady.reject = reject;
-    });
-
-    const navigateHomePage = async () => {
-      await Promise.all([promiseContextHistoryReady.promise,]);
-      createPage.value = pagesSite.value.createPage;
-      createPage.value(h(PageHistoryOverview,{
-        repoStatus: props.repoStatus,
-        repoActions: {...props.repoActions,createPage:createPage.value},
-        viewMode: props.viewMode,
-      }));
-    };
-
-    onMounted(async () => {
-      await Promise.all([
-        props.repoActions.updateHistory(),
-        navigateHomePage(),
-      ])
-    });
-
-    watch(() => props?.repoStatus?.historyData?.history, () => {
-      promiseContextHistoryReady.resolve(props?.repoStatus?.historyData?.history);
-    });
-
-    return { pagesSite, createPage };
-  }
 };
 
 export default View;

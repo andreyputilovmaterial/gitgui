@@ -51,7 +51,7 @@ const Records = {
     const historyWithRecordsForWorktreeAndIndex = computed(()=>[
       // { hash: 'worktree', timestamp: worktreeTimestamp.value, },
       // ...( isSomethingInStagingArea.value ? [{ hash: 'index', timestamp: indexTimestamp.value, }] : [] ),
-      ...props.history,
+      ...(props.history ?? []),
     ]);
 
     return {

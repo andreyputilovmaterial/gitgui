@@ -108,7 +108,7 @@ def render_page_home(net_request_handler, config: dict, added_data=None):
         assets = [] + \
             make_default_assets_list(config) + \
             [
-                ('tag-any',('script',{'type':'importmap'},'{ "imports": { "vue": "./assets/vendorlibs/vue.js" } }',),),
+                ('tag-any',('script',{'type':'importmap'},'{ "imports": { "vue": "./assets/vendorlibs/vue.js", "vue-router": "./assets/vendorlibs/vue-router.js" } }',),),
                 # ('js-link',('/assets/vendorlibs/vue.js',),),
                 ('js-link-module',('/assets/app.js',),),
             ],

@@ -1,9 +1,9 @@
 
-import { h, computed } from 'vue';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 import './style.css';
 
-import PageFilesList from '@/app/page_files_within_revision_list/index.js';
 import { recordsFilterClasses } from '@/common_components/filter_records_form/index.js';
 
 
@@ -146,18 +146,12 @@ const PackRecord = {
 `,
   setup(props) {
 
+    const router = useRouter();
     const objectSizeWarningLevel = computed(()=>calcWarningLevel(props.sizeCompressed,props.statistics));
     const objectSizeWarningColor = computed(()=>calcWarningColor(objectSizeWarningLevel.value));
 
-    const navigateRevisionPage = async () => {
-      try {
-        await props.repoActions.createPage(h(PageFilesList,{...props,hash:props.revisionHash}));
-      } catch(e) {
-        if( e instanceof Error ) {
-          props.repoActions.logError(`Failed to navigate to page: history-files-list/${props?.revisionHash}: ${e}`);
-          throw e;
-        }
-      }
+    const navigateRevisionPage = () => {
+      router.push({ name: 'history-revision', params: { hash: props.revisionHash } });
     };
 
     return {

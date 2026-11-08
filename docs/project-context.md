@@ -18,6 +18,14 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 - Development tests live in `tests/` (not bundled). `tests-real-sensitive-data/`
   is gitignored and must never be committed.
 
+## Releases
+
+- Version tags are annotated and follow `vX.YYY.ZZZ` (e.g. `v0.018.000`).
+- The tag message is a release note: first line is the version, then a summary
+  of the changes since the previous tag, grouped by theme (Features / Streaming
+  / Performance & observability / Fixes & housekeeping).
+- Latest tag: `v0.018.000` (pushed to origin, points at `9204694`).
+
 ## Submodules
 
 - `src_dev_build/lib/pinliner` (bundling)
@@ -101,6 +109,93 @@ add a templater (e.g. Jinja2):
   adding `--mdm-space-0-5x` (15px) breathing room above it. Every modal with a
   dedicated Close button (list-changed-files, show-message, file viewer,
   gitignore help, ajax-page-view) uses these two classes.
+- Planned: history-sync so browser Back closes the top modal before navigating
+  the page (see "Navigation & routing" below); the `await createModal` contract
+  is unchanged.
+
+## Navigation & routing (vue-router)
+
+Decision (2026-11-08): replace the hand-rolled frontend navigation with
+**vue-router v4 + `createWebHashHistory`** (hash URLs `/#/...`, so the self-written
+backend needs no catch-all; refresh/deep-link/back all work).
+
+Progress: **Phase 1+2 done** — router + `AppTabsLayout` + `app_context` are in
+place, `app.js` uses `app.use(router)` + a root `<router-view>`, and the 6 tabs
+are top-level child routes (`/#/home`, `/#/files`, ...) with working browser
+Back/forward.
+**Phase 3 done** — the Files tab is nested routes: `files/worktree/:path(.*)*`,
+`files/gitdir/:path(.*)*`, `files/pack/:path(.*)*` (only these namespaces exist
+in the backend `/browse`). `page_files_local_list` now reads `namespace`/`path`
+props (supplied by `fileProps()` in `router.js`) and navigates via `useRouter()`;
+`apptab_filesview` is a plain layout; `pane_files.js` renders the list directly
+(compact) with `navigateTo="files-worktree"`.
+**Phase 4 done** — history is nested routes: `history` (empty path → revisions
+list) + `history/compare/:left/:right` (version compare) + `history/revision/:hash`
+(flat `git ls-tree` file list, so "files within a revision" stays under the
+History tab — matching the mental model "revisions live within history"). The
+history parent route redirects to its empty-path child
+(`redirect: { name: 'history-list' }`): navigating to a named parent route does
+NOT match its empty-path child (only navigating by *path* does), which left the
+History tab blank; the redirect fixes it. Verified live: tabs, revision files,
+browser Back, and compare all work.
+Note: a tab route whose default view is an **empty-path child** needs that
+`redirect` on the parent (the `files` tab already had one via `files-worktree`).
+**Phase 5 done** — pack + tools are nested routes too: `packstatus` (empty child
+`packstatus-list` → pack-object list) and `tools` (children `tools-home` +
+`tools-search-history`). The pack-object "revision" link routes to
+`history-revision`. Only the Overview tab still has a vestigial
+`<pages-site>`/`createPage` (its panes use `createModal`/routes now).
+Also fixed a pre-existing bug in `config_check_updates` (`response` referenced
+before its declaration on a non-OK HTTP response; should be `httpResponse`).
+**Phase 6 done** — modals sync to browser history: on open
+`router.push({ query: { modal: <stack-of-ids> } })`; on resolve/reject
+`router.back()`; on browser Back a route watch rejects the top modal (non-Error
+= cancel). Verified live: Back closes the modal, dismiss still returns to the
+same URL.
+**Phase 7 done** — removed the vestigial Overview `<pages-site>`/`createPage`,
+deleted `common_components/pages/` (PagesSite) and the unused
+`tabbed_panes/tabbed_panes.js` + `tabbed_pane.js` (the tab-skin `styles.css`
+stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
+`createPage` no longer exists anywhere in the app.
+
+- Top-level tabs (`TabbedPanes`) become top-level child routes; the per-tab
+  `PagesSite` overlay stack becomes **nested routes rendered in `<router-view>`**
+  (swap-on-navigate; the browser Back button is the back navigation).
+  `common_components/pages/` (PagesSite/Page) will be **deleted**.
+- Route shape: `/` redirects to `home`; then `home`, `files` (children
+  `worktree/:path(.*)`, `revision/:hash/:path(.*)`, `index/:path(.*)`), `history`
+  (child `compare/:left/:right`), `gitignore` (wizard children), `packstatus`,
+  `tools`.
+- `repoStatus`/`repoActions` are now **module-level reactive singletons**
+  (`app/app_context.js`), passed to route components via vue-router's route
+  `props` option; the receiving components keep their existing props.
+  `provide`/`inject` is an optional later simplification, not required now.
+- Back-navigation re-mounts pages (fresh state, re-fetch; scroll resets to top).
+  Expensive data is cached in `repoStatus` so a re-mount re-reads instead of
+  re-fetching from git. Deliberately **no `<KeepAlive>`** (memory/staleness).
+- Modals keep the imperative `const result = await createModal(Comp)` contract,
+  and additionally get a thin history-sync: on open
+  `router.push({ query: { modal: id } })`, on dismiss `router.replace` to drop the
+  entry, and watch the route so browser Back rejects (non-Error cancel) the top
+  modal before navigating the page.
+
+### vue-router vendoring
+
+- vue-router is vendored as a **pre-bundled ESM file**, not the official
+  `vue-router.esm-browser.js` (which imports `@vue/devtools-api`, a multi-file
+  package an importmap can't point a single bare specifier at). Rolldown bundles
+  it with `--external vue`, so `@vue/devtools-api` is inlined and only `vue`
+  remains a bare import.
+- Source: `src/frontend/assets_vendor_libs/vue_router/vue-router.browser.js`
+  (+ README with the one-time rebuild command). Flow: `build_templates.py`
+  `build_resource_vue_router()` → `vendorlibs/vue-router.js` → `build.sh` →
+  `ASSETS.py` `vendorlibs_vue_router_js` → served at `/assets/vendorlibs/vue-router.js`.
+- Importmap in `endpoints_html_paths.py render_page_home` now maps
+  `"vue-router": "./assets/vendorlibs/vue-router.js"`.
+- Spike verified: minified output passes `node --check`; sole import is `vue`.
+- The app code now imports `vue-router` (from `app/router.js` etc.), so add it to
+  `app_js/package.json` to let `vite` dev resolve it (Node-only dev speed; the
+  production build still uses the committed artifact).
 
 ## Records filter component (frontend)
 

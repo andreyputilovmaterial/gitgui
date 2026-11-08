@@ -178,6 +178,11 @@ def build_vendorlibs() -> Resource:
         txt_dompurify += resources.files("src.frontend.assets_vendor_libs").joinpath("purify.min.js").read_text('utf-8')
         txt_dompurify = minify_js(txt_dompurify)
         return txt_dompurify
+    def build_resource_vue_router():
+        txt_vue_router = ''
+        txt_vue_router += resources.files("src.frontend.assets_vendor_libs.vue_router").joinpath("vue-router.browser.js").read_text('utf-8')
+        txt_vue_router = minify_js(txt_vue_router)
+        return txt_vue_router
     def build_resource_fonts_ibmplexsans():
         src = None
         dt = datetime.now()
@@ -222,6 +227,10 @@ def build_vendorlibs() -> Resource:
         Resource(
             filename = "vendorlibs/dompurify.js",
             payload = build_resource_dompurify()
+        ),
+        Resource(
+            filename = "vendorlibs/vue-router.js",
+            payload = build_resource_vue_router()
         ),
     ]
     result += build_resource_fonts_ibmplexsans()

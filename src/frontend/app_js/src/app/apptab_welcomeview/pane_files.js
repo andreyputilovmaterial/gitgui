@@ -1,6 +1,6 @@
 
 
-import PageFiles from '@/app/apptab_filesview/index';
+import PageFilesLocalList from '@/app/page_files_local_list/index';
 
 // import './style.css';
 
@@ -11,10 +11,10 @@ const View = {
     'repoActions',
   ],
   template: `
-<pane :repoStatus="repoStatus" :repoActions="repoActions" viewMode="compact" />
+<pane :repoStatus="repoStatus" :repoActions="repoActions" namespace="worktree" path="" navigateTo="files-worktree" viewMode="compact" />
 `,
   components: {
-    'pane': PageFiles,
+    'pane': PageFilesLocalList,
   },
   setup() {
     return {};

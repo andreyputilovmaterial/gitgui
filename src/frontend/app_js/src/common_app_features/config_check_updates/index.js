@@ -28,7 +28,7 @@ function useConfigCheckUpdates(getAppSetupExports) {
         try {
             const httpResponse = await fetch('/config',{method:'GET'});
             if( !httpResponse.ok )
-                throw new Error( await makeFetchResponseErrorMessage(response) );
+                throw new Error( await makeFetchResponseErrorMessage(httpResponse) );
             const response = await httpResponse.json();
             handleResponse(response);
             return response;

@@ -565,6 +565,11 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
   column `minmax(0, …)` + `overflow-wrap: anywhere` so its text wraps (the files
   list now uses this). `page_files_within_revision_list/style.css` still has the
   unconditional-grid anti-pattern (see roadmap "Layout issues!!").
+- `filter_records_form` pagination: `.nav-page` buttons carry `-5px` vertical
+  margins to keep the page row compact, so the old `gap: 7px` on
+  `.pagination-page-indices` collapsed to a **-3px overlap** on wrapped rows
+  (7 − 5 − 5). Fixed by splitting the gap into `column-gap: 7px` +
+  `row-gap: 17px` (17 − 5 − 5 = a 7px visible gap matching the horizontal one).
 
 ## npm / frontend dependency review (2026-11-08)
 

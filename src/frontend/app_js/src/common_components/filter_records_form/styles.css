@@ -55,7 +55,12 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 7px;
+  column-gap: 7px;
+  /* .nav-page pulls itself up/down with -5px vertical margins to keep the
+     pagination row compact, so a plain 7px gap collapses to a -3px overlap on
+     wrapped rows. 17px - 5px - 5px = a 7px visible gap, matching the 7px
+     horizontal gap. */
+  row-gap: 17px;
   margin-top: 1px;
 }
 .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:active, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:link, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:visited, .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:hover {

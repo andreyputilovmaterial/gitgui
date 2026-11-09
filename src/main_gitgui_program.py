@@ -274,3 +274,7 @@ def main(*argcs,**kwargs):
 
     launch_browser(f'{config.get("http_address")}/')
     server.run()
+
+
+if __name__ == '__main__':
+    main()

@@ -72,3 +72,6 @@ Please note python script should be always running while you use this tool. If y
 
 ## Build process
 There is a build.sh script - all steps are configured in the inside. If you are on windows and can't run .sh scripts - you in fact can. Just use the git bash shell.
+
+## For developers
+Developer documentation — how the app is put together (architecture, the job/pipe model, frontend patterns, build & bundling, the three ways to launch) — lives in [docs/dev-docs.md](docs/dev-docs.md).

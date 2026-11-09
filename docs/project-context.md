@@ -92,6 +92,9 @@ requirements are met.
 - `docs/maintenance-log.md` holds cross-project structural notes (import style,
   bundling/call conventions) shared with sibling projects of the same shape;
   repo-specific notes stay in `docs/project-context.md`.
+- `docs/dev-docs.md` is the stable developer reference ("what each part is, why,
+  how the pieces fit"); imperative rules stay in `.clinerules/`, living scratch
+  notes stay here in `docs/project-context.md`.
 
 ## webserve logging & events
 
@@ -112,23 +115,6 @@ requirements are met.
   stdout (start/request/stop), WARNING+ → stderr (errors/notices) — and
   reproduces the old coloring. The submodule documents this change in
   `src/webserver_engine/webserve/docs/maintenance-log.md`.
-
-## Templating (no Jinja2)
-
-HTML pages are rendered by a small self-rolled layer
-(`src/frontend/template/make_html.py` + `html_begin.html`/`html_end.html` with
-`{{INS_*}}` placeholders filled via `.replace()`). It already implements basic
-templating and is enough for the ~5 pages / ~330 lines we render, so we don't
-add a templater (e.g. Jinja2):
-
-- Jinja2 drags in more dependencies (the Flask ecosystem) we'd rather avoid.
-- pinliner only bundles our local modules, so a templater installed from
-  `requirements.txt` would *not* be bundled — that part is fine. But a templater
-  that reads standalone `.html` files at runtime *would* clash with pinliner's
-  "no separate files at runtime" model and need hacks/workarounds.
-- This isn't about avoiding the mainstream web stack; it's about starting
-  minimal and simple and seeing whether maintenance/readability actually
-  suffers. Either outcome is useful knowledge.
 
 ## Modals (frontend)
 
@@ -651,21 +637,25 @@ detail view (`history-revision`).
 - The only prod-adjacent advisory is Vue's `@vue/server-renderer < 3.5.42` XSS;
   the app is client-side-only (no SSR), so it is not reachable.
 
-## Last review: rules vs. Zen of Python
-
-- Scanned all `.clinerules/` files against `import this`. Verdict: aligned;
-  no substantive violations. The rules map cleanly onto the Zen lines —
-  `04-code-style-errors.md` → "Errors should never pass silently (unless
-  explicitly silenced)"; the CSS prefix system, Python packages and submodules
-  → "Namespaces are one honking great idea"; the stable-features-only CSS rule
-  → "never is often better than *right* now"; the documented "practicality
-  beats purity" carve-outs (launcher.py, unprefixed globals, double error
-  reporting) are explicit, not accidental. Only real tensions are tradeoffs
-  that the rules themselves acknowledge (see Known gotchas).
-
 ## Rule additions
 
 - 2026-11-09: added `12-user-facing-language.md` — user-facing text (UI copy and
   help `.md` files) must avoid programmer-specific words ("code", "functions",
   "source") and stay file-agnostic, because Git is used on any kind of file, not
   just code. Git's own domain terms ("commit", "hash", "branch", "merge") stay.
+
+## Dev docs & three launch modes (2026-11-09)
+
+- Created `docs/dev-docs.md` — the stable developer reference (the "how the app
+  is put together" doc), consolidating the wishlist that was
+  `docs/ideas-dev-docs.md` (since deleted). Moved "Templating (no Jinja2)" and
+  "rules vs the Zen of Python" from this file into `docs/dev-docs.md`, and
+  linked `docs/dev-docs.md` from the README.
+- Added `if __name__ == '__main__': main()` guards to
+  `src/main_gitgui_program.py` and `src/main_gitgui_project_selector.py` so the
+  "direct module invocation" launch mode (`python -m src.main_gitgui_program …`)
+  actually works — matching the sibling-project pattern documented in
+  `MDM-Diff-py/docs/architecture.md` ("Three ways to launch a program").
+- Updated `.clinerules/02-frontend-build.md` with the dual-run-mode rule
+  (during frontend-only iteration, verify with the Vite dev server and do not
+  re-run the bundler on every change).

@@ -108,3 +108,7 @@ def main(*argcs,**kwargs):
         choice = next(iter([ c for c in choices if c.get('name') == next(iter([ f for f in result.fields if f.name=='project' ])).response.name ]))
         print(f'Selected project: {choice.get("label"),choice.get("name")}')
         return call_gitgui_program(['--working-tree',choice.get('working_tree'),'--git-directory-location',choice.get('git_directory_location')],)
+
+
+if __name__ == '__main__':
+    main()

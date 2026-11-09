@@ -760,3 +760,18 @@ detail view (`history-revision`).
   passes and the regenerated `src/frontend/GENERATED/app.js` /
   `dist/gitgui_bundle.py` contain the 5 `v-slot` keep-alive wrappers.
 
+## markitdown dependency pin (2026-11-10)
+
+- `src/textconv/processors/markitdown/requirements.txt` now pins
+  `markitdown[pdf,xlsx,docx,pptx,xls,outlook]>=0.1.8`.
+- Reason: older versions threw `UnicodeDecodeError: 'ascii' codec can't decode
+  byte 0xe2 …` when converting UTF-8 text files — markitdown wrongly guessed an
+  ASCII charset for long files. Fixed in 0.1.8
+  (microsoft/markitdown PR #2360, "Mitigate UnicodeDecodeError due to wrong
+  ASCII charset guess for long files").
+- Gotcha: `xlrd` is **not** a valid markitdown extra (0.1.8/0.1.9
+  `provides_extra` = all, audio-transcription, az-content-understanding,
+  az-doc-intel, docx, outlook, pdf, pptx, xls, xlsx, youtube-transcription).
+  The old line listed `xlrd` standalone; it was removed because the `xls` extra
+  already pulls in `xlrd` (and `pandas`). Don't re-add a bare `xlrd` extra.
+

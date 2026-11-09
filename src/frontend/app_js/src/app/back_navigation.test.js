@@ -42,8 +42,9 @@ function makeRouter() {
             redirect: { name: 'history-list' },
             children: [
               { path: '', name: 'history-list', component: Dummy },
-              { path: 'compare/:left/:right', name: 'history-compare', component: Dummy },
-              { path: 'revision/:hash', name: 'history-revision', component: Dummy },
+              { path: 'cmp/:hash1/:hash2', name: 'history-compare', component: Dummy },
+              { path: ':hash', name: 'history-revision', component: Dummy },
+              { path: ':hash/files', name: 'history-revision-files', component: Dummy },
             ],
           },
           { path: 'packstatus', name: 'packstatus', component: Dummy, redirect: { name: 'packstatus-list' }, children: [
@@ -87,6 +88,20 @@ describe('back_navigation', () => {
     await router.push({ name: 'files-worktree', params: { path: [] } });
     await router.push({ name: 'files-worktree', params: { path: ['docs'] } });
     await router.push({ name: 'files-worktree', params: { path: ['docs', 'guide'] } });
+    expect(back.canGoBack.value).toBe(false);
+  });
+
+  it('treats revision detail and its files list as distinct pages', async () => {
+    const back = createBackNavigation();
+    const router = makeRouter();
+    back.setup(router);
+
+    await router.push({ name: 'history-revision', params: { hash: 'abc123' } });
+    await router.push({ name: 'history-revision-files', params: { hash: 'abc123' } });
+    expect(back.canGoBack.value).toBe(true);
+
+    back.goBack();
+    await waitForRoute(router, 'history-revision');
     expect(back.canGoBack.value).toBe(false);
   });
 

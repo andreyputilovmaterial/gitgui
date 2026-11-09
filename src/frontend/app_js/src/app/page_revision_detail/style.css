@@ -1,0 +1,49 @@
+
+.mdm-git-gui-revisiondetail {
+    position: relative;
+    container-type: inline-size;
+}
+
+.mdm-git-gui-revisiondetail .revision-fields {
+    border: 1px solid #dbdbdb;
+    padding: var(--mdm-space-0-5x);
+    margin: var(--mdm-space-0-5x) 0 var(--mdm-space);
+}
+
+.mdm-git-gui-revisiondetail .revision-fields .note {
+    color: #339944;
+    margin: 0 0 var(--mdm-space-0-25x);
+}
+
+.mdm-git-gui-revisiondetail .revision-field {
+    padding: 3px 0;
+    overflow-wrap: anywhere;
+}
+
+.mdm-git-gui-revisiondetail .revision-field .label {
+    color: #666;
+    font-size: 92%;
+    margin-right: 7px;
+}
+
+.mdm-git-gui-revisiondetail .revision-field-message .value {
+    display: block;
+    margin-top: 3px;
+    border: 1px solid #eee;
+    padding: 7px 14px;
+    box-shadow: inset 4px 0 0 0 #385;
+}
+
+.mdm-git-gui-revisiondetail .revision-actions {
+    margin: 0;
+}
+
+.mdm-git-gui-revisiondetail .revision-actions .view-files-button,
+.mdm-git-gui-revisiondetail .revision-actions .view-files-button:link,
+.mdm-git-gui-revisiondetail .revision-actions .view-files-button:hover,
+.mdm-git-gui-revisiondetail .revision-actions .view-files-button:active {
+    color: #6670bb;
+    text-decoration: none;
+    cursor: pointer;
+    outline: none;
+}

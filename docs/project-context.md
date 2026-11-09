@@ -229,6 +229,19 @@ removed; the backend `/browse` `gitdir`/`pack` namespaces remain (used by the
 disk-usage page's direct `/browse/<namespace>:` SIZE calls). `fileProps()` still
 passes `namespace: 'worktree'`, so the backend resource identifier
 (`worktree:<path>`) and the not-found message keep the namespace prefix.
+**Phase 11 done** — history paths finalized (2026-11-09). The history tab now has
+four children: `''` (revisions list), `cmp/:hash1/:hash2` (version compare,
+renamed from `compare/:left/:right`), `:hash/files` (files within a revision,
+renamed from `revision/:hash`), and `:hash` (new `page_revision_detail` — a
+deliberately basic single-revision view showing hash/author/date-time/message,
+i.e. the same info already on the list, plus a "View files in this revision"
+link; it gives each revision a stable `/#/history/:hash/` URL). Static segments
+(`cmp`, `files`) outrank the dynamic `:hash` in vue-router scoring and the
+segment counts differ, so these routes co-exist without conflict. The compare
+props map `route.params.hash1`/`hash2` → `hashLeft`/`hashRight` (the page
+component is unchanged). The revisions-list "(files)" links now target
+`history-revision-files`; the pack-object "Revision hash" link now lands on the
+detail view (`history-revision`).
 
 - Top-level tabs (`TabbedPanes`) become top-level child routes; the per-tab
   `PagesSite` overlay stack becomes **nested routes rendered in `<router-view>`**
@@ -236,9 +249,9 @@ passes `namespace: 'worktree'`, so the backend resource identifier
   `common_components/pages/` (PagesSite/Page) will be **deleted**.
 - Route shape: `/` redirects to `home`; then `home`, `files` (child
   `:path(.*)*` → worktree list), `history` (children `''` (revisions list),
-  `compare/:left/:right`, `revision/:hash`), `gitignore`, `packstatus`
-  (child `''` → pack-object list), `tools` (children `''` → tools home,
-  `search-in-history`).
+  `cmp/:hash1/:hash2` (compare), `:hash` (revision detail), `:hash/files`),
+  `gitignore`, `packstatus` (child `''` → pack-object list), `tools` (children
+  `''` → tools home, `search-in-history`).
 - `repoStatus`/`repoActions` are now **module-level reactive singletons**
   (`app/app_context.js`), passed to route components via vue-router's route
   `props` option; the receiving components keep their existing props.

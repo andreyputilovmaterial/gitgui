@@ -85,7 +85,7 @@ const View = {
     const isCompactView = computed(()=>props.viewMode==='compact');
 
     const navigateVersionComparePage = () => {
-      router.push({ name: 'history-compare', params: { left: formFields.compareLeft, right: formFields.compareRight } });
+      router.push({ name: 'history-compare', params: { hash1: formFields.compareLeft, hash2: formFields.compareRight } });
     };
 
     const handleCompare = async () => {

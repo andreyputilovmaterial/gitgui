@@ -130,7 +130,7 @@ const Record = {
     const isIndex = ref(props.hash==='index');
 
     const navigateFilesListPage = () => {
-      router.push({ name: 'history-revision', params: { hash: props.hash } });
+      router.push({ name: 'history-revision-files', params: { hash: props.hash } });
     };
 
     return {

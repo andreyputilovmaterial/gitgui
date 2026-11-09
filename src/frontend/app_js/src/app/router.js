@@ -10,6 +10,7 @@ import PageFilesLocalList from './page_files_local_list/index';
 import PageFilesWithinRevisionList from './page_files_within_revision_list/index';
 import PageRevisionsList from './page_revisions_list/index';
 import PageVersionCompare from './page_version_compare/index';
+import PageRevisionDetail from './page_revision_detail/index';
 import PageHistory from './apptab_historyview/index';
 import PageGitignore from './window_repoinitview/section_gitignore';
 import PagePackcompression from './apptab_packcompression/index';
@@ -36,7 +37,7 @@ const fileProps = namespace => route => ({
 
 const revisionProps = route => ({ ...routeProps, hash: route.params.hash });
 
-const compareProps = route => ({ ...routeProps, hashLeft: route.params.left, hashRight: route.params.right });
+const compareProps = route => ({ ...routeProps, hashLeft: route.params.hash1, hashRight: route.params.hash2 });
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -52,8 +53,9 @@ const router = createRouter({
         ]},
         { path: 'history', name: 'history', component: PageHistory, redirect: { name: 'history-list' }, children: [
             { path: '', name: 'history-list', component: PageRevisionsList, props: routeProps },
-            { path: 'compare/:left/:right', name: 'history-compare', component: PageVersionCompare, props: compareProps },
-            { path: 'revision/:hash', name: 'history-revision', component: PageFilesWithinRevisionList, props: revisionProps },
+            { path: 'cmp/:hash1/:hash2', name: 'history-compare', component: PageVersionCompare, props: compareProps },
+            { path: ':hash/files', name: 'history-revision-files', component: PageFilesWithinRevisionList, props: revisionProps },
+            { path: ':hash', name: 'history-revision', component: PageRevisionDetail, props: revisionProps },
         ]},
         { path: 'gitignore',  name: 'gitignore',  component: PageGitignore,       props: routeProps },
         { path: 'packstatus', name: 'packstatus', component: PagePackcompression, redirect: { name: 'packstatus-list' }, children: [

@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 
 import AppTabsLayout from './layout_app_tabs';
 import { repoStatus, repoActions } from './app_context';
+import { setupBackNavigation } from './back_navigation';
 
 import PageWelcome from './apptab_welcomeview/index';
 import PageFiles from './apptab_filesview/index';
@@ -67,5 +68,7 @@ const router = createRouter({
     },
   ],
 });
+
+setupBackNavigation(router);
 
 export default router;

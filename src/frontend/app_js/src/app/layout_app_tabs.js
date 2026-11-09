@@ -1,10 +1,16 @@
 import '../common_components/tabbed_panes/styles.css';
+import './layout_app_tabs.css';
+
+import { canGoBack, goBack } from './back_navigation';
 
 // Tab bar + nested <router-view>: replaces the old <component-tabbed-panes>.
 // Reuses the existing tab skin classes (common_components/tabbed_panes/styles.css)
 // so the tabs look identical. The active tab is tracked by <router-link>'s
 // active-class, which stays active for nested child routes (files/history/...
 // children) once those are added.
+//
+// The leading "←" is the physical back button: it appears only when the current
+// tab has a previous *page* to go back to (see back_navigation.js).
 const TABS = [
   { name: 'home',       title: 'Overview' },
   { name: 'files',      title: 'Files' },
@@ -18,6 +24,13 @@ const AppTabsLayout = {
   template: `
 <div class="mdm-ui-tabbed-panes">
   <div class="mdm-ui-tabbed-panes-head">
+    <a
+      v-if="canGoBack"
+      href="#!"
+      class="mdm-git-gui-tabbed-panes-back"
+      title="Back"
+      @click.prevent="goBack"
+    >←</a>
     <router-link
       v-for="tab in tabs"
       :key="tab.name"
@@ -32,7 +45,7 @@ const AppTabsLayout = {
 </div>
 `,
   setup() {
-    return { tabs: TABS };
+    return { tabs: TABS, canGoBack, goBack };
   },
 };
 

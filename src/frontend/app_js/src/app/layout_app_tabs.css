@@ -1,0 +1,16 @@
+/* Physical back button in the tab bar (see layout_app_tabs.js). It is a direct
+   child of .mdm-ui-tabbed-panes-head, so it already inherits the tab skin
+   (padding/background/hover) from the shared tabbed-panes styles. These rules
+   only make the arrow read as a navigation control, not a tab. */
+
+.mdm-git-gui-tabbed-panes-back,
+.mdm-git-gui-tabbed-panes-back:link,
+.mdm-git-gui-tabbed-panes-back:visited,
+.mdm-git-gui-tabbed-panes-back:hover,
+.mdm-git-gui-tabbed-panes-back:active {
+    text-decoration: none;
+    color: #385;
+    font-weight: 700;
+    font-size: 1.15em;
+    line-height: 1;
+}

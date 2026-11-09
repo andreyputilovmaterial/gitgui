@@ -204,6 +204,15 @@ deleted `common_components/pages/` (PagesSite) and the unused
 `tabbed_panes/tabbed_panes.js` + `tabbed_pane.js` (the tab-skin `styles.css`
 stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
 `createPage` no longer exists anywhere in the app.
+**Phase 8 done** — physical "back" button. `layout_app_tabs.js` renders a `←`
+button at the head of the tab bar whenever `back_navigation.js` reports a
+previous page in the current tab. `back_navigation.js` keeps a per-tab stack of
+distinct *pages* (leaf route name, with `files-worktree`/`files-gitdir`/
+`files-pack` collapsed into one "files list" page) via `router.afterEach`; it
+resets on a tab switch, ignores same-page steps (files-tree walks, modal query
+changes), and pops on a back. The button calls `router.back()` (a single
+browser-history step), so it can never step "up one level" inside the files tree
+or undo a tab switch, and it stays coherent with the browser Back button.
 
 - Top-level tabs (`TabbedPanes`) become top-level child routes; the per-tab
   `PagesSite` overlay stack becomes **nested routes rendered in `<router-view>`**

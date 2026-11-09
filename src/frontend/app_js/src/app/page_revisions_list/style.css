@@ -14,6 +14,19 @@
 .mdm-git-gui-page-history-overview .history-record .hash .label {
   display: none;
 }
+/* Let the (unbreakable) hash shrink its grid cell so the record never forces
+   itself wider than the container; the hash itself truncates with an ellipsis.
+   A flex row keeps the "(files)" link on the same line as the truncated hash. */
+.mdm-git-gui-page-history-overview .history-record .hash {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: baseline;
+}
+.mdm-git-gui-page-history-overview .history-record .hash .view-files-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
 .mdm-git-gui-page-history-overview .history-record .author .label {
   display: inline;
 }

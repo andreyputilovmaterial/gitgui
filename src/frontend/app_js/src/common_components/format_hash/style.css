@@ -1,7 +1,30 @@
 
 
+/* A hash is one long unbreakable token (no spaces), so it can force its
+   container wider than the available space. Render it as a single-line flex box
+   that never exceeds its container: the leading (short) part stays, the rest
+   truncates with an ellipsis when there is no room. */
+.mdmreport-role-hash {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
 .mdmreport-role-hash .hash-leading {
   font-weight: 600;
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mdmreport-role-hash .hash-rest {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mdmreport-role-hash.mode-only .hash-leading {

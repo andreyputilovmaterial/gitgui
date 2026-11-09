@@ -8,10 +8,19 @@
 
 .mdm-git-gui-welcomeview {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Mobile-first: a single column, so every pane stacks on narrow screens.
+       Two columns are restored only when the viewport is wide enough for the
+       Files and History panes to sit side by side without squeezing/overflow. */
+    grid-template-columns: 1fr;
     gap: 15px;
     position: relative;
     container-type: inline-size;
+}
+
+@media (min-width: 700px) {
+    .mdm-git-gui-welcomeview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .mdm-git-gui-welcomeview, .mdm-git-gui-welcomeview-dummystub, .mdm-git-gui-welcomeview-uptodate, .mdm-git-gui-welcomeview-uncommittedchanges {

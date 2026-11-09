@@ -301,6 +301,32 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
 
 ## Last state
 
+- Narrow-screen layout fixes (2026-11-08/09, "Layout issues!!" from roadmap):
+  - Overview welcome view (`apptab_welcomeview/style.css`): panes stack in a
+    single column below `@media (min-width: 700px)` (was a fixed
+    `repeat(2, minmax(0,1fr))` that squeezed Files + History side by side on
+    phones and let their overflowing records overlap).
+  - Files list (`page_files_local_list/style.css`): **one row per record at all
+    widths** (never stacked). The file-path column is `minmax(0, 5fr)` and the
+    path uses `overflow-wrap: anywhere`, so long names wrap instead of pushing
+    the row wide; on narrow containers the size + timestamp columns are hidden
+    via `@container` (`createdat` below 700px, `size`+`modifiedat` below 450px)
+    using the `mdm-ui-record-col-*` classes (so files *and* directories, which
+    use empty placeholder spans, both drop the column). An `overflow-x: auto`
+    guard on the records grid prevents any residual spill into the neighbouring
+    pane.
+  - Long hashes (`format_hash/style.css`, used app-wide): now render as a
+    single-line flex box with the leading (short) part fixed and the rest
+    truncating with an ellipsis, so the 40-char unbreakable hash no longer forces
+    the history record wider than the container; `page_revisions_list/style.css`
+    gives the `.hash` field `min-width: 0; overflow: hidden; display: flex` so
+    the "(files)" link stays on the same line as the truncated hash.
+  - The `<meta name="viewport" content="width=device-width, initial-scale=1">`
+    was added to both `template/templates/html_begin.html` (backend template)
+    and `app_js/index.html` (Vite) — `initial-scale=1` fixes Firefox rendering
+    the page at a wider virtual width at small window sizes.
+  - Verified live in the Vite dev server and the backend-served bundle at
+    ~340/360/390/600/1400px.
 - History page (`app/page_revisions_list/`): added a **"Find within history"** box
   directly below "Compare selected versions" — its own `<form>` holding a
   regex-capable search input (`component-input-regextext`, `v-model` on
@@ -522,6 +548,23 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
   to peel to the commit. Pointing a tag at another tag object makes a nested
   "tag of a tag", so `git show` prints both messages. (2026-11-08: `v0.018.000`
   was un-nested to commit `9204694` and force-pushed.)
+- The record-grid system (`common_components/css_grid/styles.css`) is
+  **mobile-first but only half-automatic**: `.mdm-ui-records` is `1fr` (single
+  column) by default and becomes a multi-column `max-content` grid at
+  `@container (min-width: 500px)`. Each `.mdm-ui-record` is a `subgrid` spanning
+  `1 / -1`, and fields are placed by the `.mdm-ui-record-col-N` classes. But the
+  `col-N` placement is **not** collapsed on narrow containers by the shared CSS —
+  each list's own stylesheet must override the fields to `grid-column: 1 / -1`
+  inside a narrow `@container` query, and must gate its multi-column
+  `grid-template-columns` behind a wide `@container` query (an *unconditional*
+  multi-column rule makes the subgrid always that wide, so the `col-N` fields
+  stay on one row and overflow). Two valid narrow-container strategies:
+  (a) stack fields with `grid-column: 1 / -1` in a narrow `@container` query
+  (history list does this at 900px), or (b) keep one row but `display: none` the
+  size/timestamp columns in a narrow `@container` query and give the flexible
+  column `minmax(0, …)` + `overflow-wrap: anywhere` so its text wraps (the files
+  list now uses this). `page_files_within_revision_list/style.css` still has the
+  unconditional-grid anti-pattern (see roadmap "Layout issues!!").
 
 ## npm / frontend dependency review (2026-11-08)
 

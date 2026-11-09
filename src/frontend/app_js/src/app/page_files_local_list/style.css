@@ -9,18 +9,44 @@
 .mdm-git-gui-fileslistview .files-record .link-view-file .label, .mdm-git-gui-fileslistview .files-record .link-download-file .label, .mdm-git-gui-fileslistview .files-record .filepath .label {
   display: none;
 }
+/* Files are always one row per record — never stacked vertically. The file
+   path column shrinks (minmax(0, …)) and its text wraps when there is no room,
+   so a long name can't push the row beyond the container. */
 .mdm-git-gui-fileslistview .files-records.mdm-ui-records {
   grid-template-columns:
   max-content
   max-content
-    5fr
+    minmax(0, 5fr)
   max-content
   max-content
   max-content;
+  /* Safety net: if a record still ends up wider than the container (e.g. an
+     unbreakable token or a not-yet-hidden column), scroll horizontally instead
+     of letting it spill into the neighbouring pane/column. */
+  overflow-x: auto;
 }
-@container (max-width: 700px) {
-  .mdm-git-gui-fileslistview .files-records.mdm-ui-records > * {
-    grid-column: 1/-1;
+.mdm-git-gui-fileslistview .files-records.files-records-compact.mdm-ui-records {
+  grid-template-columns:
+  max-content
+  max-content
+    minmax(0, 5fr)
+  max-content
+  max-content;
+}
+
+/* On narrower containers drop the size + timestamp columns so the file path
+   keeps enough room; the record stays on a single row. Target the column
+   classes so both files and directories (which use empty placeholder spans)
+   lose the column. */
+@container (max-width: 699px) {
+  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-createdat {
+    display: none;
+  }
+}
+@container (max-width: 449px) {
+  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-size,
+  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-modifiedat {
+    display: none;
   }
 }
 
@@ -44,12 +70,6 @@
 }
 .mdm-git-gui-fileslistview .files-record.files-record-mergeconflict, .mdm-git-gui-fileslistview .files-record.files-record-mergeconflict.files-record-mod {
   background: #f77996;
-}
-.mdm-git-gui-fileslistview .mdm-ui-records {
-    grid-template-columns:
-      max-content
-      max-content
-      10fr;
 }
 .mdm-git-gui-fileslistview .mdm-ui-record > * {
   padding: 3px 3px;
@@ -125,6 +145,12 @@
   color: inherit;
   transition: all 350ms ease;
   cursor: pointer;
+}
+/* Let the file path shrink its column and wrap/break long names instead of
+   forcing the whole row wider than the container. */
+.mdm-git-gui-fileslistview .files-record .filepath {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .mdm-git-gui-fileslistview .files-record a.filepath:hover {
   text-decoration: underline;

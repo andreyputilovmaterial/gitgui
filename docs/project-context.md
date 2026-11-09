@@ -612,3 +612,10 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
   beats purity" carve-outs (launcher.py, unprefixed globals, double error
   reporting) are explicit, not accidental. Only real tensions are tradeoffs
   that the rules themselves acknowledge (see Known gotchas).
+
+## Rule additions
+
+- 2026-11-09: added `12-user-facing-language.md` — user-facing text (UI copy and
+  help `.md` files) must avoid programmer-specific words ("code", "functions",
+  "source") and stay file-agnostic, because Git is used on any kind of file, not
+  just code. Git's own domain terms ("commit", "hash", "branch", "merge") stay.

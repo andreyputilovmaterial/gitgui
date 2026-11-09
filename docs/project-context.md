@@ -676,3 +676,87 @@ detail view (`history-revision`).
 - Also added `text-decoration: none` to `.mdm-ui-tabbed-panes-head > *` so the
   tab links are no longer underlined (the underline was the UA
   `a:-webkit-any-link { text-decoration: underline }` default).
+
+## GitHub issue #13 closed (2026-11-09)
+
+- Closed "Work on better bundler, and test it" (#13) with a comment linking to
+  the last `py_js_bundler` submodule bump in this repo:
+  `f0494765ba781e0813721702683252f5f6b61d87` ("Bump py_js_bundler submodule to
+  full ES import/export support", 2026-10-29, on `origin/main`; no later bumps).
+  Rationale recorded in the comment: the bundler may not be final, but keeping
+  the issue open no longer helps — reopen (or file new) if something genuinely
+  breaks.
+- Gotcha for future GitHub API work from this machine: there is a working
+  `github.com` credential for `The-city-not-present` in the macOS keychain,
+  readable via `git credential fill` (`protocol=https\nhost=github.com`). The
+  system Python 3.13 (`/Library/Frameworks/...`) fails TLS cert verification
+  (`CERTIFICATE_VERIFY_FAILED`), so call the API with `curl`, not
+  `urllib.request`.
+- Gotcha: the helium-devtools MCP drives its own Chrome instance (separate from
+  the user's "main" Chrome), so a GitHub login in the user's browser is not
+  visible to the MCP browser — cookies are not shared.
+
+
+## List pagination: URL vs keep-alive (2026-11-09)
+
+- Task "Rework pagination so it is reflected in url" (docs/roadmap.md) was
+  explored and **rejected in its literal form**. A page number is a *derived*
+  value (a function of the active filters + sort field/order + records), so a
+  bare `?page=N` in the URL is incoherent: reloading/sharing it shows "page N"
+  of a *different* filter/sort than the one that produced it. Making it truthful
+  requires also encoding filters+sort, which conflicts with fast, transient
+  filter typing (history spam / per-keystroke URL churn), and it scales badly to
+  pages with several filter/sort panes.
+- **Decision: the address bar encodes content identity (path, revision hash,
+  compare pair) only. Transient view state (filters, sort, page) stays out of
+  the URL.** The actual requirement — "show content at the same place when the
+  user returns to a previous page" — is solved by keeping the component instance
+  alive across navigation with Vue's built-in `<keep-alive>`, not by URL state.
+- Implemented with the **`v-slot` + `<component :is>`** keep-alive form (state
+  lives in the component instance, so filters/sort/page are restored exactly;
+  zero changes to `filter_records_form`; uniform for any number of filter/sort
+  components):
+
+  ```html
+  <router-view v-slot="{ Component }">
+    <keep-alive>
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
+  ```
+
+  Files touched:
+  - `src/frontend/app_js/src/app/layout_app_tabs.js` (tab-level router-view:
+    preserves each tab's whole subtree across tab switches, incl. welcome panes)
+  - `src/frontend/app_js/src/app/apptab_filesview/index.js`
+  - `src/frontend/app_js/src/app/apptab_historyview/index.js` (the key one:
+    revisions list ↔ revision detail / compare / files-within-revision)
+  - `src/frontend/app_js/src/app/apptab_tools/index.js`
+  - `src/frontend/app_js/src/app/apptab_packcompression/index.js`
+  The app.js root `<router-view>` is intentionally NOT wrapped (it only toggles
+  RepoInitView ↔ AppTabsLayout).
+- **Critical gotcha: the naive `<keep-alive><router-view/></keep-alive>` form
+  does NOT work.** Vue Router's `RouterView` renders the matched component
+  *inside* itself, so that form caches the `RouterView` instance (not the page)
+  and page state is lost. This was the first attempt and it failed (reported
+  2026-11-09: History page 3 → revision files → Back landed on page 1). The
+  `v-slot="{ Component }"` + `<component :is="Component">` form makes the matched
+  component keep-alive's direct child, which is what makes caching work. The
+  vue-router deprecation diagnostic `VUE_ROUTER_R0060` fires for the naive form.
+- Gotcha: do **not** key a keep-alive'd `<router-view>` by `$route.fullPath`.
+  The files tree walk changes fullPath on every folder step while staying on the
+  same `files-worktree` component; a fullPath key would spawn one cached instance
+  per folder. Params-only changes already reuse the same component instance (that
+  is why `page_files_local_list` watches `props.path`), and each routed leaf is a
+  distinct component, so no `:key` is needed — keep-alive caches by component.
+- Lifecycle note: kept-alive components fire `onActivated` (not `onMounted`) on
+  return, so list data is not re-fetched on back-nav. This is the desired
+  instant-restore behavior; add an `onActivated` refetch later only if data can
+  go stale while the instance stays alive.
+- Verified: 54/54 frontend unit tests pass, plus a new
+  `src/frontend/app_js/src/app/keep_alive_router.test.js` regression test proving
+  the `v-slot` keep-alive pattern preserves page-local state across navigation;
+  `npm run build` (Vite) passes; a fresh `./build.sh` (py_js_bundler + pinliner)
+  passes and the regenerated `src/frontend/GENERATED/app.js` /
+  `dist/gitgui_bundle.py` contain the 5 `v-slot` keep-alive wrappers.
+

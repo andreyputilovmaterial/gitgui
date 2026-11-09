@@ -6,7 +6,11 @@ import './style.css';
 const View = {
   template: `
 <div class="mdm-git-gui-tools">
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <keep-alive>
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
 </div>
 `,
 };

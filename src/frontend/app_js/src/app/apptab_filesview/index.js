@@ -12,7 +12,11 @@ const View = {
 <div class="mdm-git-gui-filesview">
   <p>Files in working tree.<br />
 Changed files are in orange. Merge conflicts are in pink. Untracked/ignored files are greyed out.</p>
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <keep-alive>
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
 </div>
 `,
 };

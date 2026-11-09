@@ -40,7 +40,11 @@ const AppTabsLayout = {
     >{{ tab.title }}</router-link>
   </div>
   <div class="mdm-ui-tabbed-panes-inner">
-    <router-view></router-view>
+    <router-view v-slot="{ Component }">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
   </div>
 </div>
 `,

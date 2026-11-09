@@ -26,6 +26,7 @@
   padding: 7px 14px 7px 14px;
   color: #666;
   cursor: pointer;
+  text-decoration: none;
   transition: all 600ms ease, box-shadow 120ms ease;
   box-shadow: inset 0 -4px 0 0 transparent;
 }
@@ -35,4 +36,10 @@
 }
 .mdm-ui-tabbed-panes-head > *.active {
   background: #fff;
+}
+/* Clicking a tab gives it focus, and browsers (notably Firefox) draw a dotted
+   outline around it. Suppress that mouse-click focus ring while keeping the
+   default focus outline for keyboard navigation (:focus-visible). */
+.mdm-ui-tabbed-panes-head > *:focus:not(:focus-visible) {
+  outline: none;
 }

@@ -659,3 +659,20 @@ detail view (`history-revision`).
 - Updated `.clinerules/02-frontend-build.md` with the dual-run-mode rule
   (during frontend-only iteration, verify with the Vite dev server and do not
   re-run the bundler on every change).
+
+## Tabs focus outline & underline (2026-11-09)
+
+- The app's top tabs (`Overview/Files/History/…`) are `<router-link>`s wearing
+  `.mdm-ui-tabbed-panes-button`, skinned by
+  `src/frontend/app_js/src/common_components/tabbed_panes/styles.css`
+  (`.mdm-ui-tabbed-panes-head > *`). The dotted focus outline on click came from
+  `normalize.css`'s `a:focus { outline: thin dotted; }`, not from a UA default.
+- Fixed with a scoped rule in that same styles.css:
+  `.mdm-ui-tabbed-panes-head > *:focus:not(:focus-visible) { outline: none; }`.
+  It removes the dotted ring for mouse-click focus but keeps it for keyboard
+  navigation (`:focus-visible` still matches on Tab, so `a:focus` still applies).
+  Verified against the running Vite dev server: click → `outlineStyle: none`;
+  Tab → `outlineStyle: dotted`.
+- Also added `text-decoration: none` to `.mdm-ui-tabbed-panes-head > *` so the
+  tab links are no longer underlined (the underline was the UA
+  `a:-webkit-any-link { text-decoration: underline }` default).

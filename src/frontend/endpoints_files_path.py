@@ -40,8 +40,8 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
     path_parsed = f'{urlparse(path_with_query).path}'
     path = [ unquote(p) for p in path_parsed.split('/') ]
     method = net_request_handler.command
-    file_path = '/'.join(path[2:])
-    namespace_root, file_path = resolve_namespace(file_path,config)
+    resource_identifier = '/'.join(path[2:])
+    namespace_root, file_path = resolve_namespace(resource_identifier,config)
 
     @dataclass
     class FileInfo:
@@ -78,6 +78,14 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
             
 
     if method=='GET':
+        if not file_path.exists():
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'resource not found: {resource_identifier}'}, cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
         if file_path.is_dir():
             def sorter(file_info):
                 type_sort_key = 0 if file_info.type not in ('directory', 'file') else 1 if file_info.type=='directory' else 2
@@ -103,6 +111,14 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
                 is_binary = False,
             )
     if method=='DOWNLOAD':
+        if not file_path.exists():
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'resource not found: {resource_identifier}'}, cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
         params = parse_qs(urlparse(path_with_query).query)
         params_flattened = { key: values[-1] for key, values in params.items() }
         options = params_flattened
@@ -121,11 +137,19 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
             options = options,
         )
     if method=='SIZE':
-        if not file_path.is_dir():
+        if not file_path.exists():
             return WebResponse(
                 status_code = 404,
                 content_type = 'application/json',
-                body = json.dumps({'status':'error','error':f'size requested for non-directory path: {file_path}'}, cls=JSONEncoder),
+                body = json.dumps({'status':'error','error':f'resource not found: {resource_identifier}'}, cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
+        if not file_path.is_dir():
+            return WebResponse(
+                status_code = 400,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'size requested for non-directory path: {resource_identifier}'}, cls=JSONEncoder),
                 headers = [],
                 is_binary = False,
             )

@@ -88,6 +88,12 @@
   grid-column: 1/-1;
   padding: 0 0 0 3px;;
 }
+/* A missing path is an expected, user-facing state, not a failure: keep the
+   global `.error` class for its semantics (and font weight) but render the
+   "path not found" notice as ordinary black text instead of error red. */
+.mdm-git-gui-fileslistview .mdm-git-gui-fileslistview-notfound {
+  color: #000;
+}
 .mdm-git-gui-fileslistview .files-record .link-view-file, .mdm-git-gui-fileslistview .files-record .link-download-file {
   position: relative;
 }

@@ -368,6 +368,17 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
   (`1`), then files (`2`), so unexpected entries surface at the top instead of
   being buried last (was directories/files/other with other at `999`). Renamed
   `dir_first_key` → `type_sort_key` to match its new meaning.
+- Files endpoint — `/browse/` contract: HTTP 404 now means specifically
+  "resource not found" and nothing else. GET/DOWNLOAD/SIZE return 404 (JSON
+  `{status, error}`) when the resolved path does not exist (GET used to fail with
+  a 503 from `FileNotFoundError` in `FileInfo.__init__`), and SIZE on a
+  non-directory now returns 400 instead of 404. The files view
+  (`page_files_local_list/index.js`) treats a 404 as an expected user-facing
+  state: it renders `Path not found: <namespace>:<path>` in place of the file
+  list (the notice keeps the global `.error` class for semantics but overrides
+  its color to black via `.mdm-git-gui-fileslistview-notfound`), and it does
+  **not** call `logError` or re-throw for a 404 — other failures still propagate
+  to the top-level handler/console. Covered by `tests/test_endpoints_files_path.py`.
 - Removed `git submodule update --init --recursive` from `build.sh` (submodule
   initialization is no longer part of the build; the outer `build.sh` still runs
   the webinput submodule's own `build.sh`).

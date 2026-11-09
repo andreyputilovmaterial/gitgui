@@ -103,7 +103,8 @@ const View = {
     <breadcrumbs :pathCurrentParts="pathCurrentParts" :navigate="navigate" />
     <navbar-buttons :pathCurrentParts="pathCurrentParts" :navigate="navigate" :navigateBack="navigateBack" />
     <div class="error">{{ error }}</div>
-    <template v-if="!filesList && !error">Querying data, please wait...</template>
+    <div v-if="notFoundMessage" class="error mdm-git-gui-fileslistview-notfound">{{ notFoundMessage }}</div>
+    <template v-if="!filesList && !error && !notFoundMessage">Querying data, please wait...</template>
     <template v-else-if="!!filesList">
       <files-records-compact v-if="isCompactView" :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="pathCurrent" />
       <files-records v-else :files="filesList" :namespace="namespaceCurrent" :navigate="navigate" :repoStatus="repoStatus" :repoActions="repoActions" :path="pathCurrent" />
@@ -122,6 +123,7 @@ const View = {
     const router = useRouter();
     const filesList = ref(null);
     const error = ref('');
+    const notFoundMessage = ref('');
     const pathCurrent = computed(()=> props.path ?? '');
     const namespaceCurrent = computed(()=> props.namespace);
     const isCompactView = computed(()=>props.viewMode==='compact');
@@ -152,6 +154,7 @@ const View = {
       const resourcePath = `${namespaceCurrent.value}:${pathCurrent.value}`;
       try {
         error.value = '';
+        notFoundMessage.value = '';
         const encodedPath = resourcePath
           .split("/")
           .map(encodeURIComponent)
@@ -163,6 +166,11 @@ const View = {
             headers: { "Content-Type": "application/json" },
           },
         );
+        if( response.status === 404 ) {
+            filesList.value = null;
+            notFoundMessage.value = `Path not found: ${resourcePath}`;
+            return;
+        }
         if( !response.ok ) {
             throw new Error(await makeFetchResponseErrorMessage(response) );
         }
@@ -203,6 +211,7 @@ const View = {
     return {
       filesList,
       error,
+      notFoundMessage,
       pathCurrent,
       namespaceCurrent,
       navigate,

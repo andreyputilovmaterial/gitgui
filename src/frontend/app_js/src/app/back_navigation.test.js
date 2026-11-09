@@ -32,9 +32,7 @@ function makeRouter() {
             component: Dummy,
             redirect: { name: 'files-worktree' },
             children: [
-              { path: 'worktree/:path(.*)*', name: 'files-worktree', component: Dummy },
-              { path: 'gitdir/:path(.*)*', name: 'files-gitdir', component: Dummy },
-              { path: 'pack/:path(.*)*', name: 'files-pack', component: Dummy },
+              { path: ':path(.*)*', name: 'files-worktree', component: Dummy },
             ],
           },
           {

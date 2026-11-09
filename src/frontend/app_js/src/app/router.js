@@ -24,7 +24,8 @@ import PageToolSearchInHistory from './page_tool_search_in_history/index';
 // will extend these props with their own params via a `props: route => ...`.
 const routeProps = { repoStatus, repoActions };
 
-// For a files-tab child route: repoStatus/repoActions + the namespace + the
+// For the Files-tab route: repoStatus/repoActions + the `/browse` namespace
+// (still 'worktree' internally, even though the URL no longer shows it) + the
 // decoded path (a string) + the route name to navigate back into.
 const fileProps = namespace => route => ({
   ...routeProps,
@@ -47,9 +48,7 @@ const router = createRouter({
       children: [
         { path: 'home',       name: 'home',       component: PageWelcome,         props: routeProps },
         { path: 'files', name: 'files', component: PageFiles, redirect: { name: 'files-worktree' }, children: [
-            { path: 'worktree/:path(.*)*', name: 'files-worktree', component: PageFilesLocalList, props: fileProps('worktree') },
-            { path: 'gitdir/:path(.*)*',   name: 'files-gitdir',   component: PageFilesLocalList, props: fileProps('gitdir') },
-            { path: 'pack/:path(.*)*',     name: 'files-pack',     component: PageFilesLocalList, props: fileProps('pack') },
+            { path: ':path(.*)*', name: 'files-worktree', component: PageFilesLocalList, props: fileProps('worktree') },
         ]},
         { path: 'history', name: 'history', component: PageHistory, redirect: { name: 'history-list' }, children: [
             { path: '', name: 'history-list', component: PageRevisionsList, props: routeProps },

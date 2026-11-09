@@ -170,12 +170,13 @@ Progress: **Phase 1+2 done** — router + `AppTabsLayout` + `app_context` are in
 place, `app.js` uses `app.use(router)` + a root `<router-view>`, and the 6 tabs
 are top-level child routes (`/#/home`, `/#/files`, ...) with working browser
 Back/forward.
-**Phase 3 done** — the Files tab is nested routes: `files/worktree/:path(.*)*`,
-`files/gitdir/:path(.*)*`, `files/pack/:path(.*)*` (only these namespaces exist
-in the backend `/browse`). `page_files_local_list` now reads `namespace`/`path`
-props (supplied by `fileProps()` in `router.js`) and navigates via `useRouter()`;
-`apptab_filesview` is a plain layout; `pane_files.js` renders the list directly
-(compact) with `navigateTo="files-worktree"`.
+**Phase 3 done** — the Files tab is a nested route `files/:path(.*)*` (name
+`files-worktree`) that maps the URL straight onto the working tree.
+`page_files_local_list` reads `namespace`/`path` props (supplied by
+`fileProps('worktree')` in `router.js`; the backend `/browse` namespace stays
+`worktree`) and navigates via `useRouter()`; `apptab_filesview` is a plain
+layout; `pane_files.js` renders the list directly (compact, `embedded`) as the
+Overview pane.
 **Phase 4 done** — history is nested routes: `history` (empty path → revisions
 list) + `history/compare/:left/:right` (version compare) + `history/revision/:hash`
 (flat `git ls-tree` file list, so "files within a revision" stays under the
@@ -207,8 +208,8 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
 **Phase 8 done** — physical "back" button. `layout_app_tabs.js` renders a `←`
 button at the head of the tab bar whenever `back_navigation.js` reports a
 previous page in the current tab. `back_navigation.js` keeps a per-tab stack of
-distinct *pages* (leaf route name, with `files-worktree`/`files-gitdir`/
-`files-pack` collapsed into one "files list" page) via `router.afterEach`; it
+distinct *pages* (leaf route name, with the single `files-worktree` leaf treated
+as one "files list" page) via `router.afterEach`; it
 resets on a tab switch, ignores same-page steps (files-tree walks, modal query
 changes), and pops on a back. The button calls `router.back()` (a single
 browser-history step), so it can never step "up one level" inside the files tree
@@ -220,15 +221,24 @@ component keeps its own in-tree `pathHistory` and `navigateBack` pops from it
 When rendered as a pane (`pane_files.js` passes `embedded`), `path` is fully
 local and never touches the router; when rendered as the Files-tab route, it
 still pushes to the route so the URL keeps reflecting the tree path.
+**Phase 10 done** — the Files tab URL dropped the `worktree` namespace segment
+(2026-11-09). The tab is entirely for browsing real physical files in the working
+tree, so `files/:path(.*)*` maps directly onto the worktree: root `/#/files`,
+subpaths `/#/files/<path>`. The `files-gitdir`/`files-pack` child routes were
+removed; the backend `/browse` `gitdir`/`pack` namespaces remain (used by the
+disk-usage page's direct `/browse/<namespace>:` SIZE calls). `fileProps()` still
+passes `namespace: 'worktree'`, so the backend resource identifier
+(`worktree:<path>`) and the not-found message keep the namespace prefix.
 
 - Top-level tabs (`TabbedPanes`) become top-level child routes; the per-tab
   `PagesSite` overlay stack becomes **nested routes rendered in `<router-view>`**
   (swap-on-navigate; the browser Back button is the back navigation).
   `common_components/pages/` (PagesSite/Page) will be **deleted**.
-- Route shape: `/` redirects to `home`; then `home`, `files` (children
-  `worktree/:path(.*)`, `revision/:hash/:path(.*)`, `index/:path(.*)`), `history`
-  (child `compare/:left/:right`), `gitignore` (wizard children), `packstatus`,
-  `tools`.
+- Route shape: `/` redirects to `home`; then `home`, `files` (child
+  `:path(.*)*` → worktree list), `history` (children `''` (revisions list),
+  `compare/:left/:right`, `revision/:hash`), `gitignore`, `packstatus`
+  (child `''` → pack-object list), `tools` (children `''` → tools home,
+  `search-in-history`).
 - `repoStatus`/`repoActions` are now **module-level reactive singletons**
   (`app/app_context.js`), passed to route components via vue-router's route
   `props` option; the receiving components keep their existing props.

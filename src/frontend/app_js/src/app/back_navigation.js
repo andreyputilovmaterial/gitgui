@@ -23,13 +23,13 @@ export function createBackNavigation() {
     return route?.matched?.[1]?.name;
   }
 
-  // A "page" is the deepest matched route. The three files-tab child routes
-  // (worktree/gitdir/pack) render the same files list, so they collapse into a
-  // single page: walking the files tree must not create back targets.
+  // A "page" is the deepest matched route. The Files tab has a single route
+  // (files-worktree, the worktree file list), so walking the files tree must
+  // not create back targets.
   function pageKey(route) {
     const leaf = route?.matched?.[route.matched.length - 1];
     if (!leaf) return null;
-    if (['files-worktree', 'files-gitdir', 'files-pack'].includes(leaf.name)) {
+    if (leaf.name === 'files-worktree') {
       return 'files-list';
     }
     return leaf.name;

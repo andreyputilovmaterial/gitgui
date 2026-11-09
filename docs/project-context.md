@@ -301,6 +301,17 @@ stays, now imported by `layout_app_tabs.js`). All tabs are nested routes;
 
 ## Last state
 
+- Backend port is now configurable via `--config-webserver-port` (2026-11-09).
+  It accepts an integer (exact port, fails with a readable error chaining the
+  socket `OSError` via `raise ... from exc` if occupied), `auto` (first free
+  port from the default `PORT_START_WITH=5180`, incrementing by one), or
+  `auto:<N>` (same search starting at `<N>`). Resolved in
+  `main_gitgui_program.py` by `_resolve_port`/`_require_port_available`. The
+  chosen port doesn't matter for the launched browser (it opens
+  `http://localhost:<port>/`), but it matters for the Vite dev server, which
+  hard-codes `http://localhost:5180` in `vite.config.js` — keep the backend on
+  5180 (or edit that file) when using Vite. Closes issue #23.
+
 - Narrow-screen layout fixes (2026-11-08/09, "Layout issues!!" from roadmap):
   - Overview welcome view (`apptab_welcomeview/style.css`): panes stack in a
     single column below `@media (min-width: 700px)` (was a fixed

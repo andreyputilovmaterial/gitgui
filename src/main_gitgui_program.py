@@ -5,6 +5,7 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv # for loading .env
 import os # for loading .env
+import socket # for checking that a port is available before starting the webserver
 
 
 from .webserver_engine.webserve.src.webserver import Webserver # a wrapper around python http.server - no flask or django
@@ -46,6 +47,20 @@ else:
 
 CONFIG_WEBSERVER_MULTITHREADED = True
 CONFIG_CLI_COMMAND_EXEC_WORKERS = 3
+# The default port (and the port the "auto" search starts from, see the
+# --config-webserver-port CLI argument below). When no explicit port is
+# requested, the backend runs at
+# PORT_START_WITH, or at the first available port after it (the search increments
+# by one until it finds a free port).
+#
+# Note on why the port is configurable:
+#   * Whatever port ends up being used is NOT a problem for the browser that gets
+#     launched: launch_browser() just opens http://localhost:<port>/, so it follows
+#     the backend wherever it lands.
+#   * It CAN be a problem for the dev npm server, though: its Vite config
+#     (src/frontend/app_js/vite.config.js) hard-codes http://localhost:5180 as the
+#     proxy target for every API path. So while developing against the Vite dev
+#     server, keep the backend on 5180 (or update vite.config.js accordingly).
 PORT_START_WITH = 5180
 
 
@@ -59,6 +74,62 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 
+
+
+
+def _require_port_available(host, port):
+    """Fail with a readable error if ``(host, port)`` is already taken.
+
+    A socket is bound to the address purely as a probe (the same way
+    ``find_free_port`` does). If binding fails, the underlying ``OSError`` from
+    the socket is chained into the raised exception via ``raise ... from ...`` so
+    the original reason stays visible in the traceback.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((host, port))
+        except OSError as exc:
+            raise Exception(
+                f'specified port {port} can\'t be used on {host}: {exc}'
+            ) from exc
+
+
+def _resolve_port(port_arg, host):
+    """Translate the ``--config-webserver-port`` CLI value into a concrete port number.
+
+    ``--config-webserver-port`` accepts three forms:
+
+    * an integer (e.g. ``5180``) — use exactly that port. If it is occupied the
+      program fails immediately (see ``_require_port_available``);
+    * ``auto`` — start searching at the default ``PORT_START_WITH`` and pick the
+      first available port, incrementing by one (this is the default behaviour
+      and what ``find_free_port`` already does);
+    * ``auto:<N>`` — the same search, but starting from ``<N>`` instead of the
+      default ``PORT_START_WITH``.
+    """
+    if port_arg is None or port_arg == 'auto':
+        return find_free_port(host, start=PORT_START_WITH)
+
+    if port_arg.startswith('auto:'):
+        try:
+            start = int(port_arg.split(':', 1)[1])
+        except ValueError as exc:
+            raise Exception(
+                f'invalid --config-webserver-port value {port_arg!r}: '
+                f"'auto:<N>' expects an integer port after 'auto:'"
+            ) from exc
+        return find_free_port(host, start=start)
+
+    try:
+        port = int(port_arg)
+    except ValueError as exc:
+        raise Exception(
+            f'invalid --config-webserver-port value {port_arg!r}: expected an integer port, '
+            f"'auto', or 'auto:<N>'"
+        ) from exc
+
+    _require_port_available(host, port)
+    return port
 
 
 
@@ -80,6 +151,18 @@ def main(*argcs,**kwargs):
         '--git-directory-location',
         type=str,
         required=True
+    )
+    parser.add_argument(
+        '--config-webserver-port',
+        type=str,
+        default=None,
+        help=(
+            'Port to run the backend webserver on. An integer uses that exact '
+            'port (the program fails if it is already taken); "auto" uses the '
+            f'first available port from {PORT_START_WITH} upwards (the default, '
+            'incrementing by one); "auto:<N>" is the same search but starts at '
+            '<N> instead.'
+        )
     )
     args = parser.parse_args(*argcs,**kwargs)
 
@@ -163,7 +246,7 @@ def main(*argcs,**kwargs):
 
     print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'
-    config['http_port'] = find_free_port(config['http_host'], start=PORT_START_WITH)
+    config['http_port'] = _resolve_port(args.config_webserver_port, config['http_host'])
     config['http_protocol'] = 'http'
     config['http_address'] = (
         f'{config["http_protocol"]}://'

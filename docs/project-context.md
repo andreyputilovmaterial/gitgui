@@ -213,6 +213,13 @@ resets on a tab switch, ignores same-page steps (files-tree walks, modal query
 changes), and pops on a back. The button calls `router.back()` (a single
 browser-history step), so it can never step "up one level" inside the files tree
 or undo a tab switch, and it stays coherent with the browser Back button.
+**Phase 9 done** — the files list (`page_files_local_list`) is now self-contained
+for tree navigation. Its `⌂`/`←`/`⇧` links never switch tabs or pages: the
+component keeps its own in-tree `pathHistory` and `navigateBack` pops from it
+(instead of `router.back()`), so repeated clicks only walk back within the tree.
+When rendered as a pane (`pane_files.js` passes `embedded`), `path` is fully
+local and never touches the router; when rendered as the Files-tab route, it
+still pushes to the route so the URL keeps reflecting the tree path.
 
 - Top-level tabs (`TabbedPanes`) become top-level child routes; the per-tab
   `PagesSite` overlay stack becomes **nested routes rendered in `<router-view>`**

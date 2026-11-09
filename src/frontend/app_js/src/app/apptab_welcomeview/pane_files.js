@@ -11,7 +11,7 @@ const View = {
     'repoActions',
   ],
   template: `
-<pane :repoStatus="repoStatus" :repoActions="repoActions" namespace="worktree" path="" navigateTo="files-worktree" viewMode="compact" />
+<pane :repoStatus="repoStatus" :repoActions="repoActions" namespace="worktree" path="" :embedded="true" viewMode="compact" />
 `,
   components: {
     'pane': PageFilesLocalList,

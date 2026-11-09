@@ -61,10 +61,11 @@ const NavbarButtons = {
     'pathCurrentParts',
     'navigate',
     'navigateBack',
+    'canNavigateBack',
   ],
   template: `
 <div class="mdm-git-gui-fileslist-navbuttons">
-  <a href="#!" @click.prevent="handlerNavigateBack" class="navbtn navbtn-back active" title="Back">←</a>
+  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canNavigateBack}" title="Back">←</a>
   <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}" title="Up one level">⇧</a> 
 </div>
 `,
@@ -92,6 +93,7 @@ const View = {
     'repoStatus',
     'repoActions',
     'viewMode',
+    'embedded',
   ],
   template: `
 <div :class="['mdm-git-gui-fileslistview',...(isCompactView?['mdm-git-gui-fileslistview-compact']:[])]">
@@ -101,7 +103,7 @@ const View = {
   </template>
   <template v-else>
     <breadcrumbs :pathCurrentParts="pathCurrentParts" :navigate="navigate" />
-    <navbar-buttons :pathCurrentParts="pathCurrentParts" :navigate="navigate" :navigateBack="navigateBack" />
+    <navbar-buttons :pathCurrentParts="pathCurrentParts" :navigate="navigate" :navigateBack="navigateBack" :canNavigateBack="canNavigateBack" />
     <div class="error">{{ error }}</div>
     <div v-if="notFoundMessage" class="error mdm-git-gui-fileslistview-notfound">{{ notFoundMessage }}</div>
     <template v-if="!filesList && !error && !notFoundMessage">Querying data, please wait...</template>
@@ -124,16 +126,43 @@ const View = {
     const filesList = ref(null);
     const error = ref('');
     const notFoundMessage = ref('');
-    const pathCurrent = computed(()=> props.path ?? '');
     const namespaceCurrent = computed(()=> props.namespace);
     const isCompactView = computed(()=>props.viewMode==='compact');
+    const isEmbedded = computed(()=> !!props.embedded);
+
+    // Current path. In embedded mode (the component is just a pane inside a
+    // larger page) the path is fully local and never touches the router;
+    // otherwise it follows the route param.
+    const pathCurrent = ref(props.path ?? '');
+
+    // In-tree back history: the paths we came from while walking the files
+    // tree. The "back" button pops from here, so it can only walk back within
+    // the tree and never leaves the component (no tab/page switch).
+    const pathHistory = ref([]);
+    const canNavigateBack = computed(()=> pathHistory.value.length>0);
+
     const pathCurrentParts = computed(()=>pathCurrent.value===''?[]:[...pathCurrent.value.split('/')]);
+
+    const normalizePath = raw => (raw ?? '').split('/').filter(Boolean).join('/');
+
+    const applyPath = newPath => {
+      const normalized = normalizePath(newPath);
+      if( normalized===pathCurrent.value )
+        return;
+      if( isEmbedded.value ) {
+        pathCurrent.value = normalized;
+      } else {
+        router.push({ name: props.navigateTo, params: { path: normalized.split('/').filter(Boolean) } });
+      }
+    };
+
     const navigate = newPath => {
       try {
-        if( newPath===pathCurrent.value )
+        const normalized = normalizePath(newPath);
+        if( normalized===pathCurrent.value )
           return;
-        const pathArray = (newPath||'').split('/').filter(Boolean);
-        router.push({ name: props.navigateTo, params: { path: pathArray } });
+        pathHistory.value.push(pathCurrent.value);
+        applyPath(normalized);
       } catch(e) {
         props.repoActions.logError(`failed navigating to path: ${newPath}: ${e}`);
         error.value = e;
@@ -141,7 +170,12 @@ const View = {
       }
     };
     const navigateBack = () => {
-      router.back();
+      if( !pathHistory.value.length )
+        return;
+      const previous = pathHistory.value.pop();
+      if( previous===pathCurrent.value )
+        return;
+      applyPath(previous);
     };
 
     const getFilesList = async () => {
@@ -203,6 +237,13 @@ const View = {
       ])
     });
 
+    // When rendered as a route (Files tab), follow the route param; when
+    // embedded, the path is fully local and the route param is irrelevant.
+    watch(
+      () => props.path,
+      (p) => { if( !isEmbedded.value ) pathCurrent.value = (p ?? ''); },
+    )
+
     watch(
       () => [namespaceCurrent.value, pathCurrent.value],
       () => getFilesList(),
@@ -216,6 +257,7 @@ const View = {
       namespaceCurrent,
       navigate,
       navigateBack,
+      canNavigateBack,
       pathCurrentParts,
       isCompactView,
     };

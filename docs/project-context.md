@@ -2,6 +2,42 @@
 
 > Living document. Updated after every task. Read this first at the start of every task.
 
+## Component & license registry (2026-11-10)
+
+- `components-licenses.json` (repo root) is the machine-readable registry of every component with
+  an author that is bundled with or used by gitgui, maintained by hand (no
+  generator yet). It is intended to drive an "About / software licenses" page.
+- Format: a top-level `meta` object (field legend + notes), a `components`
+  array, and a short `unbundled_dependencies` array. Each component records:
+  `id`, `name`, `kind` (`self-authored | fork | vendored | build-tool`),
+  `bundled`, `scope`, `version`, `authors[]` (`{name, role}`), `homepage`,
+  `source`, `repository` (only for forks, = the fork URL), `license`,
+  `license_spdx`, `license_local` (path in repo), `license_local_kind`
+  (`full-text | header-only | none`), `license_remote`, `note`.
+- `components` holds 16 shipped/maintained entries (self-authored submodules +
+  vendored frontend assets + the two forks). A separate short
+  `unbundled_dependencies` array lists the 12 pip packages that are NOT in the
+  bundle (requirements.txt = runtime, requirements-dev.txt = build/test,
+  per-processor = optional): `name`, `scope`, `purpose`, `source`, `license`,
+  `license_spdx` only — they ship their own license in their installed
+  `.dist-info`, so no local copy is kept.
+- Self-authored (author = Andrey Putilov / The-city-not-present): `gitgui`
+  (the app itself), `webserve`, `webinput`, `questionnaire` (qre),
+  `py_translatable_text_class`, `py_js_bundler`. All Apache-2.0.
+- Forks (upstream author + Andrey Putilov as `maintainer`): `pinliner` (Gorka
+  Eguileor, Copyright Red Hat 2015; build tool, NOT bundled) and `myers-diff`
+  (Jamie Peabody; bundled). Both Apache-2.0. Andrey is listed as maintainer
+  because the forks live in his cloned repos, have significant changes, and he
+  takes responsibility for them.
+- Vendored third-party frontend: `vue` 3.5.41, `vue-router` 5.4.0, `marked`
+  18.0.9, `dompurify` 3.4.11, `ibm-plex-sans`, `ibm-plex-mono`, `remix-icon`
+  4.9.0, `normalize-css`.
+- **Compliance gap (recorded in the JSON notes):** `vue`, `vue-router`, `marked`
+  and `normalize-css` (MIT) and `dompurify` (Apache-2.0 OR MPL-2.0) are vendored
+  with only a short `@license` header — or, for vue-router/marked/normalize.css,
+  no license text at all. The fonts and Remix Icon ship full license texts. To
+  make the About page complete, vendor the missing MIT / DOMPurify license texts.
+
 ## What this is
 
 `gitgui` is a self-contained git GUI: a Python backend (self-written webserver,

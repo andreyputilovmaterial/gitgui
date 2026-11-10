@@ -1,0 +1,569 @@
+{
+  "meta": {
+    "title": "Component & license registry (software credits)",
+    "format_version": 1,
+    "generated": "2026-11-10",
+    "purpose": "Machine-readable inventory of every component bundled with or used by gitgui, so the About page can credit authors and comply with license terms. Update by hand whenever a component is added, removed, upgraded, or its license changes.",
+    "fields": {
+      "id": "stable slug used as a key",
+      "name": "human-readable component name (spelled out)",
+      "kind": "self-authored | fork | vendored | runtime-dependency | build-tool",
+      "bundled": "true if the component's code/assets end up inside dist/gitgui_bundle.py or src/frontend/GENERATED/ASSETS.py",
+      "scope": "runtime | runtime-optional | build",
+      "version": "exact bundled version, or the pip requirement constraint for runtime deps; null when unknown",
+      "authors": "list of {name, role}; role is optional and one of: author, contributor, copyright-holder, designer, maintainer",
+      "homepage": "project homepage URL",
+      "source": "canonical source-code repository (for a fork this is the upstream/original repo)",
+      "repository": "URL of the repo as vendored in this project, when it differs from source (i.e. a fork)",
+      "license": "license name as commonly written",
+      "license_spdx": "SPDX identifier where unambiguous, else null",
+      "license_local": "path to the license text (or the file carrying the license header) inside this repo; null when nothing is vendored",
+      "license_local_kind": "full-text | header-only | none",
+      "license_remote": "URL of the license text in the upstream repository",
+      "note": "free-form note: authorship, fork origin, compliance gaps, branch assumptions"
+    },
+    "notes": [
+      "The top-level \"unbundled_dependencies\" array lists pip packages that are NOT shipped in the bundle: they are installed into the user's own environment (requirements.txt = runtime, requirements-dev.txt = build/test, per-processor requirements = optional). Kept as a short reference only; each package ships its own license text in its installed .dist-info, not in this repo.",
+      "Compliance gap: the MIT-licensed frontend assets (vue, vue-router, marked, normalize.css) and DOMPurify are vendored with only a short @license header or no license text at all. For a complete About/licenses page, add their full license texts (see each note)."
+    ],
+    "unbundled_dependencies_fields": {
+      "id": "stable slug",
+      "name": "package name",
+      "scope": "runtime | runtime-optional | build",
+      "purpose": "why it is installed",
+      "platform": "optional OS restriction (e.g. Windows)",
+      "source": "homepage / source URL",
+      "license": "license name",
+      "license_spdx": "SPDX identifier"
+    }
+  },
+  "components": [
+    {
+      "id": "gitgui",
+      "name": "gitgui",
+      "kind": "self-authored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "Andrey Putilov",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://github.com/andreyputilovmaterial/gitgui",
+      "source": "https://github.com/andreyputilovmaterial/gitgui",
+      "repository": null,
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/andreyputilovmaterial/gitgui/blob/main/LICENSE",
+      "note": "This application itself."
+    },
+    {
+      "id": "vue",
+      "name": "Vue.js",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": "3.5.41",
+      "authors": [
+        {
+          "name": "Yuxi (Evan) You",
+          "role": "author"
+        },
+        {
+          "name": "Vue.js contributors",
+          "role": "contributor"
+        }
+      ],
+      "homepage": "https://vuejs.org/",
+      "source": "https://github.com/vuejs/core",
+      "repository": null,
+      "license": "MIT License",
+      "license_spdx": "MIT",
+      "license_local": "src/frontend/assets_vendor_libs/vue/vue.esm-browser.js",
+      "license_local_kind": "header-only",
+      "license_remote": "https://github.com/vuejs/core/blob/main/LICENSE",
+      "note": "Vendored as vue.esm-browser.js (ESM browser build, v3.5.41). Only the @license MIT header is shipped; the full MIT text is NOT vendored - add it for the About/licenses page."
+    },
+    {
+      "id": "vue-router",
+      "name": "Vue Router",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": "5.4.0",
+      "authors": [
+        {
+          "name": "Eduardo San Martin Morote (posva)",
+          "role": "author"
+        },
+        {
+          "name": "Vue.js team and contributors",
+          "role": "contributor"
+        }
+      ],
+      "homepage": "https://router.vuejs.org/",
+      "source": "https://github.com/vuejs/router",
+      "repository": null,
+      "license": "MIT License",
+      "license_spdx": "MIT",
+      "license_local": null,
+      "license_local_kind": "none",
+      "license_remote": "https://github.com/vuejs/router/blob/main/LICENSE",
+      "note": "Pre-bundled ESM build of vue-router v5.4.0 (see src/frontend/assets_vendor_libs/vue_router/README.md). No license header/text is vendored - add the MIT text for compliance."
+    },
+    {
+      "id": "marked",
+      "name": "marked",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": "18.0.9",
+      "authors": [
+        {
+          "name": "Christopher Jeffrey",
+          "role": "author"
+        },
+        {
+          "name": "MarkedJS",
+          "role": "copyright-holder"
+        }
+      ],
+      "homepage": "https://marked.js.org/",
+      "source": "https://github.com/markedjs/marked",
+      "repository": null,
+      "license": "MIT License",
+      "license_spdx": "MIT",
+      "license_local": null,
+      "license_local_kind": "none",
+      "license_remote": "https://github.com/markedjs/marked/blob/master/LICENSE",
+      "note": "Minified UMD build (marked.umd.min.js) via jsDelivr. The minified file carries no license text - add the MIT text for compliance."
+    },
+    {
+      "id": "dompurify",
+      "name": "DOMPurify",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": "3.4.11",
+      "authors": [
+        {
+          "name": "Cure53 (Mario Heiderich)",
+          "role": "author"
+        },
+        {
+          "name": "DOMPurify contributors",
+          "role": "contributor"
+        }
+      ],
+      "homepage": "https://github.com/cure53/DOMPurify",
+      "source": "https://github.com/cure53/DOMPurify",
+      "repository": null,
+      "license": "Apache License 2.0 or Mozilla Public License 2.0 (dual)",
+      "license_spdx": "Apache-2.0 OR MPL-2.0",
+      "license_local": "src/frontend/assets_vendor_libs/purify.min.js",
+      "license_local_kind": "header-only",
+      "license_remote": "https://github.com/cure53/DOMPurify/blob/main/LICENSE",
+      "note": "Vendored as purify.min.js. The header references the dual license but no full text is shipped - add the license text for compliance."
+    },
+    {
+      "id": "ibm-plex-sans",
+      "name": "IBM Plex Sans",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "IBM",
+          "role": "copyright-holder"
+        },
+        {
+          "name": "Mike Abbink",
+          "role": "designer"
+        }
+      ],
+      "homepage": "https://www.ibm.com/plex/",
+      "source": "https://github.com/IBM/plex",
+      "repository": null,
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "license_local": "src/frontend/assets_vendor_libs/fonts/ibm-plex-sans/LICENSE.txt",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/IBM/plex/blob/master/LICENSE.txt",
+      "note": "Copyright (c) 2017 IBM Corp. with Reserved Font Name 'Plex'. Full license text vendored (also repeated as license.txt in each font-format folder). Version not recorded in the vendored files."
+    },
+    {
+      "id": "ibm-plex-mono",
+      "name": "IBM Plex Mono",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "IBM",
+          "role": "copyright-holder"
+        },
+        {
+          "name": "Mike Abbink",
+          "role": "designer"
+        }
+      ],
+      "homepage": "https://www.ibm.com/plex/",
+      "source": "https://github.com/IBM/plex",
+      "repository": null,
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "license_local": "src/frontend/assets_vendor_libs/fonts/ibm-plex-mono/LICENSE.txt",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/IBM/plex/blob/master/LICENSE.txt",
+      "note": "Copyright (c) 2017 IBM Corp. with Reserved Font Name 'Plex'. Full license text vendored (also repeated as license.txt in each font-format folder). Version not recorded in the vendored files."
+    },
+    {
+      "id": "remix-icon",
+      "name": "Remix Icon",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": "4.9.0",
+      "authors": [
+        {
+          "name": "Remix Design",
+          "role": "author"
+        },
+        {
+          "name": "Wendy Gao",
+          "role": "contributor"
+        },
+        {
+          "name": "Jimmy Cheung",
+          "role": "contributor"
+        }
+      ],
+      "homepage": "https://remixicon.com/",
+      "source": "https://github.com/Remix-Design/RemixIcon",
+      "repository": null,
+      "license": "Remix Icon License v1.0",
+      "license_spdx": null,
+      "license_local": "src/frontend/assets_vendor_libs/fonts/remixicon/LICENSE.txt",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/Remix-Design/RemixIcon/blob/master/License",
+      "note": "Attribution optional but appreciated ('Icons by Remix Icon (https://remixicon.com)'). Full license text vendored. Note: upstream npm package.json still says Apache-2.0, but the authoritative terms are the shipped License file (v1.0)."
+    },
+    {
+      "id": "normalize-css",
+      "name": "normalize.css",
+      "kind": "vendored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "Nicolas Gallagher",
+          "role": "author"
+        },
+        {
+          "name": "Jonathan Neal",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://necolas.github.io/normalize.css/",
+      "source": "https://github.com/necolas/normalize.css",
+      "repository": null,
+      "license": "MIT License",
+      "license_spdx": "MIT",
+      "license_local": null,
+      "license_local_kind": "none",
+      "license_remote": "https://github.com/necolas/normalize.css/blob/master/LICENSE.md",
+      "note": "Minified into src/frontend/template/templates/normalize.css. No license header survives minification - add the MIT text for compliance."
+    },
+    {
+      "id": "pinliner",
+      "name": "pinliner",
+      "kind": "fork",
+      "bundled": false,
+      "scope": "build",
+      "version": "0.2.0",
+      "authors": [
+        {
+          "name": "Gorka Eguileor",
+          "role": "author"
+        },
+        {
+          "name": "Red Hat, Inc.",
+          "role": "copyright-holder"
+        },
+        {
+          "name": "Andrey Putilov",
+          "role": "maintainer"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/pinliner",
+      "source": "https://github.com/The-city-not-present/pinliner",
+      "repository": "https://github.com/The-city-not-present/pinliner",
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src_dev_build/lib/pinliner/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/pinliner/blob/master/LICENSE",
+      "note": "Fork of Gorka Eguileor's pinliner, fixed for Python 3.12+ (importlib loader) and maintained by Andrey Putilov (this fork). Not bundled into gitgui_bundle.py; it is the build tool that produces the bundle. Copyright 2015 Red Hat, Inc."
+    },
+    {
+      "id": "myers-diff",
+      "name": "myers-diff",
+      "kind": "fork",
+      "bundled": true,
+      "scope": "runtime",
+      "version": "3.0.0",
+      "authors": [
+        {
+          "name": "Jamie Peabody",
+          "role": "author"
+        },
+        {
+          "name": "Andrey Putilov",
+          "role": "maintainer"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/myers-diff",
+      "source": "https://github.com/The-city-not-present/myers-diff",
+      "repository": "https://github.com/The-city-not-present/myers-diff",
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src/frontend/app_js/src/lib/myers-diff/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/myers-diff/blob/master/LICENSE",
+      "note": "Fork of Jamie Peabody's myers-diff (longest-common-subsequence diff), maintained by Andrey Putilov (this fork). Bundled into the frontend app.js."
+    },
+    {
+      "id": "webserve",
+      "name": "webserve",
+      "kind": "self-authored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "Andrey Putilov",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/webserve",
+      "source": "https://github.com/The-city-not-present/webserve",
+      "repository": null,
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src/webserver_engine/webserve/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/webserve/blob/main/LICENSE",
+      "note": "Self-written HTTP server (no Flask/Django). Submodule under src/webserver_engine/webserve."
+    },
+    {
+      "id": "webinput",
+      "name": "webinput",
+      "kind": "self-authored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "Andrey Putilov",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/webinput",
+      "source": "https://github.com/The-city-not-present/webinput",
+      "repository": null,
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src/lib/webinput/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/webinput/blob/main/LICENSE",
+      "note": "Self-written. Submodule under src/lib/webinput."
+    },
+    {
+      "id": "questionnaire",
+      "name": "questionnaire (qre)",
+      "kind": "self-authored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "Andrey Putilov",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/questionnaire",
+      "source": "https://github.com/The-city-not-present/questionnaire",
+      "repository": null,
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src/lib/webinput/src/lib/qre/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/questionnaire/blob/main/LICENSE",
+      "note": "Nested submodule of webinput (src/lib/webinput/src/lib/qre)."
+    },
+    {
+      "id": "py_translatable_text_class",
+      "name": "py_translatable_text_class",
+      "kind": "self-authored",
+      "bundled": true,
+      "scope": "runtime",
+      "version": null,
+      "authors": [
+        {
+          "name": "Andrey Putilov",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/py_translatable_text_class",
+      "source": "https://github.com/The-city-not-present/py_translatable_text_class",
+      "repository": null,
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src/lib/webinput/src/lib/qre/src/lib/translatable/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/py_translatable_text_class/blob/main/LICENSE",
+      "note": "Nested submodule of questionnaire (qre)."
+    },
+    {
+      "id": "py_js_bundler",
+      "name": "py_js_bundler",
+      "kind": "self-authored",
+      "bundled": true,
+      "scope": "build",
+      "version": null,
+      "authors": [
+        {
+          "name": "Andrey Putilov",
+          "role": "author"
+        }
+      ],
+      "homepage": "https://github.com/The-city-not-present/py_js_bundler",
+      "source": "https://github.com/The-city-not-present/py_js_bundler",
+      "repository": null,
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "license_local": "src/frontend/bundler_engine/lib/py_js_bundler/LICENSE",
+      "license_local_kind": "full-text",
+      "license_remote": "https://github.com/The-city-not-present/py_js_bundler/blob/main/LICENSE",
+      "note": "Self-written JS bundler used at build time (no Node). Lives under src/ so it is also inlined by pinliner, but it is only used to produce GENERATED/app.js."
+    }
+  ],
+  "unbundled_dependencies": [
+    {
+      "id": "beautifulsoup4",
+      "name": "beautifulsoup4",
+      "scope": "runtime",
+      "purpose": "HTML/XML parsing (xml textconv processor)",
+      "source": "https://www.crummy.com/software/BeautifulSoup/",
+      "license": "MIT License",
+      "license_spdx": "MIT"
+    },
+    {
+      "id": "python-dotenv",
+      "name": "python-dotenv",
+      "scope": "runtime",
+      "purpose": "loads .env configuration at startup",
+      "source": "https://github.com/theskumar/python-dotenv",
+      "license": "BSD 3-Clause License",
+      "license_spdx": "BSD-3-Clause"
+    },
+    {
+      "id": "pyyaml",
+      "name": "PyYAML",
+      "scope": "runtime",
+      "purpose": "YAML configuration parsing",
+      "source": "https://pyyaml.org/",
+      "license": "MIT License",
+      "license_spdx": "MIT"
+    },
+    {
+      "id": "markdown-it-py",
+      "name": "markdown-it-py",
+      "scope": "runtime",
+      "purpose": "Markdown rendering (help text)",
+      "source": "https://github.com/executablebooks/markdown-it-py",
+      "license": "MIT License",
+      "license_spdx": "MIT"
+    },
+    {
+      "id": "rich",
+      "name": "rich",
+      "scope": "runtime",
+      "purpose": "terminal output formatting",
+      "source": "https://github.com/Textualize/rich",
+      "license": "MIT License",
+      "license_spdx": "MIT"
+    },
+    {
+      "id": "pywebview",
+      "name": "pywebview",
+      "scope": "runtime",
+      "purpose": "native window / webview shell",
+      "source": "https://pywebview.flowrl.com/",
+      "license": "BSD 3-Clause License",
+      "license_spdx": "BSD-3-Clause"
+    },
+    {
+      "id": "markitdown",
+      "name": "MarkItDown",
+      "scope": "runtime-optional",
+      "purpose": "document-to-Markdown conversion (markitdown textconv processor)",
+      "source": "https://github.com/microsoft/markitdown",
+      "license": "MIT License",
+      "license_spdx": "MIT"
+    },
+    {
+      "id": "pywin32",
+      "name": "pywin32",
+      "scope": "runtime-optional",
+      "purpose": "mdd textconv processor",
+      "platform": "Windows",
+      "source": "https://github.com/mhammond/pywin32",
+      "license": "Python Software Foundation License",
+      "license_spdx": "PSF-2.0"
+    },
+    {
+      "id": "rjsmin",
+      "name": "rjsmin",
+      "scope": "build",
+      "purpose": "JavaScript minification at build time",
+      "source": "https://opensource.perlig.de/rjsmin/",
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0"
+    },
+    {
+      "id": "csscompressor",
+      "name": "csscompressor",
+      "scope": "build",
+      "purpose": "CSS minification at build time",
+      "source": "https://github.com/sprymix/csscompressor",
+      "license": "BSD 3-Clause License",
+      "license_spdx": "BSD-3-Clause"
+    },
+    {
+      "id": "pytest",
+      "name": "pytest",
+      "scope": "build",
+      "purpose": "test runner (development tests)",
+      "source": "https://github.com/pytest-dev/pytest",
+      "license": "MIT License",
+      "license_spdx": "MIT"
+    },
+    {
+      "id": "pytest-html",
+      "name": "pytest-html",
+      "scope": "build",
+      "purpose": "HTML test reports",
+      "source": "https://github.com/pytest-dev/pytest-html",
+      "license": "Mozilla Public License 2.0",
+      "license_spdx": "MPL-2.0"
+    }
+  ]
+}

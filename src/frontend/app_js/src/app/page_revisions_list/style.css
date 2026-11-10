@@ -209,11 +209,16 @@
   padding-right: 0;
 }
 
-.mdm-git-gui-page-history-overview .history-record .view-files-button, .mdm-git-gui-page-history-overview .history-record .view-files-button:active, .mdm-git-gui-page-history-overview .history-record .view-files-button:link, .mdm-git-gui-page-history-overview .history-record .view-files-button:hover {
-  color: var(--mdm-color-link);
+.mdm-git-gui-page-history-overview .history-record .view-files-button, .mdm-git-gui-page-history-overview .history-record .view-files-button:active, .mdm-git-gui-page-history-overview .history-record .view-files-button:link {
+  color: #000;
   text-decoration: none;
   transition: all 600ms ease;
   cursor: pointer;
+  outline: none;
+}
+.mdm-git-gui-page-history-overview .history-record .view-files-button:hover {
+  color: var(--mdm-color-green);
+  text-decoration: none;
   outline: none;
 }
 
@@ -223,22 +228,27 @@
   padding-left: 21px;
 }
 .mdm-git-gui-history-record.history-record-compact .viewfiles {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   top: 14px;
   left: -21px;
   width: 21px;
   height: 21px;
-  line-height: 14px;
-  padding: 3px 3.5px 4px;
-  padding-top: 3px;
-  padding-bottom: 4px;
-  border: 1px solid #e0e0e0;
-  text-align: center;
-  border-radius: 3px;
 }
-.mdm-git-gui-history-record.history-record-compact .viewfiles.no-link {
-  border-color: transparent;
+.mdm-git-gui-history-record.history-record-compact .view-files-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  border: none;
+}
+.mdm-git-gui-history-record.history-record-compact .view-files-button i {
+  font-size: 18px;
+  line-height: 1;
 }
 
 /* "Find within history" box: one row with a label, an expanding regex-capable

@@ -1026,4 +1026,11 @@ detail view (`history-revision`).
   now neutral grey `#666`. Links stay on the `--mdm-color-link` /
   `--mdm-color-link-hover` blue family. The `#5560a8` btn-primary hover shade was
   removed too.
+- History "view files" icon (2026-11-10): the compact history record's
+  `.ri-file-text-line` icon (`page_revisions_list/style.css`) was brought in line
+  with the files-view "view"/"download" glyphs: the `.viewfiles` box lost its
+  `1px solid #e0e0e0` border/border-radius, the `.view-files-button` is now a
+  21×21 flex-centered box with an 18px icon (`font-size: 18px; line-height: 1`),
+  and its color is black by default and green (`--mdm-color-green`) on hover
+  (cursor pointer).
 

@@ -39,8 +39,7 @@ const Record = {
   :title="!fileTracked ? 'Untracked file/directory - ignored per rules in .gitignore' : undefined"
 >
   <div class="error">{{ error }}</div>
-  <span class="git-status-indicator mdm-ui-record-col-gitstatusindicator mdm-ui-record-col-1" :title=" fileTracked ? 'Status' : 'Status (Untracked file/directory - ignored per rules in .gitignore)' "> 
-  </span>
+  <span class="git-status-indicator mdm-ui-record-col-gitstatusindicator mdm-ui-record-col-1 code" :title=" fileTracked ? 'Status' : 'Status (Untracked file/directory - ignored per rules in .gitignore)' ">{{ fileStatus?.index }}{{ fileStatus?.worktree }}</span>
   <span v-if="type==='file'" class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-2" :title=" fileTracked ? 'View file' : 'View file (Untracked file/directory - ignored per rules in .gitignore)' ">
     <component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" />
     <span class="label">View file: </span>

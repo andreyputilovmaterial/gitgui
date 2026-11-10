@@ -136,8 +136,10 @@
   padding-bottom: 4px;
 }
 .mdm-git-gui-fileslistview .files-record .git-status-indicator {
-  width: 21px;
+  min-width: 21px;
   height: 21px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .mdm-git-gui-fileslistview .files-record .size, .mdm-git-gui-fileslistview .files-record .modifiedat, .mdm-git-gui-fileslistview .files-record .createdat {

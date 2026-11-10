@@ -397,6 +397,17 @@ detail view (`history-revision`).
 
 ## Last state
 
+- Files list now shows the git `XY` status in the reserved indicator column
+  (2026-11-10). `component_record.js` / `component_record_compact.js` already
+  computed `fileStatus` (via `repoActions.checkFileStatus` / `checkFolderStatus`)
+  but rendered an empty `<span class="git-status-indicator ...">`. The span now
+  renders `{{ fileStatus?.index }}{{ fileStatus?.worktree }}` and gained the
+  `code` class (IBM Plex Mono, matching the "changed files" popup). `style.css`
+  switched the indicator from a fixed `width: 21px` to `min-width: 21px` plus
+  `text-align: center; white-space: nowrap` so two chars plus the 3px side
+  padding can't clip. Clean tracked files (absent from `git status`) stay empty;
+  directories show the combined status via `checkFolderStatus`.
+
 - Housekeeping in `src/main_gitgui_program.py` (2026-11-10):
   - The port helpers `_resolve_port` / `_require_port_available` (and the
     `PORT_START_WITH` default) moved out to a new `src/helper_backend_port.py`;

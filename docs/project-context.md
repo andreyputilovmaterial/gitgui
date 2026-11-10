@@ -37,6 +37,17 @@
   with only a short `@license` header — or, for vue-router/marked/normalize.css,
   no license text at all. The fonts and Remix Icon ship full license texts. To
   make the About page complete, vendor the missing MIT / DOMPurify license texts.
+- The JSON is bundled at build time into `src/GENERATED/SOFTWARE_LICENSES.py`:
+  `build.sh` pipes `components-licenses.json` through
+  `build_templates.py --program bundle-json-into-py --varname _SOFTWARE_LICENSES`,
+  which parses the JSON and writes the native `dict` via `repr` (approach #2 — see
+  that program's docstring for the alternative "embed the literal JSON string and
+  parse it at runtime" approach). `main_gitgui_program.py` imports
+  `_SOFTWARE_LICENSES` directly as `software_licenses` (a structured `dict`) and
+  exposes it on the config object under `software_licenses`. (2026-11-10)
+- `src/GENERATED/HELP.py`'s embedded variable was renamed `_MD` → `_HELP_MSG`
+  (via `build.sh --varname`, plus the imports in `main_gitgui_program.py` and
+  `main_print_help.py`). (2026-11-10)
 
 ## What this is
 
@@ -70,6 +81,10 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
   `sanitize` and `build_html_template` are still used (generate `TEMPLATE.py`).
 - Same split in the `webinput` submodule: `requirements.txt` = `beautifulsoup4`
   (runtime); new `requirements-dev.txt` = `pytest`, `pytest-html`.
+- `build.sh` also generates `src/GENERATED/SOFTWARE_LICENSES.py` from
+  `components-licenses.json` (via the new `bundle-json-into-py` helper, which
+  writes the parsed JSON as a native `dict`) and now names the HELP variable
+  `_HELP_MSG` instead of `_MD`.
 
 
 ## Frontend: two ways to run

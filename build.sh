@@ -70,7 +70,13 @@ echo -
 
 
 echo "And help pages in src/GENERATED"
-cat help.md | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _MD > src/GENERATED/HELP.py
+cat help.md | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname _HELP_MSG > src/GENERATED/HELP.py
+echo "done"
+echo -
+echo -
+
+echo "And software licenses in src/GENERATED"
+cat components-licenses.json | "$pythonexecutable" build_templates.py --program bundle-json-into-py --varname _SOFTWARE_LICENSES > src/GENERATED/SOFTWARE_LICENSES.py
 echo "done"
 echo -
 echo -

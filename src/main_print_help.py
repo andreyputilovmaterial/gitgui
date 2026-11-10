@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 
-from .GENERATED.HELP import _MD as help_md
+from .GENERATED.HELP import _HELP_MSG as help_md
 
 
 def print_help():

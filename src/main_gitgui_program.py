@@ -29,7 +29,13 @@ from .output_postprocessors import register_output_postprocessor, output_postpro
 from .output_postprocessors.tar import tar_output_processor
 from .output_postprocessors.textconv import make_textconv_output_processor
 from .GENERATED.VERSION import _VERSION as script_version
-from .GENERATED.HELP import _MD as help_md
+from .GENERATED.HELP import _HELP_MSG as help_md
+# The licenses registry is bundled as a *structured* Python object at build
+# time (build_templates.py --program bundle-json-into-py parses the JSON and
+# writes the native dict via repr), so no json.loads is needed here. See that
+# program's docstring for the alternative (embed the literal JSON string and
+# parse it at runtime).
+from .GENERATED.SOFTWARE_LICENSES import _SOFTWARE_LICENSES as software_licenses
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
 from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner, assess_python_ver
 from .helper_webserve_logging import WebserveLogger
@@ -176,6 +182,7 @@ def main(*argcs,**kwargs):
         'credentials:version': script_version,
 
         'help_pages': help_md,
+        'software_licenses': software_licenses,
 
         'working_tree': None,
         'git_directory_location': None,

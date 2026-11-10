@@ -2,6 +2,7 @@
 
 
 import argparse
+import json
 import traceback, sys
 from datetime import datetime
 from importlib import resources
@@ -430,6 +431,60 @@ def call_bundle_program(*argcs,**kwargs):
 
 
 
+def call_bundle_json_program(*argcs,**kwargs):
+    """Bundle a JSON file into a generated Python module as a *structured object*.
+
+    There are two ways a JSON data file could be embedded for the program:
+
+    1. Read the file's literal contents and store them as a string in the
+       generated module (``bundle-file-into-py``); the importer then has to
+       ``json.loads`` that string at runtime.
+    2. Parse the JSON during the build step and write the resulting Python
+       object via ``repr`` into the generated module; the importer then just
+       imports a native ``dict``/``list`` — no runtime parsing.
+
+    For a tree this tiny both are effectively free (runtime JSON parsing would
+    be ~0 ms). Approach #2 is still preferred: the parse cost moves to build
+    time, and the runtime import is a plain Python object with near-zero
+    overhead. This program implements approach #2.
+    """
+    time_start = datetime.now()
+    script_name = 'build helper'
+
+    parser = argparse.ArgumentParser(
+        description="Produce py from json",
+        prog='htmltemplate --program bundle-json-into-py'
+    )
+    parser.add_argument(
+        '--varname',
+        help='varname',
+        type=str,
+        required=True
+    )
+    args = None
+    try:
+        args = parser.parse_args(*argcs,**kwargs)
+    except SystemExit as e:
+        print(f'{STDOUT_COLOR_RED}Error: Invalid command-line arguments{STDOUT_COLOR_RESET}',file=sys.stderr)
+        raise e
+
+    txt = sys.stdin.buffer.read().decode(encoding='utf-8')
+    data = json.loads(txt)
+
+    result = f'''
+# THIS IS AUTO_GENERATED
+# updated {time_start}
+
+{args.varname} = {repr(data)}
+
+'''
+
+    sys.stdout.buffer.write(result.encode(encoding='utf-8'))
+
+    time_finish = datetime.now()
+    # print(f'{script_name}: {STDOUT_COLOR_GREEN}finished at {time_finish} (elapsed {time_finish-time_start}){STDOUT_COLOR_RESET}')
+
+
 def call_transform_run_script_program(*argcs, **kwargs):
     time_start = datetime.now()
     script_name = 'transform run script'
@@ -494,6 +549,7 @@ def call_transform_run_script_program(*argcs, **kwargs):
 run_programs = {
     'build': call_build_program,
     'bundle-file-into-py': call_bundle_program,
+    'bundle-json-into-py': call_bundle_json_program,
     'transform-run-script': call_transform_run_script_program,
 }
 

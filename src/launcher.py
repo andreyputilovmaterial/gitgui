@@ -11,14 +11,14 @@ import traceback, sys
 if __package__:
     # inside the src package (-m / bundle)
     from .GENERATED.VERSION import _VERSION as gitgui_script_version
-    # from .GENERATED.HELP import _MD as help_md
+    # from .GENERATED.HELP import _HELP_MSG as help_md
     from .main_print_help import print_help
     from .main_gitgui_program import main as call_gitgui_program
     from .main_gitgui_project_selector import main as call_gitgui_project_selector_program
 else:
     # no parent package
     from GENERATED.VERSION import _VERSION as gitgui_script_version
-    # from GENERATED.HELP import _MD as help_md
+    # from GENERATED.HELP import _HELP_MSG as help_md
     from main_print_help import print_help
     from main_gitgui_program import main as call_gitgui_program
     from main_gitgui_project_selector import main as call_gitgui_project_selector_program

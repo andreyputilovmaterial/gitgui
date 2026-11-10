@@ -1016,4 +1016,14 @@ detail view (`history-revision`).
   .pagination-page-indices .nav-page:hover`) was changed from purple
   (`#7067ff`) to the app's primary green (`var(--mdm-color-green)`, `#385`),
   matching the other green hovers.
+- Purple scheme removal (2026-11-10): the `--mdm-color-primary` (`#6670bb`)
+  token was dropped from `common.css` and all of its consumers moved off purple.
+  `.mdm-btn-primary` (the Tools "Open" button) is now green
+  (`--mdm-color-green` + `--mdm-color-green-hover`); `.mdm-btn-link`, the header
+  nav links (`project_specific.css`) and `.view-files-button`
+  (`page_revisions_list/style.css`, `page_revision_detail/style.css`) now use
+  the link color (`--mdm-color-link`); and the checkbox/radio `accent-color` is
+  now neutral grey `#666`. Links stay on the `--mdm-color-link` /
+  `--mdm-color-link-hover` blue family. The `#5560a8` btn-primary hover shade was
+  removed too.
 

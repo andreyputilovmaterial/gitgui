@@ -210,7 +210,7 @@
 }
 
 .mdm-git-gui-page-history-overview .history-record .view-files-button, .mdm-git-gui-page-history-overview .history-record .view-files-button:active, .mdm-git-gui-page-history-overview .history-record .view-files-button:link, .mdm-git-gui-page-history-overview .history-record .view-files-button:hover {
-  color: #6670bb;
+  color: var(--mdm-color-link);
   text-decoration: none;
   transition: all 600ms ease;
   cursor: pointer;

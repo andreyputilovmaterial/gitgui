@@ -42,7 +42,7 @@
 .mdm-git-gui-revisiondetail .revision-actions .view-files-button:link,
 .mdm-git-gui-revisiondetail .revision-actions .view-files-button:hover,
 .mdm-git-gui-revisiondetail .revision-actions .view-files-button:active {
-    color: #6670bb;
+    color: var(--mdm-color-link);
     text-decoration: none;
     cursor: pointer;
     outline: none;

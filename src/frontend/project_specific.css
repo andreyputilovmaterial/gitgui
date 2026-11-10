@@ -118,7 +118,7 @@ h1 {
   padding: .5em;
 }
 .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:hover, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:visited, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:link, .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:active {
-  color: #6670bb;
+  color: var(--mdm-color-link);
   text-decoration: none;
   transition: all 600ms ease;
 }

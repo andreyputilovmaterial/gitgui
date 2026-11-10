@@ -40,7 +40,6 @@
     --mdm-border-radius: 4px;
     --mdm-transition: 350ms ease;
 
-    --mdm-color-primary: #6670bb;
     --mdm-color-confirm: #2c7d51;
     --mdm-color-reject: #c0392b;
     --mdm-color-muted: #666;
@@ -249,14 +248,14 @@ ol > li {
 }
 
 .mdm-btn-primary {
-    background: var(--mdm-color-primary);
-    border-color: var(--mdm-color-primary);
+    background: var(--mdm-color-green);
+    border-color: var(--mdm-color-green);
     color: #fff;
 }
 .mdm-btn-primary:hover,
 .mdm-btn-primary:focus {
-    background: #5560a8;
-    border-color: #5560a8;
+    background: var(--mdm-color-green-hover);
+    border-color: var(--mdm-color-green-hover);
     color: #fff;
 }
 
@@ -308,7 +307,7 @@ ol > li {
     background: none;
     border: none;
     padding: 0;
-    color: var(--mdm-color-primary);
+    color: var(--mdm-color-link);
     font: inherit;
     line-height: inherit;
     text-align: left;
@@ -486,7 +485,7 @@ select,
     box-shadow: none;
     line-height: normal;
     vertical-align: middle;
-    accent-color: var(--mdm-color-primary);
+    accent-color: #666;
     cursor: pointer;
 }
 

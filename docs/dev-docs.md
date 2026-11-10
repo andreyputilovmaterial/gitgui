@@ -88,15 +88,15 @@ every endpoint handler and feature. It is the central storage used to hand data
 and callables down to deeper modules:
 
 - **Data**: `working_tree`, `git_directory`, `http_*`, `script_version`,
-  `app_config`, `info`, `warnings`, `webserve_log_records`, `gitignore_presets`,
-  `help_pages`, …
+  `app_config`, `info`, `warnings`, `gitignore_presets`, `help_pages`, …
 - **Callables/classes** live under `config['iface']` so endpoints can reach the
   job subsystem, the webserver primitives, and the textconv/postprocessor
   surface without importing from the top level: `cli_command_initiate`,
   `cli_initiate_from_function`, `cli_command_get_job`,
   `cli_command_get_job_stdout_reader`, `cli_command_terminate_job`,
-  `get_jobs_perf_stats`, `WebResponse`/`HTTP403`/`HTTP404`,
-  `textconv_from_data`, `textconv_from_stream`, `output_postprocessors`.
+  `get_jobs_perf_stats`, `get_webserve_log_records`,
+  `WebResponse`/`HTTP403`/`HTTP404`, `textconv_from_data`,
+  `textconv_from_stream`, `output_postprocessors`.
 
 The "one big grab-bag" role is acknowledged as not ideal and is tracked for
 review (see `docs/roadmap.md`).

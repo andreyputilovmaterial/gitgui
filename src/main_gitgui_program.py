@@ -5,12 +5,10 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv # for loading .env
 import os # for loading .env
-import socket # for checking that a port is available before starting the webserver
 
 
 from .webserver_engine.webserve.src.webserver import Webserver # a wrapper around python http.server - no flask or django
 from .webserver_engine.webserve.src.webserver import HTTP403, HTTP404, WebResponse
-from .webserver_engine.webserve.src.find_free_port import find_free_port
 from .webserver_engine.webserve.src.launch_browser import launch_browser
 from .cli_proxy_caller import (
     initiate_worker_loop as cli_initiate_worker_loop,
@@ -39,6 +37,7 @@ from .GENERATED.SOFTWARE_LICENSES import _SOFTWARE_LICENSES as software_licenses
 from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
 from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner, assess_python_ver
 from .helper_webserve_logging import WebserveLogger
+from .helper_backend_port import _resolve_port, PORT_START_WITH
 
 from .endpoints import endpoints
 
@@ -53,21 +52,6 @@ else:
 
 CONFIG_WEBSERVER_MULTITHREADED = True
 CONFIG_CLI_COMMAND_EXEC_WORKERS = 3
-# The default port (and the port the "auto" search starts from, see the
-# --config-webserver-port CLI argument below). When no explicit port is
-# requested, the backend runs at
-# PORT_START_WITH, or at the first available port after it (the search increments
-# by one until it finds a free port).
-#
-# Note on why the port is configurable:
-#   * Whatever port ends up being used is NOT a problem for the browser that gets
-#     launched: launch_browser() just opens http://localhost:<port>/, so it follows
-#     the backend wherever it lands.
-#   * It CAN be a problem for the dev npm server, though: its Vite config
-#     (src/frontend/app_js/vite.config.js) hard-codes http://localhost:5180 as the
-#     proxy target for every API path. So while developing against the Vite dev
-#     server, keep the backend on 5180 (or update vite.config.js accordingly).
-PORT_START_WITH = 5180
 
 
 script_version = f'{script_version}'.strip()
@@ -80,62 +64,6 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 
 
-
-
-
-def _require_port_available(host, port):
-    """Fail with a readable error if ``(host, port)`` is already taken.
-
-    A socket is bound to the address purely as a probe (the same way
-    ``find_free_port`` does). If binding fails, the underlying ``OSError`` from
-    the socket is chained into the raised exception via ``raise ... from ...`` so
-    the original reason stays visible in the traceback.
-    """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.bind((host, port))
-        except OSError as exc:
-            raise Exception(
-                f'specified port {port} can\'t be used on {host}: {exc}'
-            ) from exc
-
-
-def _resolve_port(port_arg, host):
-    """Translate the ``--config-webserver-port`` CLI value into a concrete port number.
-
-    ``--config-webserver-port`` accepts three forms:
-
-    * an integer (e.g. ``5180``) — use exactly that port. If it is occupied the
-      program fails immediately (see ``_require_port_available``);
-    * ``auto`` — start searching at the default ``PORT_START_WITH`` and pick the
-      first available port, incrementing by one (this is the default behaviour
-      and what ``find_free_port`` already does);
-    * ``auto:<N>`` — the same search, but starting from ``<N>`` instead of the
-      default ``PORT_START_WITH``.
-    """
-    if port_arg is None or port_arg == 'auto':
-        return find_free_port(host, start=PORT_START_WITH)
-
-    if port_arg.startswith('auto:'):
-        try:
-            start = int(port_arg.split(':', 1)[1])
-        except ValueError as exc:
-            raise Exception(
-                f'invalid --config-webserver-port value {port_arg!r}: '
-                f"'auto:<N>' expects an integer port after 'auto:'"
-            ) from exc
-        return find_free_port(host, start=start)
-
-    try:
-        port = int(port_arg)
-    except ValueError as exc:
-        raise Exception(
-            f'invalid --config-webserver-port value {port_arg!r}: expected an integer port, '
-            f"'auto', or 'auto:<N>'"
-        ) from exc
-
-    _require_port_available(host, port)
-    return port
 
 
 
@@ -271,11 +199,13 @@ def main(*argcs,**kwargs):
     server.assign_handlers(endpoints)
 
     # webserve's built-in console logging is off (logging_enabled=False above); we
-    # re-implement it here by subscribing to webserve's events. The log is also
-    # captured in config so an endpoint can expose it later.
+    # re-implement it here by subscribing to webserve's events. The log records are
+    # kept in a local variable and exposed through config['iface'] via a getter, so
+    # the live (potentially large) list is never serialized as part of the config.
     webserve_logger = WebserveLogger(config)
     server.events.subscribe(webserve_logger.handle_event)
-    config['webserve_log_records'] = webserve_logger.records
+    webserve_log_records = webserve_logger.records
+    config['iface']['get_webserve_log_records'] = lambda: webserve_log_records
 
     # print(f'{STDOUT_COLOR_GREEN}starting webserver at {config.get("http_address")}{STDOUT_COLOR_RESET}')
 

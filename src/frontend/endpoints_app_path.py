@@ -57,8 +57,8 @@ def handle_perf(net_request_handler, config: dict, added_data=None):
 
     - ``/perf``           -> index of the available resources
     - ``/perf/cli_jobs``  -> cli job memory stats (see src/cli_proxy_caller/perf.py)
-    - ``/perf/network``   -> webserve request/error log records
-      (``config['webserve_log_records']``)
+    - ``/perf/network``   -> webserve request/error log records (exposed by the
+      ``get_webserve_log_records`` callable in ``config['iface']``)
     """
     WebResponse = config.get('iface').get('WebResponse')
     path_parsed = urlparse(net_request_handler.path).path
@@ -77,7 +77,8 @@ def handle_perf(net_request_handler, config: dict, added_data=None):
         else:
             payload = get_jobs_perf_stats()
     elif path_parsed == '/perf/network':
-        payload = config.get('webserve_log_records', [])
+        get_webserve_log_records = (config.get('iface') or {}).get('get_webserve_log_records')
+        payload = get_webserve_log_records() if get_webserve_log_records else []
     else:
         return WebResponse(
             status_code = 404,

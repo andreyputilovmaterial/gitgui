@@ -178,8 +178,10 @@ requirements are met.
   silenced.
 - The caller (`src/main_gitgui_program.py`) creates the webserver with
   `logging_enabled=False`, subscribes `src/helper_webserve_logging.py`'s
-  `WebserveLogger` to the events, and stores the capped (10k) JSON-safe log in
-  `config['webserve_log_records']` (a live list, like `info`/`warnings`).
+  `WebserveLogger` to the events, and keeps the capped (10k) JSON-safe log in a
+  local variable that is exposed through `config['iface']` as the
+  `get_webserve_log_records` getter (so the live list is not serialized as part
+  of the whole `config`).
 - `WebserveLogger` uses the stdlib `logging` module with two handlers — INFO →
   stdout (start/request/stop), WARNING+ → stderr (errors/notices) — and
   reproduces the old coloring. The submodule documents this change in
@@ -395,12 +397,21 @@ detail view (`history-revision`).
 
 ## Last state
 
+- Housekeeping in `src/main_gitgui_program.py` (2026-11-10):
+  - The port helpers `_resolve_port` / `_require_port_available` (and the
+    `PORT_START_WITH` default) moved out to a new `src/helper_backend_port.py`;
+    the startup module now imports them instead of defining them inline.
+  - `webserve_log_records` is no longer stored in `config` (which made the whole
+    config serialize the up-to-10k log). It now lives in a local variable and is
+    exposed as the `get_webserve_log_records` callable under `config['iface']`;
+    `/perf/network` (`handle_perf`) reads it through that getter.
+
 - Backend port is now configurable via `--config-webserver-port` (2026-11-09).
   It accepts an integer (exact port, fails with a readable error chaining the
   socket `OSError` via `raise ... from exc` if occupied), `auto` (first free
   port from the default `PORT_START_WITH=5180`, incrementing by one), or
   `auto:<N>` (same search starting at `<N>`). Resolved in
-  `main_gitgui_program.py` by `_resolve_port`/`_require_port_available`. The
+  `src/helper_backend_port.py` by `_resolve_port`/`_require_port_available`. The
   chosen port doesn't matter for the launched browser (it opens
   `http://localhost:<port>/`), but it matters for the Vite dev server, which
   hard-codes `http://localhost:5180` in `vite.config.js` — keep the backend on
@@ -595,7 +606,8 @@ detail view (`history-revision`).
   snapshot of `context.jobs`, exposed via the `/perf` endpoint tree
   (`handle_perf` in `src/frontend/endpoints_app_path.py`, route in
   `src/endpoints.py`): `/perf` lists resources, `/perf/cli_jobs` serves the job
-  stats, and `/perf/network` serves `config['webserve_log_records']`.
+  stats, and `/perf/network` serves the `get_webserve_log_records` getter from
+  `config['iface']`.
 - `deep_size` is a stdlib-only deep-size estimator: it walks containers,
   dataclass `__dict__`/`__slots__`, and — crucially — function `__closure__`
   captures, because a `stdout_reader` closure is where buffered output (e.g. a

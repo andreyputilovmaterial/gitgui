@@ -51,7 +51,8 @@ dict currently holds, per job and in total:
 It is exposed over HTTP via the `/perf` tree (handler `handle_perf` in
 `src/frontend/endpoints_app_path.py`, route in `src/endpoints.py`): `GET /perf`
 lists the resources, `GET /perf/cli_jobs` serves these stats, and
-`GET /perf/network` serves `config['webserve_log_records']`.
+`GET /perf/network` serves the `get_webserve_log_records` getter from
+`config['iface']`.
 
 ### What it measures — footprint, not throughput
 

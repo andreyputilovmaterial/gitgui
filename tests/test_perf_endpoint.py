@@ -19,13 +19,13 @@ class _FakeWebResponse:
 
 
 def _config(jobs_stats=None, log_records=None):
-    return {
-        'iface': {
-            'WebResponse': _FakeWebResponse,
-            'get_jobs_perf_stats': jobs_stats,
-        },
-        'webserve_log_records': log_records if log_records is not None else [],
+    iface = {
+        'WebResponse': _FakeWebResponse,
+        'get_jobs_perf_stats': jobs_stats,
     }
+    if log_records is not None:
+        iface['get_webserve_log_records'] = lambda: log_records
+    return {'iface': iface}
 
 
 def _request(path):
@@ -60,6 +60,12 @@ def test_perf_network_returns_log_records():
     resp = handle_perf(_request('/perf/network'), _config(log_records=records))
     assert resp.status_code == 200
     assert json.loads(resp.body) == records
+
+
+def test_perf_network_without_getter_returns_empty():
+    resp = handle_perf(_request('/perf/network'), _config())
+    assert resp.status_code == 200
+    assert json.loads(resp.body) == []
 
 
 def test_perf_unknown_resource_returns_404():

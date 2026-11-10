@@ -87,6 +87,7 @@ def make_default_assets_list(config: dict) -> list:
         ('meta',('keywords','git gui',)),
         ('css-link',('/assets/vendorlibs/fonts/ibm-plex-sans/css/ibm-plex-sans-all.css',),),
         ('css-link',('/assets/vendorlibs/fonts/ibm-plex-mono/css/ibm-plex-mono-all.css',),),
+        ('css-link',('/assets/vendorlibs/fonts/remixicon/remixicon.css',),),
         ('css-link',('/assets/project-specific.css',),),
     ]
 

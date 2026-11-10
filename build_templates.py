@@ -193,6 +193,22 @@ def build_vendorlibs() -> Resource:
             + [
                 Resource(filename="vendorlibs/fonts/ibm-plex-mono/_ASSETS_BUNDLED_PY.py",payload=f"\n\n# auto-generated: {dt}\n\n_ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO = {repr(files)}\n")
             ]
+    def build_resource_fonts_remixicon():
+        src = None
+        dt = datetime.now()
+        with resources.as_file(resources.files("src.frontend.assets_vendor_libs")) as f:
+            src = Path(f) / 'fonts' / 'remixicon'
+            src = f'{src}'
+            files = scan_folder(src,is_binary=True)
+        result = []
+        return [] \
+            + [
+                    Resource(filename=Path('vendorlibs/fonts/remixicon') / file[0],payload=file[1],is_binary=True) \
+                for file in files
+            ] \
+            + [
+                Resource(filename="vendorlibs/fonts/remixicon/_ASSETS_BUNDLED_PY.py",payload=f"\n\n# auto-generated: {dt}\n\n_ASSETS_VENDORLIBS_FONTS_REMIXICON = {repr(files)}\n")
+            ]
     result = [
         Resource(
             filename = "vendorlibs/vue.js",
@@ -213,6 +229,7 @@ def build_vendorlibs() -> Resource:
     ]
     result += build_resource_fonts_ibmplexsans()
     result += build_resource_fonts_ibmplexmono()
+    result += build_resource_fonts_remixicon()
     return result
 
 

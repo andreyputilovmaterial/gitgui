@@ -821,3 +821,41 @@ detail view (`history-revision`).
   `page_revision_detail/index.test.js` — each asserts the fetch command is issued
   again after the hash prop changes. Full frontend suite: 58/58 pass.
 
+
+## Vendored Remix Icon webfont (2026-11-10)
+
+- Added the **Remix Icon v4.9.0** webfont as a third vendored font, alongside
+  `ibm-plex-sans` / `ibm-plex-mono`, so the UI can use `ri-*` icon classes.
+  Source: `https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/`.
+- Files live in `src/frontend/assets_vendor_libs/fonts/remixicon/`: only the
+  runtime set is vendored — `remixicon.css` (linked in the HTML `<head>`) plus
+  the five font files the CSS references (`remixicon.eot`, `.woff2`, `.woff`,
+  `.ttf`, `.svg`) — together with `LICENSE.txt` and `README.md` (author/attribution
+  info). The preprocessor sources (`.less`, `.module.less`, `.scss`, `.styl`),
+  `remixicon.glyph.json` and `remixicon.symbol.svg` are intentionally **not**
+  vendored: they are not referenced by the CSS and would add ~7.5 MB of dead
+  weight (the glyph json alone is ~4.6 MB).
+- License: **Remix Icon License v1.0** (effective Jan 2026), per the upstream
+  `License` file and the CSS/README headers. Note the npm `package.json` still
+  says `"license": "Apache-2.0"`; the authoritative terms are the `License` file
+  shipped in the package (v1.0). Attribution is optional but appreciated
+  ("Icons by Remix Icon (https://remixicon.com)"). Authors: Remix Design
+  (`https://remixicon.com`, `https://github.com/Remix-Design/RemixIcon`);
+  contributors Wendy Gao and Jimmy Cheung.
+- Pipeline (mirrors the existing font flow): `build_templates.py` gains
+  `build_resource_fonts_remixicon()` which `scan_folder`s `fonts/remixicon` and
+  emits `vendorlibs/fonts/remixicon/_ASSETS_BUNDLED_PY.py` defining
+  `_ASSETS_VENDORLIBS_FONTS_REMIXICON`; `build.sh` concatenates that file into
+  `GENERATED/ASSETS.py`; `endpoints_assets_delivery_path.py` imports it and maps
+  `^/vendorlibs/fonts/remixicon/.*` to a binary renderer; the CSS is linked from
+  `endpoints_html_paths.make_default_assets_list` and `app_js/index.html`.
+- MIME fix: `detect_content_type` in `endpoints_assets_delivery_path.py` now
+  returns `font/woff2`, `font/woff`, `font/ttf`, `font/otf`,
+  `application/vnd.ms-fontobject` and `image/svg+xml` for the corresponding
+  extensions. Previously all fonts were served as `text/plain`, which Firefox
+  rejects for `@font-face`. This also fixes the two existing IBM Plex fonts.
+- Gotcha: `remixicon.css` references its fonts with a cache-busting query
+  (`url('remixicon.woff2?t=1769486070745')`). The asset renderer strips the query
+  via `urlparse(...).path`, so the dict key `remixicon.woff2` matches and no CSS
+  rewrite is needed.
+

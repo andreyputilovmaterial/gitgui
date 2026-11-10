@@ -21,6 +21,7 @@ from .GENERATED.ASSETS import (
     vendorlibs_dompurify_js,
     _ASSETS_VENDORLIBS_FONTS_IBMPLEXSANS,
     _ASSETS_VENDORLIBS_FONTS_IBMPLEXMONO,
+    _ASSETS_VENDORLIBS_FONTS_REMIXICON,
 )
 
 
@@ -33,6 +34,18 @@ def detect_content_type(path):
         content_type = 'text/css'
     elif re.match(r'.*\.m?js\s*$',path,flags=re.I):
         content_type = 'text/javascript'
+    elif re.match(r'.*\.woff2\s*$',path,flags=re.I):
+        content_type = 'font/woff2'
+    elif re.match(r'.*\.woff\s*$',path,flags=re.I):
+        content_type = 'font/woff'
+    elif re.match(r'.*\.ttf\s*$',path,flags=re.I):
+        content_type = 'font/ttf'
+    elif re.match(r'.*\.otf\s*$',path,flags=re.I):
+        content_type = 'font/otf'
+    elif re.match(r'.*\.eot\s*$',path,flags=re.I):
+        content_type = 'application/vnd.ms-fontobject'
+    elif re.match(r'.*\.svg\s*$',path,flags=re.I):
+        content_type = 'image/svg+xml'
     return content_type
 
 def render_payload(net_request_handler, config: dict,added_data=None,is_binary=False):
@@ -125,6 +138,27 @@ def render_assets_vendorlibs_font_ibmplexmono(net_request_handler, config: dict,
         added_data = payload,
         is_binary = True,
     )
+def render_assets_vendorlibs_font_remixicon(net_request_handler, config: dict,added_data=None):
+    WebResponse = config.get('iface').get('WebResponse')
+    payload_dict = _ASSETS_VENDORLIBS_FONTS_REMIXICON
+    payload_dict = { propname: propvalue for propname,propvalue in payload_dict }
+    path_with_query = net_request_handler.path
+    path_parsed = f'{urlparse(path_with_query).path}'
+    path = '/'.join([ unquote(p) for p in (path_parsed.split('/'))[5:] ])
+    if path not in payload_dict:
+        return WebResponse(
+            status_code = 404,
+            content_type = 'text/css',
+            body = '',
+            headers = [],
+        )
+    payload = payload_dict.get(path)
+    return render_payload(
+        net_request_handler,
+        config,
+        added_data = payload,
+        is_binary = True,
+    )
 
 
 endpoints = {
@@ -137,6 +171,7 @@ endpoints = {
     '/vendorlibs/vue-router.js': render_assets_vendorlibs_vue_router_js,
     re.compile('^/vendorlibs/fonts/ibm-plex-sans/.*'): render_assets_vendorlibs_font_ibmplexsans,
     re.compile('^/vendorlibs/fonts/ibm-plex-mono/.*'): render_assets_vendorlibs_font_ibmplexmono,
+    re.compile('^/vendorlibs/fonts/remixicon/.*'): render_assets_vendorlibs_font_remixicon,
     '/app.js': render_assets_app_js,
     '/project-specific.css': render_assets_project_specific_styles_css,
 }

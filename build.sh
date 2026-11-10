@@ -125,6 +125,7 @@ cat src/frontend/GENERATED/vendorlibs/dompurify.js | "$pythonexecutable" build_t
 cat src/frontend/GENERATED/vendorlibs/vue-router.js | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname vendorlibs_vue_router_js >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-sans/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 cat src/frontend/GENERATED/vendorlibs/fonts/ibm-plex-mono/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
+cat src/frontend/GENERATED/vendorlibs/fonts/remixicon/_ASSETS_BUNDLED_PY.py >> src/frontend/GENERATED/ASSETS.py
 
 rm -rf -- src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py
 cat src/frontend/template/GENERATED/TEMPLATE_COMPILED/common.css | "$pythonexecutable" build_templates.py --program bundle-file-into-py --varname common_css >> src/frontend/template/GENERATED/TEMPLATE_COMPILED/ASSETS.py

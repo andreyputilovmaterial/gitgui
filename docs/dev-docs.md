@@ -291,6 +291,10 @@ why (what it does, why writing it ourselves would cost more than maintaining a
 vendored copy, why a runtime dependency wouldn't fit). Record that reasoning and
 the license/attribution when you add it.
 
+**The running app should make no network requests to the outside internet** (no
+CDNs) — keep it clean and private; remote operations (push/pull) are
+user-initiated only, never automatic.
+
 The frontend does not fetch third-party JS from a CDN at runtime; the following
 are vendored under `src/frontend/assets_vendor_libs/` and turned into
 `GENERATED/` Python assets by `build.sh`:

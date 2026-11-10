@@ -52,7 +52,9 @@
   fewer dependencies / fewer vendored libs is better, but adding one is fine when
   reasoned; static-file assets are bundled via the `GENERATED/` technique (can't
   drop a raw file into a pinliner bundle); and every vendored asset must be
-  tracked in `components-licenses.json` (`kind: "vendored"`). (2026-11-10)
+  tracked in `components-licenses.json` (`kind: "vendored"`). Also added a short
+  note: the running app should make no network requests to the outside internet
+  (no CDNs); remote operations are user-initiated only. (2026-11-10)
 
 ## What this is
 

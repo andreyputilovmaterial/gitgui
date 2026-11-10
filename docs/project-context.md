@@ -468,6 +468,23 @@ detail view (`history-revision`).
   row uses a flex container (`.mdm-git-gui-history-search-row` in `style.css`)
   rather than a `.mdmreport-controls-group`, so the input stays inline instead
   of being stretched to `width: 100%` by the group rules.
+- History page full-view records are now grey "cards" (2026-11-10):
+  `component_record.js` wraps each entry in `.history-record-card` (hash on the
+  top line, then the commit message and its hint notes on left-aligned lines
+  below, then date/time + author, with a black `ri-git-commit-line` icon before
+  the hash); the compare radio buttons stay in the white left gutter, and the
+  grey `#f2f2f2`/`#ececec` card starts to their right. `style.css` adds the card
+  rules (8px left indent, `border-radius: 10px`, `margin-bottom: 5px`,
+  `padding-top: 0`) and `min-width: 0` on both the record and the card to stop
+  the grid rows from blowing out the page width on narrow screens (classic grid
+  `min-width: auto` blowout). The hash is now the clickable "view files" target
+  (`.hash.hash-link`, removed the old "(files)" link): on hover it turns green
+  (`--mdm-color-green`) and is underlined (applied to `.mdmreport-role-hash`'s
+  `.hash-leading`/`.hash-rest`, because `text-decoration` on the flex `.hash`
+  doesn't propagate through the atomic inline-flex hash box). `.message-box`
+  now has `padding: 14px`, `background: rgba(255,255,255,.5)`, a green inset
+  left accent (`#385`) and `margin-right: -14px` (full-bleed to the card edge).
+  The compact view (welcome page) is untouched and still verified.
 - Added a 6th app-level tab **Tools** (`id="tools"`) as a grab-bag for ad-hoc
   ideas. It renders `apptab_tools/index.js`, which pushes `page_tools_home` — a
   data-driven list of tool "sections" — onto a `pages-site`. Each section is one

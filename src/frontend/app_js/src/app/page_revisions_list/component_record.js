@@ -89,28 +89,33 @@ const Record = {
   :data-recordsfilter-message="message"
 >
   <div v-if="!isWorktree" class="form-controls mdm-ui-record-col-formcontrols mdm-ui-record-col-1"><form-compare-vers-controls :formVerCompareFields="formVerCompareFields" :hash="hash" /></div><div v-else class="form-controls" />
-  <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash">
-    <span class="label">Hash: </span>
-    <hash-worktree v-if="isWorktree" />
-    <hash-index v-else-if="isIndex" />
-    <hash v-else :hash="hash" />
-    <a v-if="!isWorktree&&!isIndex" href="#!" @click.prevent="navigateFilesListPage" class="view-files-button"> (files)</a>
-  </span>
-  <span class="author mdm-ui-record-col-author mdm-ui-record-col-3" title="Author - username">
-    <span class="label">Author - Username: </span>
-    <author :author="author" />
-  </span>
-  <span class="timestamp mdm-ui-record-col-timestamp mdm-ui-record-col-4" title="Date/time when saved/commited">
-    <span class="label">Saved/Commited on: </span>
-    <date :timestamp="timestamp" />
-  </span>
-  <span class="message mdm-ui-record-col-message mdm-ui-record-col-5" title="Version description">
-    <div v-if="isHEAD" class="note">Current HEAD<span class="footnote"> (new history will continue from here)</span></div>
-    <div v-if="isWorktree" class="note">Your local files in the working tree<span class="footnote"><br />Please stage your changes first if you want to select them for comparison because Git does not include untracked files in diffs.</span></div>
-    <div v-if="isIndex" class="note">Temporary staging area for changes you added with \`<code>git add</code>\`; these changes will be captured in your next commit.<span class="footnote"></span></div>
-    <span class="label">Version description: </span>
-    <message :message="message" />
-  </span>
+  <div class="history-record-card">
+    <div class="history-record-card-main">
+      <span
+        class="hash"
+        :class="{ 'hash-link': !isWorktree && !isIndex }"
+        title="Hash"
+        @click.prevent="handleHashClick"
+      >
+        <span class="label">Hash: </span>
+        <i class="ri-git-commit-line hash-icon" aria-hidden="true"></i>
+        <hash-worktree v-if="isWorktree" />
+        <hash-index v-else-if="isIndex" />
+        <hash v-else :hash="hash" />
+      </span>
+      <span class="message" title="Version description">
+        <div v-if="isHEAD" class="note">Current HEAD<span class="footnote"> (new history will continue from here)</span></div>
+        <div v-if="isWorktree" class="note">Your local files in the working tree<span class="footnote"><br />Please stage your changes first if you want to select them for comparison because Git does not include untracked files in diffs.</span></div>
+        <div v-if="isIndex" class="note">Temporary staging area for changes you added with \`<code>git add</code>\`; these changes will be captured in your next commit.<span class="footnote"></span></div>
+        <span class="label">Version description: </span>
+        <message :message="message" />
+      </span>
+    </div>
+    <div class="history-record-card-meta" title="Date/time and author">
+      <date :timestamp="timestamp" />
+      <author v-if="author" :author="author" />
+    </div>
+  </div>
 </div>
 `,
   components: {
@@ -133,8 +138,13 @@ const Record = {
       router.push({ name: 'history-revision-files', params: { hash: props.hash } });
     };
 
+    const handleHashClick = () => {
+      if (isWorktree.value || isIndex.value) return;
+      navigateFilesListPage();
+    };
+
     return {
-      navigateFilesListPage,
+      handleHashClick,
       isHEAD,
       isWorktree,
       isIndex,

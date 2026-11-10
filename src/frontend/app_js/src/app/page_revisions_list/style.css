@@ -4,6 +4,64 @@
   container-type: inline-size;
 }
 
+/* --- History record card (full view) -----------------------------------------
+   The record reserves a left gutter for the compare radio buttons, which stay
+   on the white page background. The visible grey card starts to the right of
+   the radios, so its background never covers them. --------------------------- */
+
+.mdm-git-gui-page-history-overview .history-record:not(.history-record-compact) {
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 5px; /* gap between cards */
+  min-width: 0; /* allow the grid row to shrink instead of blowing out the width */
+}
+
+.mdm-git-gui-page-history-overview .history-record.mdm-ui-record:not(.history-record-compact) .history-record-card {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* let the card (a grid item) shrink with its track */
+  background: #f2f2f2;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  padding: 4px 14px 4px 8px; /* 8px left indent; 14px keeps spacing + right */
+}
+
+.mdm-git-gui-page-history-overview .history-record .history-record-card-main {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+  min-width: 0;
+}
+
+.mdm-git-gui-page-history-overview .history-record .history-record-card-main .message {
+  min-width: 0;
+}
+
+.mdm-git-gui-page-history-overview .history-record .history-record-card-meta {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 7px;
+  color: #666;
+  font-size: 92%;
+  padding-top: 2px;
+}
+
+.mdm-git-gui-page-history-overview .history-record .history-record-card .note {
+  margin: 0;
+  padding: 0 0 2px;
+}
+.mdm-git-gui-page-history-overview .history-record .history-record-card .note .footnote {
+  color: #999;
+}
+
+.mdm-git-gui-page-history-overview .history-record .hash .hash-icon {
+  flex: 0 0 auto;
+  margin-right: 6px;
+}
+
 .mdm-git-gui-page-history-overview .history-record {
   border: 1px solid transparent;
 }
@@ -23,9 +81,16 @@
   display: flex;
   align-items: baseline;
 }
-.mdm-git-gui-page-history-overview .history-record .hash .view-files-button {
-  flex: 0 0 auto;
-  white-space: nowrap;
+.mdm-git-gui-page-history-overview .history-record .hash.hash-link {
+  cursor: pointer;
+  transition: color var(--mdm-transition);
+}
+.mdm-git-gui-page-history-overview .history-record .hash.hash-link:hover {
+  color: var(--mdm-color-green);
+}
+.mdm-git-gui-page-history-overview .history-record .hash.hash-link:hover .mdmreport-role-hash .hash-leading,
+.mdm-git-gui-page-history-overview .history-record .hash.hash-link:hover .mdmreport-role-hash .hash-rest {
+  text-decoration: underline;
 }
 .mdm-git-gui-page-history-overview .history-record .author .label {
   display: inline;
@@ -50,9 +115,11 @@
   font-size: 92%;
 }
 .mdm-git-gui-page-history-overview .history-records .message-box {
-  border: 1px solid #eee;
-  padding: 7px 14px 7px;
+  /* border: 1px solid #eee; */
+  padding: 14px 14px 14px;
   box-shadow: inset 4px 0 0 0 #385;
+  background: rgba(255, 255, 255, .5);
+  margin-right: -14px;
 }
 
 

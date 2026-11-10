@@ -1,6 +1,5 @@
 
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 
 import './style.css';
 
@@ -102,9 +101,10 @@ const PackRecord = {
     <div class="inner">
       <span class="revision-hash" title="Revision hash">
         <span class="label">Revision hash: </span>
-        <a href="#!" @click.prevent="navigateRevisionPage" class="link-unstyled">
+        <i class="ri-git-commit-line hash-icon" aria-hidden="true"></i>
+        <router-link :to="{ name: 'history-revision', params: { hash: revisionHash } }" class="link-unstyled">
           <component-format-hash :hash="revisionHash" highlight="auto" />
-        </a>
+        </router-link>
       </span>
       <span class="file-path" title="File path">
         <span class="label">File path: </span>
@@ -116,17 +116,18 @@ const PackRecord = {
       </span>
       <span class="revision-timestamp" title="Revision timestamp">
         <span class="label">Revision timestamp: </span>
+        <i class="ri-time-line" aria-hidden="true"></i>
         <component-format-datetime :dt="revisionTimestamp" />
       </span>
       <span class="revision-author" title="Revision author">
         <span class="label">Revision author: </span>
+        <i class="ri-quill-pen-line meta-author-icon" aria-hidden="true"></i>
         {{ revisionAuthor }}
       </span>
       <span class="revision-message" title="Revision message" v-if="revisionMessage">
         <span class="label">Revision message: </span>
-        <div class="inner">
-          {{ revisionMessage }}
-        </div>
+        <i class="ri-chat-quote-line commit-message-icon" aria-hidden="true"></i>
+        {{ revisionMessage }}
       </span>
     </div>
   </span>
@@ -146,16 +147,10 @@ const PackRecord = {
 `,
   setup(props) {
 
-    const router = useRouter();
     const objectSizeWarningLevel = computed(()=>calcWarningLevel(props.sizeCompressed,props.statistics));
     const objectSizeWarningColor = computed(()=>calcWarningColor(objectSizeWarningLevel.value));
 
-    const navigateRevisionPage = () => {
-      router.push({ name: 'history-revision', params: { hash: props.revisionHash } });
-    };
-
     return {
-      navigateRevisionPage,
       objectSizeWarningColor,
       objectSizeWarningLevel,
       recordsFilterClasses,

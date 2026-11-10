@@ -502,6 +502,21 @@ detail view (`history-revision`).
   `component_record.js`) — the dummy time is not shown. These pseudo-records
   only appear in the full history view: the compact view doesn't inject them,
   and the version-compare view already sets `timestamp: null` for them.
+- Pack-object records (`page_pack_list_objects`) now mirror the history card's
+  revision styling (2026-11-10): each revision field got the same remix icons as
+  history — `ri-git-commit-line.hash-icon` before the hash (6px right),
+  `ri-time-line` before the date/time (6px right),
+  `ri-quill-pen-line.meta-author-icon` before the author (8px left, 6px right),
+  and `ri-chat-quote-line.commit-message-icon` before the message (7px right).
+  The commit-message box was removed (dropped the `.revision-message .inner`
+  border/padding rule and the `.inner` wrapper), and the message cell gained the
+  same ~15px vertical gap (`margin-top`/`margin-bottom`) history uses. The
+  `.revision-info` grid and its borders/indents were kept as-is. The revision
+  hash is now a `<router-link>` to `history-revision` (a real `#/history/{hash}`
+  URL, so it also opens in a new tab) instead of a dummy `#!` anchor, and on
+  hover it turns green (`--mdm-color-green`) and underlines the hash parts —
+  matching the history view's hash link.
+
 - Added a 6th app-level tab **Tools** (`id="tools"`) as a grab-bag for ad-hoc
   ideas. It renders `apptab_tools/index.js`, which pushes `page_tools_home` — a
   data-driven list of tool "sections" — onto a `pages-site`. Each section is one

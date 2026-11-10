@@ -133,13 +133,29 @@
 }
 .mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-message {
   grid-column: 1/-1;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
-.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-message .inner {
-  display: block;
-  grid-column: 1 / -1;
-  padding: 6px;
-  border: 1px solid #dfdfdf;
-  border-radius: 4px;
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-hash .hash-icon {
+  margin-right: 6px;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-hash a:hover {
+  color: var(--mdm-color-green);
+  text-decoration: none;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-hash a:hover .mdmreport-role-hash .hash-leading,
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-hash a:hover .mdmreport-role-hash .hash-rest {
+  text-decoration: underline;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-message .commit-message-icon {
+  margin-right: 7px;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-timestamp .ri-time-line {
+  margin-right: 6px;
+}
+.mdm-git-gui-pack-files.pack-file-records .mdm-git-gui-pack-object-record .revision-info .inner > .revision-author .meta-author-icon {
+  margin-left: 8px;
+  margin-right: 6px;
 }
 
 

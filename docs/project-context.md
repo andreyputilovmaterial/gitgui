@@ -522,6 +522,21 @@ detail view (`history-revision`).
   its color to black via `.mdm-git-gui-fileslistview-notfound`), and it does
   **not** call `logError` or re-throw for a 404 — other failures still propagate
   to the top-level handler/console. Covered by `tests/test_endpoints_files_path.py`.
+- Files endpoint — `/browse/` resource size is now requested with a `HEAD`
+  request: the response carries `X-Resource-Size` in a header (file → its own
+  size; directory → recursive size), with an empty body. Reason: the Node.js HTTP
+  server that Vite's dev server is built on rejects non-standard methods
+  (`SIZE`, `DOWNLOAD`, …) with a 400 at the llhttp parser layer, *before* Vite's
+  proxy middleware runs (Node only accepts a fixed method allow-list; the
+  `insecureHTTPParser` flag does not change that), so size can't be carried by a
+  custom `SIZE` method in npm dev. HEAD is standard (works through Node/Vite) and
+  is not otherwise used by `/browse` (HEAD is used only by `/health` and the
+  `/repo/...` existence checks). The legacy `SIZE`/`DOWNLOAD` methods are kept for
+  direct-backend compatibility. The pack-statistics view
+  (`page_pack_list_objects/component_statistics_pane.js`) now sends
+  `HEAD /browse/{pack|gitdir|worktree}:` and reads the `X-Resource-Size` header.
+  Covered by `tests/test_endpoints_files_path.py`.
+
 - Removed `git submodule update --init --recursive` from `build.sh` (submodule
   initialization is no longer part of the build; the outer `build.sh` still runs
   the webinput submodule's own `build.sh`).

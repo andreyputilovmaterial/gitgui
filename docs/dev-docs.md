@@ -245,6 +245,28 @@ caught on your next full reload, so they are not silently missed. Re-run
 running frontend in a browser, ask the user (helium-devtools MCP or a direct
 Chrome call) — the dev frontend should be reachable, otherwise ask.
 
+## HTTP methods and the Vite dev server
+
+The backend webserver is method-agnostic: it dispatches on the raw request
+method (`net_request_handler.command`) and serves any method name (`GET`, `POST`,
+`PUT`, `SIZE`, `DOWNLOAD`, `FOO`, …). The app itself is fully capable of using
+non-standard HTTP methods end to end.
+
+The **Vite/npm dev server** is not. Vite is built on Node's `http` server, and
+Node's `llhttp` parser rejects methods outside its fixed allow-list with
+`400 Bad Request` *before* Vite's proxy middleware ever sees them — so `SIZE`,
+`DOWNLOAD`, etc. cannot be proxied to the backend in `npm run dev`, and there is
+no public Vite/Node config or patch for it (`insecureHTTPParser` only relaxes
+header parsing, not methods). This makes frontend development with non-standard
+methods less convenient; it does not make the app less capable.
+
+Consequence for frontend code: **express operations with standard methods so the
+Vite dev server can proxy them.** The `/browse` endpoint models this — resource
+size is requested with `HEAD` and returned in the `X-Resource-Size` response
+header (file → its size, directory → recursive size), instead of a custom `SIZE`
+method. The legacy `SIZE`/`DOWNLOAD` methods remain supported by the backend for
+direct/production use.
+
 ## Ports
 
 The backend listens on `localhost`, default port `5180` (`PORT_START_WITH` in

@@ -110,6 +110,26 @@ def handle_request_files_endpoint(net_request_handler, config: dict,added_data=N
                 headers = [],
                 is_binary = False,
             )
+    if method=='HEAD':
+        if not file_path.exists():
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'resource not found: {resource_identifier}'}, cls=JSONEncoder),
+                headers = [],
+                is_binary = False,
+            )
+        if file_path.is_dir():
+            size = sum(file.stat().st_size for file in file_path.rglob("*") if file.is_file())
+        else:
+            size = file_path.stat().st_size
+        return WebResponse(
+            status_code = 200,
+            content_type = 'application/json',
+            body = '',
+            headers = [ ( 'X-Resource-Size', str(size), ) ],
+            is_binary = False,
+        )
     if method=='DOWNLOAD':
         if not file_path.exists():
             return WebResponse(

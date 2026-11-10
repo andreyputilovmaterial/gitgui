@@ -140,11 +140,13 @@ const StatisticsPane = {
 
     const fetchGitPacksFolderSize = async () => {
       try {
-        const sizeGitPackFilesHttpResponse = await fetch( '/browse/pack:', { method: 'SIZE', payload: undefined, } );
+        const sizeGitPackFilesHttpResponse = await fetch( '/browse/pack:', { method: 'HEAD', } );
         if( !sizeGitPackFilesHttpResponse.ok )
             throw new Error( await makeFetchResponseErrorMessage(sizeGitPackFilesHttpResponse) );
-        const sizeGitPackFiles = await sizeGitPackFilesHttpResponse.json();;
-        directoryWithGitPackFilesSize.value = sizeGitPackFiles;
+        const sizeGitPackFiles = sizeGitPackFilesHttpResponse.headers.get('X-Resource-Size');
+        if( sizeGitPackFiles === null )
+            throw new Error( 'Git Pack View: response missing X-Resource-Size header' );
+        directoryWithGitPackFilesSize.value = Number(sizeGitPackFiles);
       } catch(e) {
         props.repoActions.logError(`Git Pack View: Failed retrieving data: ${e}`);
         error.value = e;
@@ -153,11 +155,13 @@ const StatisticsPane = {
     };
     const fetchGitRepoFolderSize = async () => {
       try {
-        const sizeGitDirectoryHttpResponse = await fetch( '/browse/gitdir:', { method: 'SIZE', payload: undefined, } );
+        const sizeGitDirectoryHttpResponse = await fetch( '/browse/gitdir:', { method: 'HEAD', } );
         if( !sizeGitDirectoryHttpResponse.ok )
             throw new Error( await makeFetchResponseErrorMessage(sizeGitDirectoryHttpResponse) );
-        const sizeGitDirectory = await sizeGitDirectoryHttpResponse.json();;
-        directoryGitDirSize.value = sizeGitDirectory;
+        const sizeGitDirectory = sizeGitDirectoryHttpResponse.headers.get('X-Resource-Size');
+        if( sizeGitDirectory === null )
+            throw new Error( 'Git Pack View: response missing X-Resource-Size header' );
+        directoryGitDirSize.value = Number(sizeGitDirectory);
       } catch(e) {
         props.repoActions.logError(`Git Pack View: Failed retrieving data: ${e}`);
         error.value = e;
@@ -166,11 +170,13 @@ const StatisticsPane = {
     };
     const fetchWorktreeFolderSize = async () => {
       try {
-        const sizeHttpResponse = await fetch( '/browse/worktree:', { method: 'SIZE', payload: undefined, } );
+        const sizeHttpResponse = await fetch( '/browse/worktree:', { method: 'HEAD', } );
         if( !sizeHttpResponse.ok )
             throw new Error( await makeFetchResponseErrorMessage(sizeHttpResponse) );
-        const size = await sizeHttpResponse.json();;
-        directoryWorkingTreeSize.value = size;
+        const size = sizeHttpResponse.headers.get('X-Resource-Size');
+        if( size === null )
+            throw new Error( 'Git Pack View: response missing X-Resource-Size header' );
+        directoryWorkingTreeSize.value = Number(size);
       } catch(e) {
         props.repoActions.logError(`Git Pack View: Failed retrieving data: ${e}`);
         error.value = e;

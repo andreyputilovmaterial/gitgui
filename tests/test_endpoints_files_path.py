@@ -90,3 +90,30 @@ def test_browse_size_on_directory_returns_size(tmp_path):
     )
     assert resp.status_code == 200
     assert json.loads(resp.body) == 5
+
+
+def test_browse_head_on_directory_returns_size_header(tmp_path):
+    (tmp_path / 'a.txt').write_text('hello')
+    (tmp_path / 'sub').mkdir()
+    (tmp_path / 'sub' / 'b.txt').write_text('12345')
+    resp = handle_request_files_endpoint(
+        _request('/browse/worktree:', command='HEAD'), _config(tmp_path)
+    )
+    assert resp.status_code == 200
+    assert ('X-Resource-Size', '10') in resp.headers
+
+
+def test_browse_head_on_file_returns_size_header(tmp_path):
+    (tmp_path / 'a.txt').write_text('hello')
+    resp = handle_request_files_endpoint(
+        _request('/browse/worktree:a.txt', command='HEAD'), _config(tmp_path)
+    )
+    assert resp.status_code == 200
+    assert ('X-Resource-Size', '5') in resp.headers
+
+
+def test_browse_head_missing_returns_404(tmp_path):
+    resp = handle_request_files_endpoint(
+        _request('/browse/worktree:missing', command='HEAD'), _config(tmp_path)
+    )
+    assert resp.status_code == 404

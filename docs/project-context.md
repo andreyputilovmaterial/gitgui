@@ -1011,4 +1011,9 @@ detail view (`history-revision`).
   (`#111`) with `cursor: default` and no green hover. Ancestors (home +
   intermediate dirs) stay clickable `<a>`s and keep the green hover + pointer
   cursor.
+- Pagination hover (2026-11-10): the page-number hover color in
+  `filter_records_form/styles.css` (`.mdm-ui-recordsfilter-pagination
+  .pagination-page-indices .nav-page:hover`) was changed from purple
+  (`#7067ff`) to the app's primary green (`var(--mdm-color-green)`, `#385`),
+  matching the other green hovers.
 

@@ -6,6 +6,17 @@ order, with the date and a short reason for the change. See
 
 ## 2026-11-10
 
+- Replaced the purple link color with a dedicated blue: `--mdm-color-link` is now
+  `#2c68c5` and `--mdm-color-link-hover` is now `#66a1fa` (previously purple
+  `#6c78ff` / `#4d56cc`). The redundant `--mdm-color-blue` / `--mdm-color-blue-hover`
+  tokens were removed and `.mdm-link-blue` now follows the link color, so blue and
+  the default link color are the same thing.
+- Link hovers that still used the app green were moved to the new link-hover blue:
+  `.mdm-btn-link:hover`, the header navigation link hover (`project_specific.css`),
+  and the revision detail "View files" link hover.
+
+## 2026-11-10
+
 - Removed the purple `--mdm-color-primary` (#6670bb) token from the color scheme.
   Its consumers moved off purple: `.mdm-btn-primary` is now the primary green
   (`--mdm-color-green` / `--mdm-color-green-hover`), `.mdm-btn-link` now uses the

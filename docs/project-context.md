@@ -1030,6 +1030,18 @@ detail view (`history-revision`).
   now neutral grey `#666`. Links stay on the `--mdm-color-link` /
   `--mdm-color-link-hover` blue family. The `#5560a8` btn-primary hover shade was
   removed too.
+- Link color finalized to blue (2026-11-10): `--mdm-color-link` is now
+  `#2c68c5` and `--mdm-color-link-hover` is `#66a1fa` (the purple
+  `#6c78ff` / `#4d56cc` pair is gone), and the now-redundant
+  `--mdm-color-blue` / `--mdm-color-blue-hover` tokens were removed
+  (`.mdm-link-blue` now follows the link color). Hardcoded blue/purple link
+  colors were normalized to the link tokens: the diff-view "calc diff" button
+  (`styles_diffview.css`, `#4950f0`/`#7080ff`) and the bulk-restore link hover
+  (`style_bulk_restore_form.css`, an invalid `454090`). Link hovers that had
+  drifted to green were moved to the new link-hover blue: `.mdm-btn-link:hover`,
+  header nav hover, and revision-detail "View files" hover. The green hover on
+  the history/file-list action glyphs (hash, view/download icons, breadcrumbs)
+  was left as-is — those are deliberate green affordances, not blue/purple links.
 - History "view files" icon (2026-11-10): the compact history record's
   `.ri-file-text-line` icon (`page_revisions_list/style.css`) was brought in line
   with the files-view "view"/"download" glyphs: the `.viewfiles` box lost its

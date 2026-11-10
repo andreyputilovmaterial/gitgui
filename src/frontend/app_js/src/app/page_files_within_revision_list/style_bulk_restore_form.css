@@ -15,7 +15,7 @@
     cursor: pointer;
 }
 .mdm-git-gui-historyfileslistview .build-restore-link:hover {
-  color: 454090;
+  color: var(--mdm-color-link-hover);
 }
 .mdm-git-gui-historyfileslistview .bulk-restore-success-message {
   color: #226633;

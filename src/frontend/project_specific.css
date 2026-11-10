@@ -123,7 +123,7 @@ h1 {
   transition: all 600ms ease;
 }
 .gitgui-html-page-header .gitgui-html-page-navigation > ul > li a:hover {
-  color: #385;
+  color: var(--mdm-color-link-hover);
 }
 .gitgui-page-home .gitgui-html-page-header .gitgui-html-page-navigation [navigation-role="home"] {
   display: none;

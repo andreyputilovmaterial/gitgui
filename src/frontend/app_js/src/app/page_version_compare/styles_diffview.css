@@ -8,12 +8,12 @@
 
 .mdm-git-gui-diffview .memorysave-form .gitgui-button-show {
   border: none;
-  color: #4950f0;
+  color: var(--mdm-color-link);
   text-decoration: none;
   transition: all 600me ease;
 }
 .mdm-git-gui-diffview .memorysave-form .gitgui-button-show:hover {
-  color: #7080ff;
+  color: var(--mdm-color-link-hover);
   text-decoration: underline;
 }
 

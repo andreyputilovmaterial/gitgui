@@ -45,12 +45,10 @@
     --mdm-color-muted: #666;
     --mdm-color-error: #cc0000;
 
-    --mdm-color-link: #6c78ff;
-    --mdm-color-link-hover: #4d56cc;
+    --mdm-color-link: #2c68c5;
+    --mdm-color-link-hover: #66a1fa;
     --mdm-color-green: #385;
     --mdm-color-green-hover: #217346;
-    --mdm-color-blue: #5b9bd5;
-    --mdm-color-blue-hover: #2f6fa8;
 }
 
 /* Base */
@@ -181,9 +179,9 @@ ol > li {
 .mdm-link-green { color: var(--mdm-color-green); }
 .mdm-link-green:hover,
 .mdm-link-green:focus { color: var(--mdm-color-green-hover); }
-.mdm-link-blue { color: var(--mdm-color-blue); }
+.mdm-link-blue { color: var(--mdm-color-link); }
 .mdm-link-blue:hover,
-.mdm-link-blue:focus { color: var(--mdm-color-blue-hover); }
+.mdm-link-blue:focus { color: var(--mdm-color-link-hover); }
 .mdm-link-red { color: var(--mdm-color-reject); }
 .mdm-link-red:hover,
 .mdm-link-red:focus { color: #96281b; }
@@ -315,7 +313,7 @@ ol > li {
     text-decoration: none;
 }
 .mdm-btn-link:hover {
-    color: #385;
+    color: var(--mdm-color-link-hover);
     text-decoration: underline;
 }
 

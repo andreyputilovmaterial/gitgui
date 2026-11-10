@@ -40,10 +40,12 @@
 
 .mdm-git-gui-revisiondetail .revision-actions .view-files-button,
 .mdm-git-gui-revisiondetail .revision-actions .view-files-button:link,
-.mdm-git-gui-revisiondetail .revision-actions .view-files-button:hover,
 .mdm-git-gui-revisiondetail .revision-actions .view-files-button:active {
     color: var(--mdm-color-link);
     text-decoration: none;
     cursor: pointer;
     outline: none;
+}
+.mdm-git-gui-revisiondetail .revision-actions .view-files-button:hover {
+    color: var(--mdm-color-link-hover);
 }

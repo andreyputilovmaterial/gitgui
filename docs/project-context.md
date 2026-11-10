@@ -896,6 +896,27 @@ detail view (`history-revision`).
   again after the hash prop changes. Full frontend suite: 58/58 pass.
 
 
+## Files-within-revision page shows author/date/message (2026-11-10)
+
+- `page_files_within_revision_list` (route `/#/history/:hash/files`) now shows the
+  revision's date/time, author and commit message on three plain lines under the
+  "View files from revision …" line — no box/border, just a `15px` bottom margin
+  and `30px` (modular `--mdm-space`) left padding via `.revision-info`; the
+  `.description` row's default `1em` `<p>` margin is reduced to `2px`. It reuses
+  the same data source as `page_revision_detail`:
+  a `revision` computed over `repoStatus.historyData.history` plus a
+  `watch(() => props.hash, …)` that calls `repoActions.updateHistory()` (immediate),
+  so deep-linking straight to the page loads history first. `component-format-datetime`
+  renders the date/time; labels match `page_revision_detail` ("Date/time:",
+  "Author:", "Commit message:").
+- The revision lookup is an exact full-hash match (history records store `%H`),
+  same as `page_revision_detail` — a short-hash deep link does not resolve the
+  info (and won't show the three lines).
+- Tests: `page_files_within_revision_list/index.test.js` gained a second case
+  asserting the labels/values render; both cases stub `component-format-datetime`
+  (Vue resolves template-referenced components even inside a false `v-if`, so the
+  stub is required to keep output clean). Full frontend suite: 59/59 pass.
+
 ## Vendored Remix Icon webfont (2026-11-10)
 
 - Added the **Remix Icon v4.9.0** webfont as a third vendored font, alongside

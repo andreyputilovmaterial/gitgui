@@ -75,3 +75,18 @@
   text-decoration: none;
   outline: none;
 }
+
+.mdm-git-gui-historyfileslistview .description {
+  margin: 2px 0;
+}
+.mdm-git-gui-historyfileslistview .revision-info {
+  margin-bottom: var(--mdm-space-0-5x);
+  padding-left: var(--mdm-space);
+}
+.mdm-git-gui-historyfileslistview .revision-info-field {
+  padding: 2px 0;
+  overflow-wrap: anywhere;
+}
+.mdm-git-gui-historyfileslistview .revision-info-field .label {
+  color: #666;
+}

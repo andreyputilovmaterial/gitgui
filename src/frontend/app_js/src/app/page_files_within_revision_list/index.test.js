@@ -12,6 +12,7 @@ describe('page_files_within_revision_list', () => {
     }));
     const repoActions = {
       executeGitCommand,
+      updateHistory: vi.fn(async () => {}),
       logError: vi.fn(),
     };
     const repoStatus = {};
@@ -21,6 +22,7 @@ describe('page_files_within_revision_list', () => {
       global: {
         stubs: {
           'component-format-hash': true,
+          'component-format-datetime': true,
           'files-records': true,
         },
       },
@@ -37,5 +39,48 @@ describe('page_files_within_revision_list', () => {
     expect(executeGitCommand).toHaveBeenCalledTimes(2);
     const secondArgs = executeGitCommand.mock.calls[1][0];
     expect(secondArgs[secondArgs.length - 1]).toBe('bbb');
+  });
+
+  it('shows author, date/time and commit message for the revision', async () => {
+    const executeGitCommand = vi.fn(async () => ({
+      exit_code: 0,
+      stderr: '',
+      stdout: 'docs/project-context.md\n',
+    }));
+    const updateHistory = vi.fn(async () => {});
+    const repoActions = { executeGitCommand, updateHistory, logError: vi.fn() };
+    const repoStatus = {
+      historyData: {
+        history: [
+          {
+            hash: 'aaa',
+            author: 'Jane Doe',
+            message: 'Add project context',
+            timestamp: new Date('2026-11-10T09:24:52Z'),
+          },
+        ],
+      },
+    };
+
+    const wrapper = mount(View, {
+      props: { hash: 'aaa', repoStatus, repoActions },
+      global: {
+        stubs: {
+          'component-format-hash': true,
+          'component-format-datetime': true,
+          'files-records': true,
+        },
+      },
+    });
+    await flushPromises();
+
+    expect(updateHistory).toHaveBeenCalledTimes(1);
+
+    const text = wrapper.text();
+    expect(text).toContain('Date/time:');
+    expect(text).toContain('Author:');
+    expect(text).toContain('Commit message:');
+    expect(text).toContain('Jane Doe');
+    expect(text).toContain('Add project context');
   });
 });

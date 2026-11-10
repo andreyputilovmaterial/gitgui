@@ -25,26 +25,17 @@ else
         exit 1
     fi
 fi
-echo "Upd dependencies"
-"$pythonexecutable" -m pip install -r requirements.txt
+echo "Install dev dependencies"
+"$pythonexecutable" -m pip install -r requirements-dev.txt
 echo "done"
 echo -
 echo -
 
 
 
-echo "Install optional dependencies for textconv processors (best-effort)"
-if [ -d src/textconv/processors ]; then
-    for requirements in $(find src/textconv/processors -type f -name 'requirements.txt' | sort); do
-        echo "installing optional dependencies: $requirements"
-        if ! "$pythonexecutable" -m pip install -r "$requirements"; then
-            echo "WARNING: optional dependencies in $requirements not installed (the corresponding processor will be unavailable)"
-        fi
-    done
-fi
-echo "done"
-echo -
-echo -
+# textconv processor requirements are runtime dependencies, not dev
+# dependencies: they are installed by the live program's own venv (run.sh),
+# never here. They are still copied into dist/optional_dependencies below.
 
 
 

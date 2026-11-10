@@ -18,6 +18,24 @@ by `build.sh` via the `pinliner` submodule; runtime assets are embedded as
 - Development tests live in `tests/` (not bundled). `tests-real-sensitive-data/`
   is gitignored and must never be committed.
 
+## Build scripts & dependency split (2026-11-10)
+
+- `build.sh` installs only **dev/build** deps from `requirements-dev.txt`
+  (`rjsmin`, `csscompressor`, `python-dotenv`, `pytest`, `pytest-html`), not the
+  full `requirements.txt`.
+- `requirements.txt` is now **runtime-only** (`beautifulsoup4`, `python-dotenv`,
+  `PyYAML`, `markdown-it-py`, `rich`, `pywebview`); it is shipped to `dist/` and
+  installed by `run.sh` into the live program's own venv.
+- `src/textconv/processors/*/requirements.txt` are runtime deps: `build.sh` no
+  longer installs them, only copies them into `dist/optional_dependencies/` for
+  `run.sh`.
+- Removed dead code from `build_templates.py`: the `BeautifulSoup` import,
+  `sanitize_classname`, `wrap_div`, `build_py_dist` (and its `renderers` entry).
+  `sanitize` and `build_html_template` are still used (generate `TEMPLATE.py`).
+- Same split in the `webinput` submodule: `requirements.txt` = `beautifulsoup4`
+  (runtime); new `requirements-dev.txt` = `pytest`, `pytest-html`.
+
+
 ## Frontend: two ways to run
 
 The Vue app (`src/frontend/app_js`) is served in two ways; **both must keep

@@ -2,13 +2,11 @@
 
 
 import argparse
-# from pathlib import Path
 import traceback, sys
 from datetime import datetime
 from importlib import resources
 from dataclasses import dataclass
 from pathlib import Path
-from bs4 import BeautifulSoup
 
 
 
@@ -38,26 +36,6 @@ STDOUT_COLOR_GREEN = "\033[32m"
 
 def sanitize(input):
     return f'{input}'.replace(r'"""',r'\"""')
-
-def sanitize_classname(s):
-    def err(i):
-        raise Exception(f'Not valid class name: {i}')
-    s = f'{s}'.split()
-    return ' '.join([part if re.match(r'^\s*\w[\w\-]*\w\s*$',part) else err(part) for part in s])
-
-def wrap_div(classname, txt) -> str:
-    soup = BeautifulSoup("<div></div>", "html.parser")
-    div = soup.div
-
-    fragment = BeautifulSoup(txt, "html.parser")
-
-    # IMPORTANT: iterate over a copy
-    for child in list(fragment.contents):
-        div.append(child)
-
-    div["class"] = sanitize_classname(classname).split()
-
-    return str(div)
 
 
 
@@ -266,15 +244,6 @@ def build_app_js() -> Resource:
 
 
 
-def build_py_dist() -> Resource:
-    raise Exception(f'Producing make_html.py: this should not be handled by build.py, call pinliner instead')
-    # return [
-    #     Resource(
-    #         filename = "make_html.py",
-    #         payload = sanitize(txt)
-    #     ),
-    # ]
-
 def build_html_template() -> Resource:
     # TEMPLATE_HTML_COPYBANNER = resources.files("src.frontend.template.templates").joinpath("copybanner.html").read_text('utf-8')
     TEMPLATE_HTML_TABLE_BEGIN = resources.files("src.frontend.template.templates").joinpath("table_begin.html").read_text('utf-8')
@@ -318,7 +287,6 @@ renderers = {
     'app_js': build_app_js,
     # 'app_css': build_app_css,
     'vendor-libs': build_vendorlibs,
-    'make_html.py': build_py_dist,
     'src_template': build_html_template,
 }
 

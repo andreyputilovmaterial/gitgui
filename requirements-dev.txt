@@ -1,0 +1,8 @@
+# Build- and test-time dependencies only.
+# The live program installs its own runtime dependencies from requirements.txt
+# (see run.sh); these are never installed into the live environment.
+rjsmin>=1
+csscompressor>=0.9
+python-dotenv>=1.0
+pytest
+pytest-html

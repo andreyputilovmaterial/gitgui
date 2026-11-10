@@ -7,6 +7,7 @@
 ## Things to consider, reminders, random thoughts
 
 - consider Tauri
+- (done) build.sh does not need to install dependencies from requirements.txt, and definitely does not need to install processor's requirements - that's definitely a mistake. Only dev dependencies are needed. Processor dependencies are not dev dependencies. Maybe I'd prefer to opt out from venv, but we need rjsmin and csscompressor packages - that's why better to have venv. Updates should be recorded in docs/maintenance-log.md. Submodules should also be reviewed for the same. — Implemented 2026-11-10: split into requirements.txt (runtime, installed by run.sh) vs requirements-dev.txt (dev/build only); removed the processor-requirements install from build.sh; applied the same split in the webinput submodule; see docs/maintenance-log.md.
 - adopt filtering of projects in project-selector
 - sorting of categories (  )
 - make widgets a lib in webinput

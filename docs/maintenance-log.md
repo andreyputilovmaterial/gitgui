@@ -35,6 +35,71 @@ Two concepts are easy to conflate, so they are spelled out separately:
 
 ---
 
+## Build scripts: install only dev dependencies; split runtime vs dev requirements
+
+- **Requested:** 2026-11-10
+- **Implemented:** 2026-11-10
+- **Where:** `build.sh`, `requirements.txt`, `requirements-dev.txt`, and the
+  `webinput` submodule's `build.sh` / `requirements.txt` / `requirements-dev.txt`.
+
+### What & why
+
+`build.sh` is a *development/build* script. It should only provision the
+toolchain needed to produce the bundle (minifiers, the JS bundler, pinliner),
+never the runtime dependencies of the produced program. The produced program
+runs in its own, separate venv — created by `run.sh` — which installs
+`requirements.txt` plus the per-processor optional dependencies.
+
+The old `build.sh` installed the whole `requirements.txt` and then also installed
+every `src/textconv/processors/*/requirements.txt`. Processor dependencies are
+pure *runtime* dependencies (e.g. `markitdown`, `pywin32`) and have no place in a
+build venv. The two domains were mixed, and building pulled in heavy runtime
+packages that the bundle never needs.
+
+### Input (before)
+
+`requirements.txt` mixed build, test and runtime packages; `build.sh` installed
+all of them and the processor requirements:
+
+```bash
+# build.sh (before)
+"$pythonexecutable" -m pip install -r requirements.txt
+
+echo "Install optional dependencies for textconv processors (best-effort)"
+if [ -d src/textconv/processors ]; then
+    for requirements in $(find src/textconv/processors -type f -name 'requirements.txt' | sort); do
+        "$pythonexecutable" -m pip install -r "$requirements"
+    done
+fi
+```
+
+### Output (after)
+
+Two requirement files with distinct roles:
+
+- `requirements.txt` — runtime only, shipped to `dist/` and installed by `run.sh`.
+- `requirements-dev.txt` — build/test only (`rjsmin`, `csscompressor`,
+  `python-dotenv`, `pytest`, `pytest-html`), installed by `build.sh`.
+
+`build.sh` no longer installs processor requirements; it only copies them into
+`dist/optional_dependencies/` for `run.sh`.
+
+```bash
+# build.sh (after)
+"$pythonexecutable" -m pip install -r requirements-dev.txt
+```
+
+### Repeat
+
+1. Put only the packages the shipped program imports at runtime into
+   `requirements.txt`.
+2. Put the build toolchain (minifiers, bundlers) and test frameworks into
+   `requirements-dev.txt` and point `build.sh` at it.
+3. Remove any per-feature/processor `requirements.txt` installs from `build.sh`;
+   keep only the copy-to-dist step so the live `run.sh` can install them.
+4. Apply the same split in every submodule that has its own `build.sh`.
+
+
 ## Entry-point imports: replace the three-branch `__name__` split with a two-branch `__package__` split
 
 - **Requested:** 2026-11-04 18:09 MSK

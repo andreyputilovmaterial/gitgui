@@ -83,7 +83,7 @@
   margin-bottom: -5px;
 }
 .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page:hover {
-  color: #7067ff;
+  color: var(--mdm-color-green);
 }
 .mdm-ui-recordsfilter-pagination .pagination-page-indices .nav-page.active {
   /* border-color: #33aa22; */

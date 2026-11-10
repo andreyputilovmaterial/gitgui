@@ -72,7 +72,7 @@ const Record = {
   :data-recordsfilter-message="message"
 >
   <span :class="['viewfiles','mdm-ui-record-col-viewfiles','mdm-ui-record-col-1',...(isWorktree||isIndex?['no-link']:[])]" title="View files">
-    <a v-if="!isWorktree&&!isIndex" href="#!" @click.prevent="navigateFilesListPage" class="view-files-button">{}</a>
+    <a v-if="!isWorktree&&!isIndex" href="#!" @click.prevent="navigateFilesListPage" class="view-files-button"><i class="ri-file-text-line"></i></a>
   </span>
   <span class="hash mdm-ui-record-col-hash mdm-ui-record-col-2" title="Hash">
     <hash-worktree v-if="isWorktree" />

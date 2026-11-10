@@ -30,7 +30,7 @@ const AppTabsLayout = {
       class="mdm-git-gui-tabbed-panes-back"
       title="Back"
       @click.prevent="goBack"
-    >←</a>
+    ><i class="ri-arrow-left-circle-line"></i></a>
     <router-link
       v-for="tab in tabs"
       :key="tab.name"

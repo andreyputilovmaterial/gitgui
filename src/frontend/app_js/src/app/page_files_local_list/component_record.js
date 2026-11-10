@@ -43,7 +43,7 @@ const Record = {
   <span v-if="type==='file'" class="link-view-file mdm-ui-record-col-view-file mdm-ui-record-col-2" :title=" fileTracked ? 'View file' : 'View file (Untracked file/directory - ignored per rules in .gitignore)' ">
     <component-loader-spinner v-if="fileViewLinkBusy && !fileViewLinkWindowIsOpen" />
     <span class="label">View file: </span>
-      <a @click.prevent="navigateFileViewPage" href="#!">{{ '{' }}{{ '}' }}</a>
+      <a @click.prevent="navigateFileViewPage" href="#!"><i class="ri-file-text-line"></i></a>
     </span>
     <span v-else class="mdm-ui-record-col-view-file mdm-ui-record-col-2"></span>
     <span v-if="type==='file'" class="filepath mdm-ui-record-col-filepath mdm-ui-record-col-3" :title=" fileTracked ? 'File path' : 'File path (Untracked file/directory - ignored per rules in .gitignore)' ">

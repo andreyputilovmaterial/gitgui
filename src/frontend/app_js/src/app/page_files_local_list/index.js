@@ -24,34 +24,45 @@ const Breadcrumbs = {
     'navigate',
   ],
   template: `
-<div class="mdm-git-gui-fileslist-breadcrumbs">
+<div :class="['mdm-git-gui-fileslist-breadcrumbs', isAtRoot ? 'mdm-git-gui-fileslist-breadcrumbs--at-root' : '']">
   <template v-for="(piece,index) in pathParts">
     <span v-if="index>0" class="delimiter">/</span>
-    <a href="#!" @click.prevent="piece.clickHandler" class="item" :title="index===0 ? 'Home' : undefined">{{ piece.pathNode }}</a>
+    <a v-if="!piece.isCurrent" href="#!" @click.prevent="piece.clickHandler" class="item" :title="index===0 ? 'Home' : undefined">
+      <i v-if="piece.isHome" class="ri-home-4-line"></i>
+      <template v-else>{{ piece.pathNode }}</template>
+    </a>
+    <span v-else class="item item-current" :title="index===0 ? 'Home' : undefined">
+      <i v-if="piece.isHome" class="ri-home-4-line"></i>
+      <template v-else>{{ piece.pathNode }}</template>
+    </span>
   </template>
 </div>
 `,
   setup(props) {
+    const isAtRoot = computed(() => props.pathCurrentParts.length === 0);
     const pathParts = computed(() => [
       {
-        pathNode: '⌂',
+        isHome: true,
+        isCurrent: isAtRoot.value,
         clickHandler: event => props.navigate('') && false,
       },
       ...props.pathCurrentParts.map((pathNode,i)=>{
       const pathThis = props.pathCurrentParts.slice(0,i+1).join('/');
       const pathFull = props.pathCurrentParts.join('/');
+      const isCurrent = pathThis === pathFull;
       const clickHandler = event => {
-        if( pathThis===pathFull )
+        if( isCurrent )
           return false;
         return props.navigate(pathThis) && false
       };
       return {
         pathNode,
+        isCurrent,
         clickHandler,
       };
     })
     ]);
-    return { pathParts, };
+    return { pathParts, isAtRoot, };
   },
 };
 
@@ -65,8 +76,8 @@ const NavbarButtons = {
   ],
   template: `
 <div class="mdm-git-gui-fileslist-navbuttons">
-  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canNavigateBack}" title="Back">←</a>
-  <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}" title="Up one level">⇧</a> 
+  <a href="#!" @click.prevent="handlerNavigateBack" :class="{'navbtn':true,'navbtn-back':true,'active':canNavigateBack}" title="Back"><i class="ri-arrow-left-line"></i></a>
+  <a href="#!" @click.prevent="handlerNavigateUp" :class="{'navbtn':true,'navbtn-levelup':true,'active':canLevelUp,}" title="Up one level"><i class="ri-arrow-up-line"></i></a> 
 </div>
 `,
   setup(props) {

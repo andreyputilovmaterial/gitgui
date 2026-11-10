@@ -932,4 +932,39 @@ detail view (`history-revision`).
   (`url('remixicon.woff2?t=1769486070745')`). The asset renderer strips the query
   via `urlparse(...).path`, so the dict key `remixicon.woff2` matches and no CSS
   rewrite is needed.
+- Icon swaps (2026-11-10): replaced ad-hoc text glyphs with `ri-*` classes.
+  `{}` (view file / view files) → `ri-file-text-line` (first `ri-file-code-line`,
+  then changed to the lighter/more neutral `file-text`); download `⇩` →
+  `ri-folder-download-line`; files-list breadcrumb `⌂` → `ri-home-4-line` and
+  navbar `←` / `⇧` → `ri-arrow-left-line` / `ri-arrow-up-line`; global back
+  button `←` → `ri-arrow-left-line`. The breadcrumb home glyph was a template
+  *data* value (`pathNode: '⌂'`, rendered via `{{ ... }}`), so it now carries an
+  `isHome: true` flag and the template renders an `<i>` for home and
+  `{{ piece.pathNode }}` otherwise. Affected files:
+  `page_files_local_list/index.js` + `component_record{,_compact}.js`,
+  `page_files_within_revision_list/component_record.js`,
+  `page_revisions_list/component_record_compact.js`, `layout_app_tabs.js`.
+- Accompanying CSS (2026-11-10): `.mdm-git-gui-fileslist-breadcrumbs` now uses
+  `flex gap: 4px` instead of the 4px side padding + `-4px` side-margin trick
+  (`.item` horizontal padding removed). `.mdm-git-gui-fileslist-navbuttons .navbtn`
+  switched to `text-align: left` + zero horizontal padding so the first icon sits
+  flush with the left edge. The files-record view/download glyph links
+  (`.link-view-file > a`, `.link-download-file > a` in both
+  `page_files_local_list/style.css` and `page_files_within_revision_list/style.css`)
+  dropped their `1px solid #e0e0e0` border and are now flex-centered 21px boxes
+  whose `<i>` is `font-size: 18px; line-height: 1` (bigger glyph, same footprint).
+  Their `:hover` color is now `var(--mdm-color-green)` (the app's primary green
+  `#385`) instead of `#223077`. The global back button (`layout_app_tabs.js`) is
+  now `ri-arrow-left-circle-line`, nudged a touch bigger via
+  `.mdm-git-gui-tabbed-panes-back i { font-size: 1.1em }`.
+- Breadcrumb follow-up (2026-11-10): the files-list breadcrumb
+  (`page_files_local_list/index.js` + `style_breadcrumbs.css`) now (1) hides the
+  home glyph when it is the only element at root — via a `--at-root` modifier on
+  the container that sets `visibility: hidden` so the row still reserves its
+  vertical space (no content jump when deeper chains appear) — and (2) renders
+  the current leaf (the directory we are in) as a non-clickable
+  `<span class="item item-current">` instead of an `<a>`, keeping it black
+  (`#111`) with `cursor: default` and no green hover. Ancestors (home +
+  intermediate dirs) stay clickable `<a>`s and keep the green hover + pointer
+  cursor.
 

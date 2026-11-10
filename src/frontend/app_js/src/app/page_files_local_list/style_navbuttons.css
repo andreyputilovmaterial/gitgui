@@ -11,8 +11,8 @@
     line-height: 16px;
     min-width: 21px;
     min-height: 21px;
-    padding: 2px 1px 3px;
-    text-align: center;
+    padding: 2px 0 3px;
+    text-align: left;
     border-radius: 5px;
 }
 .mdm-git-gui-fileslist-navbuttons a.navbtn, .mdm-git-gui-fileslist-navbuttons a.navbtn:active, .mdm-git-gui-fileslist-navbuttons a.navbtn:link, .mdm-git-gui-fileslist-navbuttons a.navbtn:visited {

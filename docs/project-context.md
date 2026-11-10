@@ -795,6 +795,14 @@ detail view (`history-revision`).
 
 ## Rule additions
 
+- 2026-11-11: regrouped the git/github `.clinerules` into their own `2x`
+  series: `08-commit-messages.md` → `20-git-commit-messages-wording.md`,
+  `11-submodules-commits.md` → `21-git-submodules-commits-order.md`,
+  `09-github-issues.md` → `29-github-issues.md`, plus a new
+  `22-when-making-commits.md`. This groups all git/github rules together and
+  resolves the `09` prefix collision with `09-frontend-common-css.md`. Also
+  fixed typos and tightened wording in the moved rules.
+
 - 2026-11-09: added `12-user-facing-language.md` — user-facing text (UI copy and
   help `.md` files) must avoid programmer-specific words ("code", "functions",
   "source") and stay file-agnostic, because Git is used on any kind of file, not

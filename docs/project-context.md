@@ -982,7 +982,10 @@ detail view (`history-revision`).
   rewrite is needed.
 - Icon swaps (2026-11-10): replaced ad-hoc text glyphs with `ri-*` classes.
   `{}` (view file / view files) → `ri-file-text-line` (first `ri-file-code-line`,
-  then changed to the lighter/more neutral `file-text`); download `⇩` →
+  then changed to the lighter/more neutral `file-text`); the compact history
+  record's "View files" link was later changed again from `ri-file-text-line` to
+  `ri-folder-open-line` (`page_revisions_list/component_record_compact.js`);
+  download `⇩` →
   `ri-folder-download-line`; files-list breadcrumb `⌂` → `ri-home-4-line` and
   navbar `←` / `⇧` → `ri-arrow-left-line` / `ri-arrow-up-line`; global back
   button `←` → `ri-arrow-left-line`. The breadcrumb home glyph was a template

@@ -485,6 +485,12 @@ detail view (`history-revision`).
   now has `padding: 14px`, `background: rgba(255,255,255,.5)`, a green inset
   left accent (`#385`) and `margin-right: -14px` (full-bleed to the card edge).
   The compact view (welcome page) is untouched and still verified.
+  The worktree/index pseudo-records keep their assigned `timestamp` in the data
+  (so sorting/filtering still works), but the "date/time + author" line is only
+  rendered for real commits (`v-if="!isWorktree && !isIndex"` in
+  `component_record.js`) — the dummy time is not shown. These pseudo-records
+  only appear in the full history view: the compact view doesn't inject them,
+  and the version-compare view already sets `timestamp: null` for them.
 - Added a 6th app-level tab **Tools** (`id="tools"`) as a grab-bag for ad-hoc
   ideas. It renders `apptab_tools/index.js`, which pushes `page_tools_home` — a
   data-driven list of tool "sections" — onto a `pages-site`. Each section is one

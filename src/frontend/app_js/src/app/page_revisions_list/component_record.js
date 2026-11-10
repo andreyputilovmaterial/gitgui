@@ -60,7 +60,7 @@ const Date = {
 
 const Message = {
   props: [ 'message', ],
-  template: `<div v-if="!!message && (\`\${message}\`.trim().length>0)" class="message-box">{{ message }}</div>`,
+  template: `<div v-if="!!message && (\`\${message}\`.trim().length>0)" class="commit-message"><i class="ri-chat-quote-line commit-message-icon" aria-hidden="true"></i>{{ message }}</div>`,
   setup() {
     return {};
   },
@@ -103,16 +103,17 @@ const Record = {
         <hash-index v-else-if="isIndex" />
         <hash v-else :hash="hash" />
       </span>
-      <span class="message" title="Version description">
-        <div v-if="isHEAD" class="note">Current HEAD<span class="footnote"> (new history will continue from here)</span></div>
-        <div v-if="isWorktree" class="note">Your local files in the working tree<span class="footnote"><br />Please stage your changes first if you want to select them for comparison because Git does not include untracked files in diffs.</span></div>
-        <div v-if="isIndex" class="note">Temporary staging area for changes you added with \`<code>git add</code>\`; these changes will be captured in your next commit.<span class="footnote"></span></div>
-        <span class="label">Version description: </span>
+      <div v-if="isHEAD" class="note">Current HEAD<span class="footnote"> (new history will continue from here)</span></div>
+      <div v-if="isWorktree" class="note">Your local files in the working tree<span class="footnote"><br />Please stage your changes first if you want to select them for comparison because Git does not include untracked files in diffs.</span></div>
+      <div v-if="isIndex" class="note">Temporary staging area for changes you added with \`<code>git add</code>\`; these changes will be captured in your next commit.<span class="footnote"></span></div>
+      <span v-if="hasMessage" class="message" title="Version description">
         <message :message="message" />
       </span>
     </div>
-    <div v-if="!isWorktree && !isIndex" class="history-record-card-meta" title="Date/time and author">
+    <div v-if="!isWorktree && !isIndex" class="history-record-card-meta">
+      <i class="ri-time-line" aria-hidden="true"></i>
       <date :timestamp="timestamp" />
+      <i v-if="author" class="ri-quill-pen-line meta-author-icon" aria-hidden="true"></i>
       <author v-if="author" :author="author" />
     </div>
   </div>
@@ -133,6 +134,7 @@ const Record = {
     const isHEAD = computed(()=>props.repoStatus?.historyData?.head && (props.repoStatus?.historyData?.head==props.hash));
     const isWorktree = ref(props.hash==='worktree');
     const isIndex = ref(props.hash==='index');
+    const hasMessage = computed(()=> !!props.message && `${props.message}`.trim().length>0);
 
     const navigateFilesListPage = () => {
       router.push({ name: 'history-revision-files', params: { hash: props.hash } });
@@ -145,6 +147,7 @@ const Record = {
 
     return {
       handleHashClick,
+      hasMessage,
       isHEAD,
       isWorktree,
       isIndex,

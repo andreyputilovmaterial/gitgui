@@ -30,12 +30,12 @@
 .mdm-git-gui-page-history-overview .history-record .history-record-card-main {
   display: flex;
   flex-direction: column;
-  row-gap: 2px;
   min-width: 0;
 }
 
 .mdm-git-gui-page-history-overview .history-record .history-record-card-main .message {
   min-width: 0;
+  margin-top: 15px;
 }
 
 .mdm-git-gui-page-history-overview .history-record .history-record-card-meta {
@@ -43,15 +43,16 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: baseline;
-  column-gap: 7px;
-  color: #666;
-  font-size: 92%;
-  padding-top: 2px;
+  column-gap: 6px;
+  margin-top: 15px;
+}
+.mdm-git-gui-page-history-overview .history-record .history-record-card-meta .meta-author-icon {
+  margin-left: 8px;
 }
 
 .mdm-git-gui-page-history-overview .history-record .history-record-card .note {
-  margin: 0;
-  padding: 0 0 2px;
+  margin: 2px 0 0;
+  padding: 0;
 }
 .mdm-git-gui-page-history-overview .history-record .history-record-card .note .footnote {
   color: #999;
@@ -60,6 +61,10 @@
 .mdm-git-gui-page-history-overview .history-record .hash .hash-icon {
   flex: 0 0 auto;
   margin-right: 6px;
+}
+
+.mdm-git-gui-page-history-overview .history-record .commit-message .commit-message-icon {
+  margin-right: 7px;
 }
 
 .mdm-git-gui-page-history-overview .history-record {
@@ -113,13 +118,6 @@
 .mdm-git-gui-page-history-overview .history-records .timestamp {
   color: #666;
   font-size: 92%;
-}
-.mdm-git-gui-page-history-overview .history-records .message-box {
-  /* border: 1px solid #eee; */
-  padding: 14px 14px 14px;
-  box-shadow: inset 4px 0 0 0 #385;
-  background: rgba(255, 255, 255, .5);
-  margin-right: -14px;
 }
 
 

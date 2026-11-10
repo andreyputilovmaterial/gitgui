@@ -481,10 +481,14 @@ detail view (`history-revision`).
   (`.hash.hash-link`, removed the old "(files)" link): on hover it turns green
   (`--mdm-color-green`) and is underlined (applied to `.mdmreport-role-hash`'s
   `.hash-leading`/`.hash-rest`, because `text-decoration` on the flex `.hash`
-  doesn't propagate through the atomic inline-flex hash box). `.message-box`
-  now has `padding: 14px`, `background: rgba(255,255,255,.5)`, a green inset
-  left accent (`#385`) and `margin-right: -14px` (full-bleed to the card edge).
-  The compact view (welcome page) is untouched and still verified.
+  doesn't propagate through the atomic inline-flex hash box). The commit
+  message is now plain black text (no box) prefixed with a
+  `ri-chat-quote-line` icon; the date/time + author line uses a `ri-time-line`
+  icon and a `ri-quill-pen-line` icon in standard size/color. The hint note is
+  a sibling stuck just below the hash (2px), and a ~15px gap separates the
+  hash/hint block from the commit message and the date/author line (applied
+  even when a record has no hint). The compact
+  view (welcome page) is untouched and still verified.
   The worktree/index pseudo-records keep their assigned `timestamp` in the data
   (so sorting/filtering still works), but the "date/time + author" line is only
   rendered for real commits (`v-if="!isWorktree && !isIndex"` in

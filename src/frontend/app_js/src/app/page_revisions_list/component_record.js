@@ -111,7 +111,7 @@ const Record = {
         <message :message="message" />
       </span>
     </div>
-    <div class="history-record-card-meta" title="Date/time and author">
+    <div v-if="!isWorktree && !isIndex" class="history-record-card-meta" title="Date/time and author">
       <date :timestamp="timestamp" />
       <author v-if="author" :author="author" />
     </div>

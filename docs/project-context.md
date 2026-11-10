@@ -48,6 +48,11 @@
 - `src/GENERATED/HELP.py`'s embedded variable was renamed `_MD` → `_HELP_MSG`
   (via `build.sh --varname`, plus the imports in `main_gitgui_program.py` and
   `main_print_help.py`). (2026-11-10)
+- `docs/dev-docs.md` "Vendored libraries" section now spells out the policy:
+  fewer dependencies / fewer vendored libs is better, but adding one is fine when
+  reasoned; static-file assets are bundled via the `GENERATED/` technique (can't
+  drop a raw file into a pinliner bundle); and every vendored asset must be
+  tracked in `components-licenses.json` (`kind: "vendored"`). (2026-11-10)
 
 ## What this is
 

@@ -283,6 +283,14 @@ the backend on `5180` (or update `vite.config.js`).
 
 ## Vendored libraries
 
+**Fewer dependencies and fewer vendored libraries is better.** Every vendored
+asset is code we must track, keep current, and credit correctly, so a new
+vendored library should never be added casually. That is a preference, not a
+ban: adding one is fine when it is *reasoned* — there must be a clear, stated
+why (what it does, why writing it ourselves would cost more than maintaining a
+vendored copy, why a runtime dependency wouldn't fit). Record that reasoning and
+the license/attribution when you add it.
+
 The frontend does not fetch third-party JS from a CDN at runtime; the following
 are vendored under `src/frontend/assets_vendor_libs/` and turned into
 `GENERATED/` Python assets by `build.sh`:
@@ -296,6 +304,28 @@ are vendored under `src/frontend/assets_vendor_libs/` and turned into
 - DOMPurify — `purify.min.js` (sanitize rendered HTML),
   `/assets/vendorlibs/dompurify.js`.
 - IBM Plex Sans / Mono fonts.
+
+### Vendoring static files
+
+A vendored asset is usually a set of static files (a `.js` bundle, a font file,
+a license text). A static file cannot go into the bundle as-is — pinliner bundles
+Python modules, not arbitrary files — so the same `GENERATED/` technique from
+"pinliner constraints and the `GENERATED/` technique" applies: `build.sh` writes
+the file's contents into a generated, importable `.py` module
+(`src/frontend/GENERATED/ASSETS.py`), and the program imports that module instead
+of reading the file at runtime. Adding a vendored asset therefore needs no new
+mechanism — drop the source file under `src/frontend/assets_vendor_libs/`, have
+`build.sh` embed it, and import the generated module.
+
+### Tracking vendored libraries
+
+Every vendored asset/library is tracked in `components-licenses.json` (repo
+root), the machine-readable registry intended to drive the "About / software
+licenses" page. When you add, remove, upgrade, or re-license a vendored
+component, update its entry there (`kind: "vendored"`, plus `version`,
+`authors`, `license`, `license_spdx`, `license_local`/`license_local_kind`, and
+`note`). This is where the reasoning and attribution required above are recorded,
+and where a missing license text shows up as a compliance gap.
 
 ### Update policy
 

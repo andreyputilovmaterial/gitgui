@@ -1,6 +1,6 @@
 
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 
 import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functions.js';
@@ -237,10 +237,11 @@ const View = {
           return new Uint8Array(buffer);
         }
       }
+      error.value = '';
+      changedFiles.value = null;
       try {
         const result = await executeGitDiff(props.hashLeft,props.hashRight);
         changedFiles.value = parseDiffOutputs(result);
-        error.value = '';
       } catch(e) {
         error.value = e;
         props.repoActions.logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}": ${e}`);
@@ -248,11 +249,11 @@ const View = {
       }
     };
 
-    onMounted(async () => {
-      await Promise.all([
-        getFiles(),
-      ])
-    });
+    watch(
+      [ () => props.hashLeft, () => props.hashRight ],
+      () => { getFiles(); },
+      { immediate: true },
+    );
 
     return {
       error,

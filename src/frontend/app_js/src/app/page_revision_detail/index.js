@@ -1,5 +1,5 @@
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import './style.css';
@@ -57,7 +57,9 @@ const View = {
       router.push({ name: 'history-revision-files', params: { hash: props.hash } });
     };
 
-    onMounted(async () => {
+    const load = async () => {
+      error.value = '';
+      loaded.value = false;
       try {
         await props.repoActions.updateHistory();
       } catch (e) {
@@ -65,7 +67,13 @@ const View = {
       } finally {
         loaded.value = true;
       }
-    });
+    };
+
+    watch(
+      () => props.hash,
+      load,
+      { immediate: true },
+    );
 
     return {
       error,

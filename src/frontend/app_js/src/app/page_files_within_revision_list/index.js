@@ -1,6 +1,6 @@
 
 
-import { ref, onMounted, } from 'vue';
+import { ref, watch, } from 'vue';
 
 import './style.css';
 
@@ -39,8 +39,9 @@ const View = {
 
     const getFilesList = async () => {
       const notEmpty = v => { if(!v) return false; if(/^\s*$/.test(v)) return false; return true; };
+      error.value = '';
+      filesList.value = null;
       try {
-        error.value = '';
         const response = await props.repoActions.executeGitCommand(['git','ls-tree','-r','--name-only',props.hash]);
         if( !(response.exit_code===0) || notEmpty(response.stderr) ) {
           const errmsg = `Response from git ls-tree: exit_code == ${response.exit_code}, stderr == "${response.stderr}"`;
@@ -54,11 +55,11 @@ const View = {
       }
     };
 
-    onMounted(async () => {
-      await Promise.all([
-        getFilesList(),
-      ])
-    });
+    watch(
+      () => props.hash,
+      () => { getFilesList(); },
+      { immediate: true },
+    );
 
     return {
       filesList, error,

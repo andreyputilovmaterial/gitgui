@@ -775,3 +775,31 @@ detail view (`history-revision`).
   The old line listed `xlrd` standalone; it was removed because the `xls` extra
   already pulls in `xlrd` (and `pandas`). Don't re-add a bare `xlrd` extra.
 
+
+## History pages refetch on param change (2026-11-10)
+
+- Bug: after the vue-router + keep-alive adoption, the history pages that fetch
+  per-revision data — `page_version_compare` (diff records), `page_files_within_revision_list`
+  (file list) and `page_revision_detail` (history reload) — only fetched in
+  `onMounted`. Because `layout_app_tabs.js` / `apptab_historyview/index.js` wrap
+  their `<router-view>` in `<keep-alive>` (see "List pagination: URL vs keep-alive"),
+  navigating between two `cmp/:hash1/:hash2` pairs (or two `:hash`) reuses the
+  same kept-alive component instance: `onMounted` does not re-fire, so the first
+  fetch's result stayed on screen for every subsequent pair. Symptom: the
+  version-compare page always showed the same one-file diff (`docs/project-context.md`)
+  no matter which hashes were selected.
+- Fix: replace the `onMounted` fetch with a `watch` on the hash prop(s) using
+  `{ immediate: true }`, and reset the stored data (`changedFiles`/`filesList`) to
+  `null` before refetching so the "Querying data…" state shows instead of stale
+  rows. `watch` on route-derived props is the same pattern already used by
+  `page_files_local_list` (`watch(() => props.path, …)`); the list views that must
+  stay instant-restored are unaffected because they are separate components and
+  keep-alive caches them by component.
+- Note: `page_revision_detail` was technically already reactive (its `revision`
+  is a `computed` over `props.hash`), but its `updateHistory()` reload was still
+  mount-only, so it got the same `watch` for consistency/freshness.
+- Tests added (Vitest): `page_version_compare/index.test.js`,
+  `page_files_within_revision_list/index.test.js`,
+  `page_revision_detail/index.test.js` — each asserts the fetch command is issued
+  again after the hash prop changes. Full frontend suite: 58/58 pass.
+

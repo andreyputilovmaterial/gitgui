@@ -421,6 +421,20 @@ detail view (`history-revision`).
 
 ## Last state
 
+- Added a standalone `textconv` program (2026-11-11):
+  - `src/main_textconv_program.py` exposes `main(*argcs, **kwargs)` (the launcher
+    convention) taking a single positional arg — path to an input file. It
+    resolves the path, fails early with a `FileNotFoundError` if the file is
+    missing, opens it in binary mode, and prints
+    `textconv_from_stream(file, path)` (imported from `.textconv`, the same way
+    `main_gitgui_program.py` imports it) to stdout with `end=''` — the returned
+    string already embeds its own TEXTCONV headers plus the converted content.
+  - `src/launcher.py` registers it as `--program textconv` (added to
+    `run_programs` and to both the relative- and flat-import branches), so it
+    works via `python -m src.launcher --program textconv <file>` and inside the
+    pinliner bundle. Direct runs also work: `python -m src.main_textconv_program
+    <file>`.
+
 - Files list now shows the git `XY` status in the reserved indicator column
   (2026-11-10). `component_record.js` / `component_record_compact.js` already
   computed `fileStatus` (via `repoActions.checkFileStatus` / `checkFolderStatus`)

@@ -15,6 +15,7 @@ if __package__:
     from .main_print_help import print_help
     from .main_gitgui_program import main as call_gitgui_program
     from .main_gitgui_project_selector import main as call_gitgui_project_selector_program
+    from .main_textconv_program import main as call_textconv_program
 else:
     # no parent package
     from GENERATED.VERSION import _VERSION as gitgui_script_version
@@ -22,6 +23,7 @@ else:
     from main_print_help import print_help
     from main_gitgui_program import main as call_gitgui_program
     from main_gitgui_project_selector import main as call_gitgui_project_selector_program
+    from main_textconv_program import main as call_textconv_program
 
 gitgui_script_version = gitgui_script_version.strip()
 
@@ -66,6 +68,7 @@ def call_help_program(*argcs,**kwargs):
 run_programs = {
     'gitgui': call_gitgui_program,
     'project-selector': call_gitgui_project_selector_program,
+    'textconv': call_textconv_program,
     'test': call_test_program,
     'done': call_done_program,
     'help': call_help_program,

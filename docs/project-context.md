@@ -56,6 +56,23 @@
   note: the running app should make no network requests to the outside internet
   (no CDNs); remote operations are user-initiated only. (2026-11-10)
 
+## Per-user app home directory (2026-11-11)
+
+- The app stores per-user helper files (settings, last-opened project, future
+  cached/derived data) in an OS-designated, app-namespaced directory resolved
+  by `src/get_app_home_dir.py`: macOS `~/Library/Application Support/gitgui`,
+  Windows `%APPDATA%\gitgui`, Linux `$XDG_CONFIG_HOME/gitgui` (fallback
+  `~/.config/gitgui`).
+- `get_app_home_dir()` returns a `Path`, does **not** create the directory
+  (consumers `mkdir(parents=True, exist_ok=True)` lazily), and honors the
+  `GITGUI_HOME_DIR` env override (used by tests).
+- `main_gitgui_program.py` imports it and exposes the resolved location on the
+  config object as `config['app_home_dir']` (stringified, like `working_tree`).
+- This is user *data*, not app-shipped assets, so it does not violate the "no
+  separate local files at runtime" rule (which covers `help.md`, `version.md`,
+  `.env`, JS/CSS — those stay bundled as `GENERATED/` modules).
+
+
 ## What this is
 
 `gitgui` is a self-contained git GUI: a Python backend (self-written webserver,

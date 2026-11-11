@@ -38,6 +38,7 @@ from .GENERATED.CONFIG import GITIGNORE_PRESETS as gitignore_presets
 from .helper_utilities import prettyprint_config, make_hash, is_in_pinliner, assess_python_ver
 from .helper_webserve_logging import WebserveLogger
 from .helper_backend_port import _resolve_port, PORT_START_WITH
+from .get_app_home_dir import get_app_home_dir
 
 from .endpoints import endpoints
 
@@ -116,6 +117,7 @@ def main(*argcs,**kwargs):
         'git_directory_location': None,
         'git_directory': None,
         'git_paths_hash': None,
+        'app_home_dir': None,
 
         'http_host': None,
         'http_port': None,
@@ -174,6 +176,9 @@ def main(*argcs,**kwargs):
         raise Exception('git-directory-location not specified')
 
     config['git_paths_hash'] = make_hash(working_tree,git_directory)
+
+    app_home_dir = get_app_home_dir()
+    config['app_home_dir'] = f'{app_home_dir}'
 
     print('\npreparing git cli command loop...\n')
     for _ in range (0,CONFIG_CLI_COMMAND_EXEC_WORKERS):

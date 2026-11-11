@@ -111,10 +111,14 @@ const Record = {
       </span>
     </div>
     <div v-if="!isWorktree && !isIndex" class="history-record-card-meta">
-      <i class="ri-time-line" aria-hidden="true"></i>
-      <date :timestamp="timestamp" />
-      <i v-if="author" class="ri-quill-pen-line meta-author-icon" aria-hidden="true"></i>
-      <author v-if="author" :author="author" />
+      <span class="meta-item">
+        <i class="ri-time-line" aria-hidden="true"></i>
+        <date :timestamp="timestamp" />
+      </span>
+      <span v-if="author" class="meta-item">
+        <i class="ri-quill-pen-line meta-author-icon" aria-hidden="true"></i>
+        <author :author="author" />
+      </span>
     </div>
   </div>
 </div>

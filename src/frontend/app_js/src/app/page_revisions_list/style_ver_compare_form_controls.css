@@ -5,10 +5,13 @@
 .mdm-git-gui-history-record .form-controls {
   display: block;
   position: absolute;
-  left: -56px; /* this is the allocated space, implyint we take 28px and have 14 pe margin too the right */
-  top: 4px; /* replicating 4px padding in all other elementes in this line */
+  left: -57px; /* one more px to the left, so the radios' left edge lines up with .history-records' left edge */
+  top: 0;
 }
-.mdm-git-gui-history-record .form-controls label {
+.mdm-git-gui-history-record .form-controls.mdm-ui-record-col-formcontrols {
+  padding-top: 0; /* no upper spacing above the compare radios */
+}
+.mdm-git-gui-history-record .form-controls fieldset label {
   display: block;
   margin: 0;
   padding: 0;

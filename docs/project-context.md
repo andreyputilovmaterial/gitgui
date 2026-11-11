@@ -481,7 +481,7 @@ detail view (`history-revision`).
   below, then date/time + author, with a black `ri-git-commit-line` icon before
   the hash); the compare radio buttons stay in the white left gutter, and the
   grey `#f2f2f2`/`#ececec` card starts to their right. `style.css` adds the card
-  rules (8px left indent, `border-radius: 10px`, `margin-bottom: 5px`,
+  rules (8px left indent, `border-radius: 10px`, `margin-bottom: 8px`,
   `padding-top: 0`) and `min-width: 0` on both the record and the card to stop
   the grid rows from blowing out the page width on narrow screens (classic grid
   `min-width: auto` blowout). The hash is now the clickable "view files" target
@@ -491,10 +491,25 @@ detail view (`history-revision`).
   doesn't propagate through the atomic inline-flex hash box). The commit
   message is now plain black text (no box) prefixed with a
   `ri-chat-quote-line` icon; the date/time + author line uses a `ri-time-line`
-  icon and a `ri-quill-pen-line` icon in standard size/color. The hint note is
-  a sibling stuck just below the hash (2px), and a ~15px gap separates the
+  icon and a `ri-quill-pen-line` icon, each icon+text pair wrapped in a
+  `.meta-item` span (`display: inline-flex; white-space: nowrap`) so the icon and
+  its text never wrap onto separate lines; both pairs are `color: #666`,
+  `font-weight: 300` and fade to black on hover (`transition: color 450ms ease`).
+  The hint note is
+  a sibling stuck just below the hash (2px), and a ~17px gap separates the
   hash/hint block from the commit message and the date/author line (applied
-  even when a record has no hint). The compact
+  even when a record has no hint). The compare radio buttons were nudged left
+  (`left: -57px` on `.form-controls`) so their left edge lines up with
+  `.mdm-ui-recordsfilter`'s left edge, and moved up (`top: 0` + `padding-top: 0`)
+  to remove the upper spacing above them. The radio-label override is
+  `.mdm-git-gui-history-record .form-controls fieldset label { padding: 0 }` —
+  the extra `fieldset` bumps specificity to (0,2,2) so it beats the shared
+  `.mdm-git-ui-app .mdmreport-controls-group label { padding: 0 7px 0 7px }`
+  (0,2,1) regardless of CSS order. This matters because the Vite dev server
+  and the py_js_bundler bundle emit that shared rule in a different order: in
+  the bundle it lands *after* the override and, at equal specificity, its 7px
+  left padding won, indenting the radios 7px to the right (the label
+  content-box padding pushed the radio input inward). The compact
   view (welcome page) is untouched and still verified.
   The worktree/index pseudo-records keep their assigned `timestamp` in the data
   (so sorting/filtering still works), but the "date/time + author" line is only

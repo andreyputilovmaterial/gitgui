@@ -12,7 +12,7 @@
 .mdm-git-gui-page-history-overview .history-record:not(.history-record-compact) {
   padding-top: 0;
   padding-bottom: 0;
-  margin-bottom: 5px; /* gap between cards */
+  margin-bottom: 8px; /* gap between cards */
   min-width: 0; /* allow the grid row to shrink instead of blowing out the width */
 }
 
@@ -35,7 +35,7 @@
 
 .mdm-git-gui-page-history-overview .history-record .history-record-card-main .message {
   min-width: 0;
-  margin-top: 15px;
+  margin-top: 17px;
 }
 
 .mdm-git-gui-page-history-overview .history-record .history-record-card-meta {
@@ -44,10 +44,23 @@
   flex-wrap: wrap;
   align-items: baseline;
   column-gap: 6px;
-  margin-top: 15px;
+  margin-top: 17px;
 }
 .mdm-git-gui-page-history-overview .history-record .history-record-card-meta .meta-author-icon {
   margin-left: 8px;
+}
+.mdm-git-gui-page-history-overview .history-record .history-record-card-meta .meta-item {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  column-gap: 6px;
+  white-space: nowrap;
+  color: #666;
+  font-weight: 300;
+  transition: color 450ms ease;
+}
+.mdm-git-gui-page-history-overview .history-record .history-record-card-meta .meta-item:hover {
+  color: #000;
 }
 
 .mdm-git-gui-page-history-overview .history-record .history-record-card .note {

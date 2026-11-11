@@ -25,6 +25,9 @@ package.
     `os.pipe()` file objects.
 - `gc/jobs.py` — removes finished jobs from `context.jobs` after `JOB_TTL`
   (5 min) or when flagged for deletion.
+- `gc/loop.py` — a daemon thread that runs the `gc/jobs.py` scan on a fixed
+  interval (`GC_SCAN_INTERVAL`, 1 min), so stale jobs are removed even when no
+  new request arrives.
 - `perf.py` — live memory-footprint statistics (see below).
 
 ## Memory monitoring (`perf.py`)

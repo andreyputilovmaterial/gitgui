@@ -12,6 +12,7 @@ from .webserver_engine.webserve.src.webserver import HTTP403, HTTP404, WebRespon
 from .webserver_engine.webserve.src.launch_browser import launch_browser
 from .cli_proxy_caller import (
     initiate_worker_loop as cli_initiate_worker_loop,
+    initiate_gc_loop as cli_initiate_gc_loop,
     initiate_command as cli_command_initiate,
     initiate_from_function as cli_initiate_from_function,
     get_job as cli_command_get_job,
@@ -183,6 +184,7 @@ def main(*argcs,**kwargs):
     print('\npreparing git cli command loop...\n')
     for _ in range (0,CONFIG_CLI_COMMAND_EXEC_WORKERS):
         cli_initiate_worker_loop(config)
+    cli_initiate_gc_loop(config)
 
     print('\npreparing webserver...\n')
     config['http_host'] = 'localhost'

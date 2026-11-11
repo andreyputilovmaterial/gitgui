@@ -759,6 +759,26 @@ detail view (`history-revision`).
   result), so the raw `result.stdout`/`result.stderr` bytes are released when the
   handler exits instead of being pinned by the reader closure.
 
+## Job GC runs periodically (2026-11-11)
+
+- `src/cli_proxy_caller/gc/jobs.py` removes a finished job from `context.jobs`
+  once its `execution_finished_at` is older than `JOB_TTL` (5 min), or when
+  `flag_for_deletion` is set (never for jobs still running — `finished_at` must
+  be set first).
+- GC used to run only when a request-facing function (`exposed.py`) enqueued a
+  `"gc"` message into `job_message_queue`; with no new requests, stale jobs would
+  linger forever. Now `src/cli_proxy_caller/gc/loop.py` starts a daemon thread
+  (`initiate_gc_loop`, exported from `cli_proxy_caller/__init__.py`, started once
+  in `main_gitgui_program.py` next to the worker loop) that sleeps
+  `GC_SCAN_INTERVAL` (1 min) and calls the same `gc(context.jobs)` directly — so
+  a stale job is removed within `JOB_TTL + GC_SCAN_INTERVAL` at most even when
+  traffic stops. The request-time `"gc"` enqueues were kept for prompt cleanup
+  (e.g. on `terminate_job`).
+- Concurrency fix shipped along with it: `gc()` now deletes with
+  `jobs.pop(job_id, None)` instead of `del jobs[job_id]`. With 3 workers +
+  the periodic thread, concurrent gc passes were possible before; `pop` makes
+  deletion idempotent. Covered by `tests/test_cli_proxy_caller_gc.py`.
+
 ## Known gotchas
 
 - The CSS rules tolerate two naming conventions — `mdm-*` (current) and the

@@ -7,4 +7,5 @@ from .exposed import (
     terminate_job,
 )
 from .worker import initiate_worker_loop
+from .gc.loop import initiate_gc_loop
 from .perf import get_jobs_perf_stats

@@ -424,16 +424,27 @@ detail view (`history-revision`).
 - Added a standalone `textconv` program (2026-11-11):
   - `src/main_textconv_program.py` exposes `main(*argcs, **kwargs)` (the launcher
     convention) taking a single positional arg — path to an input file. It
-    resolves the path, fails early with a `FileNotFoundError` if the file is
-    missing, opens it in binary mode, and prints
-    `textconv_from_stream(file, path)` (imported from `.textconv`, the same way
-    `main_gitgui_program.py` imports it) to stdout with `end=''` — the returned
-    string already embeds its own TEXTCONV headers plus the converted content.
+    fails early with a `FileNotFoundError` if the file is missing, opens it in
+    binary mode, and prints `textconv_from_stream(file, path)` (imported from
+    `.textconv`, the same way `main_gitgui_program.py` imports it) to stdout with
+    `end=''` — the returned string already embeds its own TEXTCONV headers plus
+    the converted content.
   - `src/launcher.py` registers it as `--program textconv` (added to
     `run_programs` and to both the relative- and flat-import branches), so it
     works via `python -m src.launcher --program textconv <file>` and inside the
     pinliner bundle. Direct runs also work: `python -m src.main_textconv_program
     <file>`.
+  - Optimized `main_textconv_program.py` for per-file invocation (the textconv
+    driver is spawned once per file in a git diff): dropped `argparse` (its
+    `import argparse` was ~8 ms + parser build/parse ~4 ms per process) in favor
+    of reading the arg list directly. `main` resolves args the same way
+    `parse_args()` did — explicit positional list or `args=` keyword wins, else
+    `sys.argv[1:]` — and validates `len(args) == 1` with a readable `ValueError`
+    (the launcher's `except Exception` renders it as `Error: …`). Also dropped
+    the redundant `Path(...).resolve()` (realpath) before `is_file()`, since
+    `is_file()`/`open()` already stat and follow symlinks. Kept the path as a
+    `str` — `sys.argv[1].encode()` (bytes) was rejected because it would break
+    `Path`, `open` and the `f'{input_file}'` filename.
 
 - Files list now shows the git `XY` status in the reserved indicator column
   (2026-11-10). `component_record.js` / `component_record_compact.js` already

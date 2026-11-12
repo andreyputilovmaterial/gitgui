@@ -5,6 +5,7 @@ from .exposed import (
     get_job,
     get_job_stdout_reader,
     terminate_job,
+    send_input,
 )
 from .worker import initiate_worker_loop
 from .gc.loop import initiate_gc_loop

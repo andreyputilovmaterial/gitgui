@@ -1203,3 +1203,61 @@ detail view (`history-revision`).
     test page shows this difference directly; the fixture was intentionally left
     unchanged (task scope is frontend-only).
 
+
+- Stdin / "batch" interactive commands (2026-11-12): added support for long-lived
+  commands that read multiple input lines from stdin and answer each with a framed
+  response (the `git cat-file --batch` model). Design (NOT committed yet):
+  - Each stdin request is a NEW child job, created by `cli_proxy_caller.send_input`
+    via `initiate_from_function`. The child's closure writes `query + \n` to the
+    parent's stdin (under the parent's `pipe_process_lock`) and reads exactly one
+    framed response from the parent's stdout, emitting it as the child's stdout.
+    The frontend attaches to the child exactly like a pipe participant.
+  - The parent process job is started with `is_interactive=true` +
+    `options['read_convention']=<name>` and has NO stdout_reader/download_url (batch
+    stdout is owned by the per-request children). `executeGitBatchCommand` in
+    `git__execute_commands` sets `is_binary=true` + `read_convention` and forwards
+    it as a query param.
+  - New uniform registry `src/cli_proxy_caller/read_conventions.py`
+    (`register_read_convention`/`get_read_convention`) holds the framing contracts:
+    `reader(process) -> frame`. Built-ins: `newline` (readline) and `gitcatfile`
+    (header `<sha> <type> <size>` + exactly `size` bytes + `\n`, with `missing`).
+    Registered in `main_gitgui_program.py` (mirrors `output_postprocessors`).
+  - HTTP: `POST /command/{id}/stdin` (body `{input}`) → 202 child job dict with
+    `download_url`; the child's stdout is consumed via the existing
+    `GET /command/{child}/stdout`. `send_input` fails loudly (404 unknown job /
+    409 not-running / no-convention / not-interactive) and the parent must reach
+    status "running" before the first input (frontend gates the Send button).
+  - Fixed a pre-existing deadlock: `handle_interactive_command.consume_stderr` held
+    `pipe_process_lock` while blocking on a (possibly silent) process's stderr, so
+    any stdin request — and terminate itself — would deadlock. stderr is now read
+    under only its own `stderr_reader_lock`; `pipe_process_lock` serialises
+    stdin/stdout/terminate only.
+  - `worker.py` now assigns `job.command`/`job.is_binary` only when the task carries
+    them (`is not None`), so input/terminate tasks can't clobber the parent's state.
+  - Tests in `tests/test_cli_proxy_caller_stdin.py` (13): framing unit tests +
+    end-to-end `send_input` against a real `python -u` echo process (single and
+    multiple sequential requests), single-consumption of a child stdout reader,
+    fail-loudly validation, and terminate/gc cleanup (including terminate-after-exit).
+    Note: `cat` was NOT used as the echo fixture because `cat` block-buffers stdout
+    on a pipe; `python -u` flushes immediately.
+  - Frontend test page `page_test_backend_jobs` gained a "Batch interactive
+    (stdin request/response)" section (Start process / Send input / Terminate) that
+    streams each child's framed response and reports "header declared N bytes,
+    consumed M — OK/MISMATCH".
+  - Backend is stale on the dev instance until restarted: the running backend on
+    port 5180 predates these changes, so the browser batch example needs a backend
+    restart to work end-to-end (pytest covers the backend logic meanwhile).
+
+
+  - Follow-up fixes after live testing (2026-11-12, still uncommitted):
+    - `page_test_backend_jobs` binary previews (batch responses and the older
+      binary examples) now report when the shown text is only the first 1024 bytes
+      (`preview shows first 1024 bytes`), instead of silently truncating.
+    - `handle_task_from_function` now uses `buffering=1` for text and `buffering=0`
+      for binary writable pipes, removing the `RuntimeWarning: line buffering
+      (buffering=1) isn't supported in binary mode` noise (binary streamed bytes
+      are unbuffered, which is what we want anyway).
+    - Termination: the frontend `terminateJob` sends `DELETE /command/{id}` but the
+      backend only handled `TERM`; `handle_job_status` now accepts both `TERM` and
+      `DELETE` so the "Terminate" button stops returning HTTP 405.
+

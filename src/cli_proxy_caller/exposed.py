@@ -11,6 +11,7 @@ from .common_defs import (
 from .common_context import (
     context,
 )
+from .read_conventions import get_read_convention
 
 
 def initiate_command(command,config,is_binary=False,is_interactive=False,options:dict|None=None):
@@ -147,6 +148,84 @@ def initiate_from_function(fn: Callable, args, inp, config, options: dict | None
 
     context.job_message_queue.put(JobMessage(job_id=None, task=JobTask(action="gc", )))
     return job.as_dict()
+
+
+def send_input(job_id, inp, config):
+    """
+        Send one line of input to a long-lived interactive ("batch") process, and
+        create a child job whose stdout is the process's framed response.
+
+        This is the "attach a consumer per request" model: the parent process job
+        was started with ``is_interactive=True`` and an ``options['read_convention']``
+        that names a reader in the read-conventions registry. Each call here makes
+        a NEW function job (via initiate_from_function) whose closure:
+
+          1. writes the query + newline to the parent's stdin,
+          2. reads exactly one framed response from the parent's stdout (per the
+             read convention),
+          3. writes that frame to the child job's stdout (streamed via the child's
+             stdout_reader / download_url).
+
+        The parent's ``pipe_process_lock`` serialises these per-request reads (and
+        terminate), and the child's stdout_reader can be consumed exactly once —
+        both invariants are enforced by existing code, not by convention.
+
+        Receives: parent job id, the input payload (str), and the global config.
+        Returns: the child job dict (containing the new child job id). The caller
+        then attaches to / streams the child exactly like a pipe participant.
+    """
+
+    HTTP404 = config.get("iface").get("HTTP404")
+
+    if not job_id:
+        raise HTTP404("cli_send_input: job_id is missing")
+
+    parent = context.jobs.get(job_id)
+    if parent is None:
+        raise HTTP404(f'cli_send_input: job_id "{job_id}" not found')
+
+    with parent.lock:
+        if not parent.is_interactive:
+            raise Exception(f'cli_send_input: job "{job_id}" is not interactive (stdin is only for interactive jobs)')
+        if parent.status != "running":
+            raise Exception(f'cli_send_input: job "{job_id}" is not running (status "{parent.status}")')
+        read_convention = (parent.options or {}).get('read_convention')
+        if not read_convention:
+            raise Exception(f'cli_send_input: job "{job_id}" has no read_convention (it was not started in batch mode)')
+        is_binary = parent.is_binary
+        job_data = parent.job_data
+        if job_data is None or job_data.pipe_process is None:
+            raise Exception(f'cli_send_input: job "{job_id}" has no pipe_process yet; start it and wait until status is "running"')
+        process = job_data.pipe_process
+        pipe_process_lock = job_data.pipe_process_lock
+
+    reader = get_read_convention(read_convention)
+    if reader is None:
+        raise Exception(f'cli_send_input: read convention is not supported: "{read_convention}"')
+
+    def stdin_request(_stdin_stream, stdout_stream, stderr_stream, *args):
+        query = args[0]
+        with pipe_process_lock:
+            if is_binary:
+                process.stdin.write(query.encode('utf-8') + b'\n')
+            else:
+                process.stdin.write(query + '\n')
+            process.stdin.flush()
+            response = reader(process)
+        if response is None:
+            response = b'' if is_binary else ''
+        stdout_stream.write(response)
+
+    return initiate_from_function(
+        stdin_request,
+        [inp],
+        None,
+        config,
+        options={'parentJobId': job_id, 'input': inp, 'read_convention': read_convention},
+        is_binary=is_binary,
+    )
+
+
 
 
 

@@ -173,3 +173,47 @@ file objects. `textconv` and `tar` are the existing examples.
   GET/PUT handlers in `src/frontend/endpoints_git_command_path.py`, and
   `src/output_postprocessors/*` (pure-Python pipe participants).
 
+
+## Long-lived stdin commands ("batch")
+
+Some commands stay alive and answer many stdin requests, one framed response per
+request — the canonical example is `git cat-file --batch`, which prints a header
+line (`<sha> <type> <size>`) and then exactly `size` payload bytes plus a newline
+(or `<sha> missing`). This is a request/response loop over the process's stdin
+and stdout, distinct from the continuous stdout stream used by ordinary
+interactive jobs.
+
+The model reuses the existing job machinery:
+
+- The **process job** (parent) is started with `is_interactive=true` and
+  `options['read_convention']=<name>`. It has **no** `stdout_reader` / download
+  URL — its stdout is owned by the per-request children, so there is never a
+  global consumer racing them. stderr is still accumulated into `job.stderr` by
+  the normal collector thread (no reader needed).
+- Each **input** is a new child job (`cli_proxy_caller.send_input` →
+  `initiate_from_function`). The child's closure, under the parent's
+  `pipe_process_lock`, writes `query + \n` to the parent's stdin and reads
+  exactly one framed response from the parent's stdout, emitting it as the
+  child's stdout. The frontend attaches to the child with the same
+  consume-before-await pattern as any pipe participant.
+- The framing contract lives in the uniform registry
+  `src/cli_proxy_caller/read_conventions.py`
+  (`register_read_convention` / `read_conventions`), mirroring
+  `src/output_postprocessors`. A convention is `reader(process) -> frame`
+  (bytes in binary mode, str in text mode). Built-ins: `newline`, `gitcatfile`.
+
+HTTP surface: `POST /command/{id}/stdin` (body `{input}`) creates the child and
+returns a 202 job dict with `download_url`; the response is then streamed via the
+ordinary `GET /command/{child}/stdout`. `send_input` fails loudly when the parent
+is missing, not running, not interactive, or has no `read_convention` — and the
+parent must reach status `running` before the first input.
+
+Two correctness notes:
+
+- `cat` is NOT a usable echo fixture: it block-buffers stdout when it is a pipe,
+  so a `readline()` reader would never see the reply. `python -u` flushes
+  immediately and is used in the tests.
+- The stderr collector must not hold `pipe_process_lock` while blocking on
+  stderr (that would deadlock every stdin request and terminate itself); it reads
+  stderr under its own `stderr_reader_lock`.
+

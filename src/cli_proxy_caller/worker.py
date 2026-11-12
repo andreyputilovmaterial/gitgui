@@ -53,8 +53,10 @@ def processor_handle_job(context: Context, task: Task, job_id: Any) -> None:
         raise Exception(f'cli_proxy_caller: JobTask: action not recognized ("{task.action}")') # this would kill the worker, obviously, and there's no alternative to it
 
     try:
-        job.command = task.command
-        job.is_binary = task.is_binary
+        if task.command is not None:
+            job.command = task.command
+        if task.is_binary is not None:
+            job.is_binary = task.is_binary
         processor(context,task,job)
     except Exception as e:
         associated_info: dict | None = None

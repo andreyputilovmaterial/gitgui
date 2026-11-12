@@ -60,15 +60,19 @@ def handler(context,task,job):
             stdout_read_fd, stdout_write_fd = os.pipe()
             stderr_read_fd, stderr_write_fd = os.pipe()
             # stdin_fd = os.pipe()
+            # buffering=1 is line buffering, which io.open does not support in
+            # binary mode (it warns and falls back). For binary use buffering=0
+            # (unbuffered) so streamed bytes hit the pipe immediately.
+            write_buffering = 1 if not job.is_binary else 0
             stdout_writable_buf = os.fdopen(
                 stdout_write_fd,
                 "w",
                 encoding = "utf-8",
-                buffering = 1,
+                buffering = write_buffering,
             ) if not job.is_binary else os.fdopen(
                 stdout_write_fd,
                 "wb",
-                buffering = 1,
+                buffering = write_buffering,
             )
             stdout_readonly_buf = os.fdopen(
                 stdout_read_fd,
@@ -82,11 +86,11 @@ def handler(context,task,job):
                 stderr_write_fd,
                 "w",
                 encoding = "utf-8",
-                buffering = 1,
+                buffering = write_buffering,
             ) if not job.is_binary else os.fdopen(
                 stderr_write_fd,
                 "wb",
-                buffering = 1,
+                buffering = write_buffering,
             )
             stderr_readonly_buf = os.fdopen(
                 stderr_read_fd,

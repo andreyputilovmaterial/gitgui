@@ -18,7 +18,13 @@ from .cli_proxy_caller import (
     get_job as cli_command_get_job,
     get_job_stdout_reader as cli_command_get_job_stdout_reader,
     terminate_job as cli_command_terminate_job,
+    send_input as cli_send_input,
     get_jobs_perf_stats,
+)
+from .cli_proxy_caller.read_conventions import (
+    register_read_convention,
+    read_newline,
+    read_git_cat_file_batch,
 )
 from .textconv import (
     textconv_from_data,
@@ -140,6 +146,7 @@ def main(*argcs,**kwargs):
             'cli_command_get_job': cli_command_get_job,
             'cli_command_get_job_stdout_reader': cli_command_get_job_stdout_reader,
             'cli_command_terminate_job': cli_command_terminate_job,
+            'cli_send_input': cli_send_input,
             'get_jobs_perf_stats': get_jobs_perf_stats,
             'WebResponse': WebResponse,
             'HTTP403': HTTP403,
@@ -157,6 +164,8 @@ def main(*argcs,**kwargs):
 
     register_output_postprocessor('tar',tar_output_processor)
     register_output_postprocessor('textconv',make_textconv_output_processor(config))
+    register_read_convention('newline',read_newline)
+    register_read_convention('gitcatfile',read_git_cat_file_batch)
 
     if args.working_tree:
         working_tree = f'{args.working_tree}' # make sure it's text

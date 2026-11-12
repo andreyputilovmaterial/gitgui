@@ -127,6 +127,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
     call_cli_command_get_job = config.get('iface').get('cli_command_get_job')
     call_cli_command_terminate_job = config.get('iface').get('cli_command_terminate_job')
     call_cli_command_get_job_stdout_reader = config.get('iface').get('cli_command_get_job_stdout_reader')
+    call_cli_send_input = config.get('iface').get('cli_send_input')
 
     def handle_initiate_new_command(net_request_handler):
 
@@ -232,7 +233,7 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 body = json.dumps(job_dict, cls=JSONEncoder),
                 headers = headers,
             )
-        elif method=='TERM':
+        elif method=='TERM' or method=='DELETE':
             call_cli_command_terminate_job(job_id,config)
             return WebResponse(
                 status_code = 204,
@@ -247,6 +248,78 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 body = json.dumps({'status':'error','error':f'renderer for {method} {path_parsed} is not recognized'}, cls=JSONEncoder),
                 headers = [],
             )
+
+
+    def handle_send_stdin(net_request_handler):
+        """Send one input line to a long-lived batch process (POST /command/{id}/stdin).
+
+        This creates a NEW child job (see cli_proxy_caller.send_input) whose stdout
+        is the process's framed response for this input. The response is returned as
+        a 202 job dict with a download_url, exactly like a pipe participant, so the
+        frontend attaches to it with the usual consume-before-await pattern."""
+
+        def parse_path(path_parts):
+            # path_parts[0] == ''
+            # path_parts[1] == 'command'
+            # path_parts[2] == job_id
+            # path_parts[3] == 'stdin'
+            return path_parts[2]
+
+        path_with_query = net_request_handler.path
+        path_parsed = f'{urlparse(path_with_query).path}'
+        path_parts = [ unquote(p) for p in path_parsed.split('/') ]
+        job_id = parse_path(path_parts)
+        if not job_id:
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'handle_send_stdin: job not found: {job_id}'}, cls=JSONEncoder),
+                headers = [],
+            )
+
+        body = net_request_handler.request_body.read()
+        payload = json.loads(body)
+        inp = payload.get('input') if isinstance(payload, dict) else None
+        if inp is None:
+            return WebResponse(
+                status_code = 400,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':'handle_send_stdin: "input" is required'}, cls=JSONEncoder),
+                headers = [],
+            )
+
+        HTTP404 = config.get('iface').get('HTTP404')
+        try:
+            child_job_dict = call_cli_send_input(job_id, inp, config)
+        except HTTP404:
+            return WebResponse(
+                status_code = 404,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'handle_send_stdin: job not found: {job_id}'}, cls=JSONEncoder),
+                headers = [],
+            )
+        except Exception as e:
+            # Parent not ready / not interactive / no convention: a caller error,
+            # not a server error — surface it as 409 so the frontend can retry.
+            return WebResponse(
+                status_code = 409,
+                content_type = 'application/json',
+                body = json.dumps({'status':'error','error':f'{e}'}, cls=JSONEncoder),
+                headers = [],
+            )
+
+        child_job_id = child_job_dict.get('job_id')
+        headers = []
+        filename = '%FILENAME%'
+        url_get_rawbytes = make_download_url(path_parts, child_job_id, filename)
+        child_job_dict['download_url'] = url_get_rawbytes
+        headers.append(('Location', f'{url_get_rawbytes}',))
+        return WebResponse(
+            status_code = 202,
+            content_type = 'application/json',
+            body = json.dumps(child_job_dict, cls=JSONEncoder),
+            headers = headers,
+        )
 
     def handle_send_binary_data(net_request_handler):
         """Stream this job's stdout back to the caller (GET /command/{id}/stdout/{filename}).
@@ -427,6 +500,8 @@ def handle_git_command(net_request_handler, config: dict, added_data=None):
                 renderer = handle_send_binary_data
             elif method == 'PUT' and re.match(r'^/command/[^/]*/stdout\b.*', path_parsed):
                 renderer = handle_pipe_binary_data
+            elif method == 'POST' and re.match(r'^/command/[^/]*/stdin$', path_parsed):
+                renderer = handle_send_stdin
             else:
                 renderer = handle_job_status
         if not renderer:

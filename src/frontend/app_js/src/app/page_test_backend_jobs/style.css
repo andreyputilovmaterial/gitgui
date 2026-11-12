@@ -86,6 +86,19 @@
     margin: 7px 0;
 }
 
+.mdm-git-gui-test-batch-responses {
+    margin-top: 7px;
+}
+
+.mdm-git-gui-test-batch-response {
+    margin: 0 0 15px;
+}
+
+.mdm-git-gui-test-batch-response .meta {
+    margin: 0 0 7px;
+    color: #666;
+}
+
 @media (min-width: 760px) {
     .mdm-git-gui-test-jobs-examples {
         grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));

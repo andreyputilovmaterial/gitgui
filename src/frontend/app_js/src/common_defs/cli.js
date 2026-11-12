@@ -334,6 +334,28 @@ function cliCommand(command,{is_binary=false,is_interactive=false,attachExisting
           return true;
         };
 
+        context.jobData.sendInput = async (input) => {
+          // Send one line of input to a long-lived batch process. The backend
+          // answers with a NEW child job (its framed stdout response); the caller
+          // then attaches to it exactly like a pipe participant (consume-before-
+          // await). Returns the child job dict: { job_id, is_binary, download_url, ... }.
+          const response = await fetch(
+            `/command/${encodeURIComponent(context.job_id)}/stdin`,
+            {
+              method: 'POST',
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ input }),
+            },
+          );
+          if (!response.ok) {
+            const error = await makeFetchResponseErrorMessage(response);
+            throw new Error(error);
+          }
+          return await response.json();
+        };
+
       },
       err => reject(err)
     );

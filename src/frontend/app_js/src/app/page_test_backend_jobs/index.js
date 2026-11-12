@@ -65,6 +65,7 @@ const View = {
         <template v-else>
           <div class="mdm-git-gui-test-jobs-binary-meta">
             <span>{{ records[example.id].bytes == null ? '…' : records[example.id].bytes }} bytes</span>
+            <span v-if="records[example.id].previewTruncated">preview shows first 1024 bytes</span>
             <a v-if="downloadUrl(records[example.id])" :href="downloadUrl(records[example.id])" target="_blank" rel="noopener">download</a>
           </div>
           <pre class="preview">{{ records[example.id].preview }}</pre>
@@ -75,6 +76,39 @@ const View = {
       </div>
     </section>
   </div>
+
+  <section class="mdm-git-gui-test-jobs-example mdm-git-gui-test-batch">
+    <h2 class="title">Batch interactive (stdin request/response)</h2>
+    <p class="desc">A long-lived git cat-file --batch process. Each input creates a child job whose framed stdout response is streamed back.</p>
+
+    <form class="mdmreport-controls" @submit.prevent="sendBatchInput">
+      <div class="mdmreport-controls-group">
+        <label for="test-jobs-batch-spec">Object spec:</label>
+        <input id="test-jobs-batch-spec" v-model="batchSpec" class="mdmreport-control" type="text" placeholder="HEAD:README.md" :disabled="!batchJob" />
+      </div>
+      <div class="mdmreport-controls-group mdm-git-gui-test-jobs-actions">
+        <button v-if="!batchJob" type="button" class="mdm-btn mdm-btn-primary" :disabled="batchBusy" @click="startBatch">Start process</button>
+        <template v-else>
+          <button type="submit" class="mdm-btn mdm-btn-primary" :disabled="batchBusy || batchJob.status !== 'running'">Send input</button>
+          <button type="button" class="mdm-btn" :disabled="batchBusy" @click="terminateBatch">Terminate</button>
+        </template>
+      </div>
+    </form>
+
+    <div v-if="batchError" class="error">{{ batchError }}</div>
+
+    <div v-if="batchJob" class="mdm-git-gui-test-jobs-output">
+      <div class="mdm-git-gui-test-jobs-exit">process status: {{ batchJob.status }} · exit code: {{ formatExit(batchJob) }}</div>
+      <pre v-if="batchJob.stderr" class="stderr">{{ batchJob.stderr }}</pre>
+      <div v-if="batchResponses.length" class="mdm-git-gui-test-batch-responses">
+        <div v-for="(resp, i) in batchResponses" :key="i" class="mdm-git-gui-test-batch-response">
+          <div class="meta">#{{ i + 1 }} input: {{ resp.input }} — {{ resp.bytes == null ? '…' : resp.bytes }} bytes<span v-if="resp.expectation">, {{ resp.expectation }}</span><span v-if="resp.truncated"> · preview shows first 1024 bytes</span></div>
+          <pre v-if="resp.error" class="error">{{ resp.error }}</pre>
+          <pre v-else class="preview">{{ resp.text }}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 `,
   setup(props) {
@@ -86,6 +120,13 @@ const View = {
     const catFileSpec = ref('HEAD:.gitignore');
     const catFilename = ref('.clinerules');
     const textconvFilename = ref('textconv-test.txt');
+
+    // Batch interactive (stdin request/response) state.
+    const batchJob = ref(null);
+    const batchSpec = ref('HEAD:.gitignore');
+    const batchResponses = ref([]);
+    const batchBusy = ref(false);
+    const batchError = ref('');
 
     function attachRecord(exampleId, record, label) {
       record.label = label;
@@ -117,9 +158,9 @@ const View = {
       return record;
     }
 
-    function previewBytes(chunks) {
+    function previewBytes(chunks, maxBytes = 1024) {
       const total = chunks.reduce((n, chunk) => n + chunk.byteLength, 0);
-      const head = new Uint8Array(Math.min(total, 1024));
+      const head = new Uint8Array(Math.min(total, maxBytes));
       let offset = 0;
       for (const chunk of chunks) {
         const n = Math.min(chunk.byteLength, head.byteLength - offset);
@@ -127,7 +168,10 @@ const View = {
         offset += n;
         if (offset >= head.byteLength) break;
       }
-      return new TextDecoder('utf-8', { fatal: false }).decode(head);
+      return {
+        text: new TextDecoder('utf-8', { fatal: false }).decode(head),
+        truncated: total > maxBytes,
+      };
     }
 
     async function finishStream(record) {
@@ -140,7 +184,9 @@ const View = {
             record.bytes += chunk.byteLength;
             chunks.push(chunk);
           }
-          record.preview = previewBytes(chunks);
+          const preview = previewBytes(chunks);
+          record.preview = preview.text;
+          record.previewTruncated = preview.truncated;
         } else {
           record.streamedStdout = '';
           for await (const chunk of record.getData()) {
@@ -294,6 +340,90 @@ const View = {
     }
 
 
+    function describeBatchExpectation(chunks) {
+      const total = chunks.reduce((n, c) => n + c.byteLength, 0);
+      const all = new Uint8Array(total);
+      let offset = 0;
+      for (const chunk of chunks) {
+        all.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+      const newlineIndex = all.indexOf(10);
+      if (newlineIndex < 0) return '';
+      const headerText = new TextDecoder('utf-8', { fatal: false }).decode(all.subarray(0, newlineIndex));
+      const parts = headerText.split(/\s+/);
+      if (parts.length >= 2 && parts[1] === 'missing') {
+        return `header declared "missing", consumed ${total} bytes`;
+      }
+      if (parts.length < 3) return '';
+      const declared = Number(parts[2]);
+      const expected = newlineIndex + 1 + declared + 1;
+      const ok = expected === total;
+      return `header declared ${declared} bytes, consumed ${total} (expected ${expected}) — ${ok ? 'OK' : 'MISMATCH'}`;
+    }
+
+    async function startBatch() {
+      batchError.value = '';
+      try {
+        batchBusy.value = true;
+        batchResponses.value = [];
+        batchJob.value = await props.repoActions.executeGitBatchCommand(['git', 'cat-file', '--batch']);
+      } catch (e) {
+        batchError.value = `Failed to start batch process: ${(e && e.message) || e}`;
+        props.repoActions.logError(`Test backend jobs (batch start): ${e}`);
+      } finally {
+        batchBusy.value = false;
+      }
+    }
+
+    async function sendBatchInput() {
+      const parent = batchJob.value;
+      if (!parent) return;
+      const input = batchSpec.value.trim();
+      if (!input) return;
+      const record = reactive({ input, text: '', bytes: null, expectation: '', error: '' });
+      batchResponses.value.push(record);
+      try {
+        batchBusy.value = true;
+        const childDict = await parent.sendInput(input);
+        const child = await props.repoActions.attachToRunningCommand(childDict.job_id, {
+          parentJobId: parent.job_id,
+          is_binary: childDict.is_binary,
+          is_interactive: true,
+        });
+        await child.promiseDownloadLinkReady;
+        const chunks = [];
+        for await (const chunk of child.getData()) {
+          chunks.push(chunk);
+        }
+        await child.promise;
+        record.bytes = chunks.reduce((n, c) => n + c.byteLength, 0);
+        const preview = previewBytes(chunks);
+        record.text = preview.text;
+        record.truncated = preview.truncated;
+        record.expectation = describeBatchExpectation(chunks);
+      } catch (e) {
+        record.error = (e && e.message) || String(e);
+      } finally {
+        batchBusy.value = false;
+      }
+    }
+
+    async function terminateBatch() {
+      const parent = batchJob.value;
+      if (!parent) return;
+      try {
+        batchBusy.value = true;
+        await parent.terminateJob();
+      } catch (e) {
+        batchError.value = `Failed to terminate batch process: ${(e && e.message) || e}`;
+        props.repoActions.logError(`Test backend jobs (batch terminate): ${e}`);
+      } finally {
+        batchBusy.value = false;
+        batchJob.value = null;
+      }
+    }
+
     const examples = [
       {
         id: 'text-sync',
@@ -408,6 +538,7 @@ const View = {
         if (first) {
           catFileSpec.value = `HEAD:${first}`;
           catFilename.value = first;
+          batchSpec.value = `HEAD:${first}`;
         }
       } catch {
         // keep the defaults; the examples will just surface an error if they are wrong
@@ -421,6 +552,14 @@ const View = {
       catFileSpec,
       catFilename,
       textconvFilename,
+      batchJob,
+      batchSpec,
+      batchResponses,
+      batchBusy,
+      batchError,
+      startBatch,
+      sendBatchInput,
+      terminateBatch,
       examples,
       runExample,
       formatExit,

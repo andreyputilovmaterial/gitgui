@@ -263,9 +263,20 @@ function useGitCommands(getAppSetupExports) {
         return _executeGitCommand(args,{...options,is_interactive:true,is_binary:true});
     }
 
+    // Batch interactive commands: a long-lived process that reads multiple input
+    // lines from stdin and answers each with a framed response (see
+    // docs/streaming-jobs.md). The `read_convention` names the framing contract in
+    // the backend read-conventions registry; it is forwarded to the backend as a
+    // query param. Returns the live parent jobData (no download_url — responses
+    // arrive as child jobs via parent.sendInput()).
+    async function _executeGitBatchCommand(args,{read_convention='gitcatfile',...options} = {}) {
+        return _executeGitCommand(args,{...options,is_interactive:true,is_binary:true,read_convention});
+    }
+
     const executeGitCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitCommand(...args));
     const executeGitAsyncCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitAsyncCommand(...args));
     const executeGitBinaryCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitBinaryCommand(...args));
+    const executeGitBatchCommand = (...args) => gitCommandConcurrencyManager.run(()=>_executeGitBatchCommand(...args));
 
     
     return {
@@ -275,6 +286,7 @@ function useGitCommands(getAppSetupExports) {
             executeGitCommand,
             executeGitAsyncCommand,
             executeGitBinaryCommand,
+            executeGitBatchCommand,
             // attachToRunningCommand: adopt an already-running job (e.g. a pipe
             // participant whose job_id came back from a PUT to the producer's stdout)
             // under the same job-object contract, instead of starting a fresh process.

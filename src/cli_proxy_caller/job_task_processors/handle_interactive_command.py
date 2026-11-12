@@ -27,40 +27,8 @@ STDERR_DEFAULT_READ_CHUNK_SIZE = 8 # 8192
 
 
 
-def read_arbitrary_stdout_per_convention_newline(process):
-    data = process.stdout.readline()
-    return data
-
-def read_arbitrary_stdout_per_convention_gitcatfile(process):
-    header = process.stdout.readline()
-    parts = header.split()
-    obj_type = parts[1]
-    if obj_type == b"missing":
-        return header
-    size = parts[2]
-    size = int(size)
-    data = process.stdout.read(size)
-    process.stdout.read(1)
-    return header + data + b'\n'
-
-read_conventions = {
-    'newline': read_arbitrary_stdout_per_convention_newline,
-    'gitcatfile': read_arbitrary_stdout_per_convention_gitcatfile,
-}
-
-def read_arbitrary_stdout_per_convention(process,read_convention):
-    converter = read_conventions.get(read_convention,None)
-    if converter:
-        return converter(process)
-    else:
-        raise Exception(f'read_stdout: read convention is not supported: {read_convention}')
-
-
-
-
 def handler(context,task,job):
 
-    is_binary = job.is_binary
     pipe_process = None
     pipe_process_lock = None
     options = None
@@ -83,7 +51,6 @@ def handler(context,task,job):
             if job.status != "fresh":
                 raise Exception(f'Can only call subprocess.Popen() on context.jobs with status "fresh" (job_id: "{job.job_id}")')
             job.status = "running"
-            job.stdout_pipe = {}
             job.command = command
             job.is_interactive = True
             job.is_binary = is_binary
@@ -108,45 +75,40 @@ def handler(context,task,job):
                     if not job.job_data:
                         job.job_data = JobInternalData()
                     pipe_process = job.job_data.pipe_process
-                    pipe_process_lock = job.job_data.pipe_process_lock
+                    stderr_stream = pipe_process.stderr
+                # stderr is read on its own pipe and must NOT take pipe_process_lock:
+                # that lock serialises stdin writes / stdout reads / terminate, so
+                # holding it while blocking here would deadlock every stdin request
+                # (and terminate itself). stderr_reader_lock alone is sufficient.
                 with job.job_data.stderr_reader_lock:
-                    with pipe_process_lock:
-                        # is_alive = not ( not pipe_process or (returncode is not None) or (not not execution_finished_at) )
-                        # if not is_alive:
-                        #     stderr = ''
-                        #     with job.lock:
-                        #         if not job.stderr:
-                        #             job.stderr = ''
-                        #         job.stderr = (job.stderr + stderr)[:10000000] # let's limit to 10 mb
-                        # stderr = '' if not is_binary else b''
-                        stderr_read_chunk_size = int(options.get('stderr_chunk_size', STDERR_DEFAULT_READ_CHUNK_SIZE))
-                        decoder = codecs.getincrementaldecoder("utf-8")( errors="replace" ) if is_binary else None
-                        while True:
-                            # print(f'[DEBUG-cli]: interactive task: stderr consumer task read({stderr_read_chunk_size}), job_id = {job.job_id}')
-                            chunk = pipe_process.stderr.read(stderr_read_chunk_size)
-                            if not chunk:
-                                # Flush any incomplete UTF-8 sequence at EOF.
-                                if decoder is not None:
-                                    text = decoder.decode(b"", final=True)
-                                    if text:
-                                        with job.lock:
-                                            job.stderr = (job.stderr or '') + text
-                                break
-                            chunk_txt = decoder.decode(chunk) if decoder is not None else chunk
-                            if chunk_txt:
-                                with job.lock:
-                                    job.stderr = (job.stderr or '') + chunk_txt
-                                    job.stderr = job.stderr[:10000000]  # let's limit to 10 mb
-                        returncode = pipe_process.poll()
-                        if returncode is not None:
-                            # let's check if it's gone
+                    stderr_read_chunk_size = int(options.get('stderr_chunk_size', STDERR_DEFAULT_READ_CHUNK_SIZE))
+                    decoder = codecs.getincrementaldecoder("utf-8")( errors="replace" ) if is_binary else None
+                    while True:
+                        # print(f'[DEBUG-cli]: interactive task: stderr consumer task read({stderr_read_chunk_size}), job_id = {job.job_id}')
+                        chunk = stderr_stream.read(stderr_read_chunk_size)
+                        if not chunk:
+                            # Flush any incomplete UTF-8 sequence at EOF.
+                            if decoder is not None:
+                                text = decoder.decode(b"", final=True)
+                                if text:
+                                    with job.lock:
+                                        job.stderr = (job.stderr or '') + text
+                            break
+                        chunk_txt = decoder.decode(chunk) if decoder is not None else chunk
+                        if chunk_txt:
                             with job.lock:
-                                dt_now = datetime.now(timezone.utc)
-                                job.status = "done"
-                                job.returncode = returncode
-                                if not job.execution_finished_at:
-                                    job.execution_finished_at = dt_now
-                                job.last_activity_at = dt_now
+                                job.stderr = (job.stderr or '') + chunk_txt
+                                job.stderr = job.stderr[:10000000]  # let's limit to 10 mb
+                    returncode = pipe_process.poll()
+                    if returncode is not None:
+                        # let's check if it's gone
+                        with job.lock:
+                            dt_now = datetime.now(timezone.utc)
+                            job.status = "done"
+                            job.returncode = returncode
+                            if not job.execution_finished_at:
+                                job.execution_finished_at = dt_now
+                            job.last_activity_at = dt_now
 
             def worker_consume_stderr():
                 # print( f'[DEBUG-cli]: interactive task: stderr consumer worker started, job_id = {job.job_id}')
@@ -181,7 +143,13 @@ def handler(context,task,job):
             with job.lock:
                 job.job_data.pipe_process = process
                 job.last_activity_at = datetime.now(timezone.utc)
-                job.stdout_reader = stdout_reader
+                if options.get('read_convention'):
+                    # Batch (stdin request/response) process: its stdout is consumed
+                    # frame-by-frame by per-request child jobs (exposed.send_input),
+                    # so we must NOT expose a continuous stdout reader / download URL.
+                    job.stdout_reader = None
+                else:
+                    job.stdout_reader = stdout_reader
 
             stderr_consumer_thread = Thread(target=worker_consume_stderr, daemon=True)
             stderr_consumer_thread.start() # will die normally when its infinite loop is over - will happen when stderr pipe is closed, it happens when this pipe_process stops, so will terminate normally
@@ -218,40 +186,6 @@ def handler(context,task,job):
 
 
 
-    def handle_new_input():
-        # print(f'[DEBUG-cli]: interactive task: new input, job_id = {job.job_id}')
-        with job.job_data.pipe_process_lock:
-            process = job.job_data.pipe_process
-            with job.lock:
-                job.last_activity_at = datetime.now(timezone.utc)
-            if job.status != "running":
-                raise Exception(f'Can only call pipe_process.stdin.write() on context.jobs with status "running" (job_id: "{job.job_id}")')
-            if not process or isinstance(process,int): # storing returncode when finished - just to reset to something, it is not actually used
-                raise Exception(f'Can only call subprocess.stdin.write() when pipe_process exists (job_id: "{job.job_id}")')
-
-            input_request_id, inp, read_convention = task.command
-
-            with job.lock:
-                if input_request_id in job.stdout_pipe:
-                    raise Exception(f'Can only call pipe_process.stdin.write() with new input id, input_id: "{input_request_id}" (job_id: "{job.job_id}")')
-                job.stdout_pipe[input_request_id] = {
-                    'stdin': inp,
-                }
-                job.last_activity_at = datetime.now(timezone.utc)
-
-            if not is_binary:
-                process.stdin.write(inp + "\n")
-            else:
-                process.stdin.write(inp.encode() + b"\n")
-            process.stdin.flush()
-
-            with job.job_data.stderr_reader_lock:
-                response = read_arbitrary_stdout_per_convention(process,read_convention)
-            with job.lock:
-                raise Exception('/command cli: interactive: stdin not implemented yet')
-
-
-
     if task.action=="new_command":
         # print(f'[DEBUG-cli]: interactive task: received "new command" task, job_id = {job.job_id}')
         return handle_new_command()
@@ -265,10 +199,6 @@ def handler(context,task,job):
 
     # elif task.action=="stdout":
     #     return handle_consume_stdout()
-
-    elif task.action=="input":
-        # print(f'[DEBUG-cli]: interactive task: received "new input" task, job_id = {job.job_id}')
-        return handle_new_input()
 
     else:
         raise Exception(f'cli: interactive command: task not recognized ({task.action})')

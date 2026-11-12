@@ -421,6 +421,31 @@ detail view (`history-revision`).
 
 ## Last state
 
+- Implemented archive textconv (2026-11-13): the `archive` processor was a
+  "not implemented" stub; it now emits a **listing** — one `path  <sha256>` line
+  per file, sorted by path for a stable diff, with the SHA-256 of each member's
+  decompressed content (directory entries are skipped). `src/textconv/processors/archive/`
+  detects the format by content magic (not just extension): zip (`zipfile`), 7z
+  (`py7zr`, guarded optional import + `archive/requirements.txt`), tar and its
+  gz/bz2/xz variants (`tarfile`), and single-file gzip/bzip2/xz (`gzip`/`bz2`/
+  `lzma`, name = archive name minus compression suffix). RAR is rejected with a
+  readable error (proprietary); unrecognized bytes fail early with a readable
+  error; empty input → empty listing. `processors/__init__.py` now imports the
+  processor and maps `archive` → `textconv_archive`; the `matches` table gained
+  `.bz2`, `.xz`, `.tgz`, `.tbz2`, `.txz`. Added `py7zr` to
+  `components-licenses.json` (`unbundled_dependencies`, `LGPL-2.1-or-later`) and
+  documented the processor in `docs/textconv.md`. Tests in
+  `tests/test_textconv_archive.py` (zip/tar/tar.gz/gz/bz2/rar/unrecognized/empty
+  + `pytest.importorskip('py7zr')` 7z). Verified: repo `.venv` (no py7zr) 13
+  passed/1 skipped across archive+program tests; a throwaway venv with py7zr
+  ran all 9 archive tests green.
+  - Decision: per-file hash = SHA-256 of decompressed content (matches the
+    project-wide `hash:` convention and works uniformly across zip/tar/7z where
+    tar has no stored per-file content hash). py7zr is the mainstream pure-Python
+    7z library (LGPL-2.1-or-later); its `HashIOFactory` streams decompressed bytes
+    into a hasher so we don't materialize whole members in memory. For 7z,
+    `extract(targets=files, factory=HashIOFactory())`; skip `info.is_directory`.
+
 - Implemented the three textconv fixes (2026-11-13):
   - `src/textconv/__init__.py` — `StreamingProxy` now computes the hash/size for
     the **whole** source stream, decoupled from processor reads: `__init__` does

@@ -4,10 +4,11 @@ from .text import textconv as process_text
 from .mdd import textconv as textconv_mdd
 from .markitdown import textconv as textconv_md
 from .xml import textconv as textconv_xml
+from .archive import textconv as textconv_archive
 
 matches = [
     ( ['.mdd'], 'mdd' ),
-    ( ['.zip','.7z','.tar','.gz','.bzip','.gzip','.rar'], 'archive' ),
+    ( ['.zip','.7z','.tar','.gz','.bzip','.gzip','.rar','.bz2','.xz','.tgz','.tbz2','.txz'], 'archive' ),
     ( ['.xlsx','.xls','.xlsm','.doc','.docs','pptx','.ppt',], 'markitdown' ),
     ( ['.md','.pdf',], 'markitdown' ),
     ( ['.ddf',], 'binary' ),
@@ -19,7 +20,7 @@ matches = [
 processors = {
     'spss': lambda d,f: 'TEXTCONV: spss textconv: not implemented',
     'csv': lambda d,f: 'TEXTCONV: csv textconv: not implemented',
-    'archive': lambda d,f: 'TEXTCONV: archive textconv: not implemented',
+    'archive': textconv_archive,
     'office': textconv_md,
     'markitdown': textconv_md,
     'mdd': textconv_mdd,

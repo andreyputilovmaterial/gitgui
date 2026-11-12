@@ -125,6 +125,31 @@ processors that never call `read()`.
 3. **HTTP endpoint** — `POST /textconv?filepath=…` (body = file bytes) handled by
    `src/frontend/endpoints_textconv_path.py`.
 
+## Archive processor
+
+`src/textconv/processors/archive/` converts an archive into a **listing**: one
+line per file, `path  <sha256>`, sorted by path for a stable diff. The hash is
+the SHA-256 of the member's decompressed content (so it matches the project-wide
+"file hash" convention), and directory entries are omitted (they have no content
+to hash).
+
+Formats are detected by content magic, not just the filename:
+
+- **zip** — stdlib `zipfile`.
+- **7z** — `py7zr` (optional dependency, see `archive/requirements.txt`). If a
+  7z file is encountered without `py7zr` installed, the processor raises a
+  readable error instead of silently misreading it.
+- **tar** — stdlib `tarfile`, which also covers `tar.gz`/`tar.bz2`/`tar.xz` and
+  their short aliases.
+- **gzip / bzip2 / xz single files** — stdlib `gzip`/`bz2`/`lzma`; the listing
+  has one entry whose path is the archive name with its compression suffix
+  stripped.
+- **RAR** — rejected with a readable error (proprietary format; not an
+  open-source archive).
+
+Unrecognized bytes fail early with a readable error; the normal `type`/`hash`/
+`bytes_consumed` headers still wrap the listing as for any other processor.
+
 ## The hardcoded prefix (design note)
 
 The marker string is duplicated verbatim in `src/textconv/__init__.py` and

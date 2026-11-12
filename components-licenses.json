@@ -530,6 +530,15 @@
       "license_spdx": "PSF-2.0"
     },
     {
+      "id": "py7zr",
+      "name": "py7zr",
+      "scope": "runtime-optional",
+      "purpose": "7z archive listing (archive textconv processor)",
+      "source": "https://github.com/miurahr/py7zr",
+      "license": "GNU Lesser General Public License v2.1 or later",
+      "license_spdx": "LGPL-2.1-or-later"
+    },
+    {
       "id": "rjsmin",
       "name": "rjsmin",
       "scope": "build",

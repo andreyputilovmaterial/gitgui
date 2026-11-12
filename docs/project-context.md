@@ -421,6 +421,14 @@ detail view (`history-revision`).
 
 ## Last state
 
+- Frontend files list (2026-11-13): raised the container-query breakpoint that
+  hides the **file size + modified-at** columns in
+  `src/frontend/app_js/src/app/page_files_local_list/style.css` from
+  `max-width: 449px` to `max-width: 499px`, so on containers under 500 px the
+  size and timestamp columns are dropped (created-at is already hidden below
+  699 px). Reason: relatively narrow panes (e.g. the working-tree file pane on
+  the home page) left too little room for the file name itself.
+
 - Implemented archive textconv (2026-11-13): the `archive` processor was a
   "not implemented" stub; it now emits a **listing** — one `path  <sha256>` line
   per file, sorted by path for a stable diff, with the SHA-256 of each member's

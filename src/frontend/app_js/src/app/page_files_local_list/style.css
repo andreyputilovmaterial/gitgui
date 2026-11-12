@@ -43,7 +43,7 @@
     display: none;
   }
 }
-@container (max-width: 449px) {
+@container (max-width: 499px) {
   .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-size,
   .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-modifiedat {
     display: none;

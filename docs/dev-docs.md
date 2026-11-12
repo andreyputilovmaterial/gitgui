@@ -16,6 +16,7 @@
 | `.clinerules/*.md` | Imperative rules (imports, frontend/build, testing, style, JS, CSS, dates, commits, optional deps, submodules, user-facing language, …). |
 | `docs/project-context.md` | Living scratch notes — updated every agent run, never "stable". |
 | `docs/streaming-jobs.md` | Canonical reference for the job/pipe model. |
+| `docs/textconv.md` | Canonical reference for the textconv subsystem (header contract, hash, wiring). |
 | `docs/maintenance-log.md` | Cross-project structural notes shared with sibling projects. |
 | `docs/roadmap.md` | Plans / reminders / things to consider. |
 | `src/frontend/template/templates/common.css.changelog.md` | Changelog for the global CSS skin. |

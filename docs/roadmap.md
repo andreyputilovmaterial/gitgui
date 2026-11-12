@@ -7,6 +7,7 @@
 ## Things to consider, reminders, random thoughts
 
 - consider Tauri
+- One pre-existing, unrelated issue I noticed but did __not__ touch: running the *full* backend suite (`pytest -q`) fails at collection due to a `test_webserve_logging.py` basename collision between `tests/` and `src/lib/webinput/tests/` — it predates this work.
 - adopt filtering of projects in project-selector
 - sorting of categories (  )
 - make widgets a lib in webinput

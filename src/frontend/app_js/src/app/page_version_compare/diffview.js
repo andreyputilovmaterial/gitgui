@@ -8,6 +8,8 @@ import { ref, onMounted, watch, nextTick, } from 'vue';
 import './style.css';
 import './styles_diffview.css';
 
+import { contentHashesDiffer, makeContentHashTiebreakerLine } from './diff_content_hash.js';
+
 
 
 
@@ -388,6 +390,9 @@ const View = {
         statisticsLeft.value.textLineCount = leftLines.length;
         const rightLines = rightNomralizedLfCr.split('\n');
         statisticsRight.value.textLineCount = rightLines.length;
+        const leftHash = statisticsLeft.value.textconvHeadersRecognized?.hash;
+        const rightHash = statisticsRight.value.textconvHeadersRecognized?.hash;
+        const forceDifference = contentHashesDiffer(leftHash, rightHash) && (leftNomralizedLfCr === rightNomralizedLfCr);
         const leftLinesOrLinePartsCount = leftLines.reduce( (count, line) => count + Math.ceil((line.length+1) / MEMORYSAVE_CHARS_PER_LINE_LIMIT), 0 );
         const rightLinesOrLinePartsCount = rightLines.reduce( (count, line) => count + Math.ceil((line.length+1) / MEMORYSAVE_CHARS_PER_LINE_LIMIT), 0 );
         if( (leftLinesOrLinePartsCount>MEMORYSAVE_LINES_LIMIT) || (rightLinesOrLinePartsCount>MEMORYSAVE_LINES_LIMIT) ) {
@@ -493,6 +498,9 @@ const View = {
           }
           linesBuf.splice(0,linesBuf.length);
           sequenceOfUnchangedStartedAt = currIndex;
+        }
+        if( forceDifference ) {
+          lines.unshift( makeContentHashTiebreakerLine(leftHash, rightHash) );
         }
         linesRef.value = lines;
       } catch(e) {

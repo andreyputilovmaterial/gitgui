@@ -421,6 +421,45 @@ detail view (`history-revision`).
 
 ## Last state
 
+- Implemented the three textconv fixes (2026-11-13):
+  - `src/textconv/__init__.py` — `StreamingProxy` now computes the hash/size for
+    the **whole** source stream, decoupled from processor reads: `__init__` does
+    no I/O; `__enter__` pre-reads + ingests the 5 MB sample; `read()` replays it
+    without re-ingesting; and a new idempotent `_finalize_headers()` (called from
+    `textconv_from_stream`'s `finally`) drains the remainder, emits
+    `bytes_consumed`/`hash`, and always runs so `hash:` is present even when the
+    sample read fails. Hashing caps at the 64 MB display limit; the stream is
+    still drained (and counted) beyond it so a `git cat-file` producer is never
+    blocked.
+  - `src/frontend/app_js/src/app/page_version_compare/diffview.js` + new
+    `diff_content_hash.js` helper — when the rendered text is identical but the
+    `hash:` headers differ, the diff view prepends one synthetic "Content hash"
+    line (lineNum `null` so real line numbers don't shift) so the diff shows a
+    change.
+  - Tests: `tests/test_textconv_program.py` (+4: distinct binary hashes, full
+    content hash/byte count, hash-present-on-sample-read-failure) and a new
+    `page_version_compare/diff_content_hash.test.js` (2). Backend textconv tests
+    5/5, frontend suite 61/61. Note: the *full* backend pytest collection is
+    blocked by a pre-existing `test_webserve_logging.py` basename collision
+    between `tests/` and `src/lib/webinput/tests/` (unrelated to this change).
+
+- Verified the textconv header contract and documented it in `docs/textconv.md`
+  (2026-11-13). Findings:
+  - The `hash:` header is a SHA-256 of the bytes the processor *actually
+    consumed* (`StreamingProxy`), not necessarily the whole file. It is emitted
+    in `StreamingProxy.__exit__`, so it is present on normal completion *and* on
+    a processor exception; the one case that skips it is an exception in the
+    `StreamingProxy` constructor (the initial 5 MB sample read), which goes
+    straight to `except` and emits only `error`.
+  - Gap: processors that return a fixed message without reading the stream
+    (`binary`, `image`, `archive`, `spss`, `csv`, and `mdd` without `win32com`)
+    yield `bytes_consumed: 0` and the constant empty-input hash
+    `e3b0c442…b855` — two different files of those types get the *same* hash.
+  - Gap: the frontend diff view (`page_version_compare/diffview.js`) computes its
+    side-by-side diff on the stripped `text` only; `headersRecognized.hash` is
+    parsed but never read, so the hash currently does not drive diff inequality.
+  - Added a row to the doc map in `docs/dev-docs.md` pointing at the new file.
+
 - Added a standalone `textconv` program (2026-11-11):
   - `src/main_textconv_program.py` exposes `main(*argcs, **kwargs)` (the launcher
     convention) taking a single positional arg — path to an input file. It

@@ -48,15 +48,33 @@ class TextconvDataTooBig(Exception):
 class StreamingProxy:
     def __init__(self, source: FileLikeObject, buffer_for_headers: StringIO) -> FileLikeObject:
         self.source = source
+        self.buffer_for_headers = buffer_for_headers
         self.size = 0
         self.hasher = hashlib.sha256()
-        self.buffer_for_headers = buffer_for_headers
         self._is_in_context = False
-        # Pre-read a bounded sample for file-type detection.
-        # These bytes will subsequently be replayed by read(), so the
-        # logical stream still starts at byte 0 for the processor.
-        self._sample = source.read(SAMPLE_SIZE_BYTES)
+        # The bounded sample is read lazily in __enter__ (not here) so that
+        # constructing the proxy can never fail. An error reading the sample
+        # still leaves a proxy object that textconv_from_stream can finalize,
+        # so a `hash:` header is always emitted.
+        self._sample = None
         self._sample_pos = 0
+        self._headers_finalized = False
+
+    def _ingest(self, data: bytes) -> None:
+        if data:
+            self.hasher.update(data)
+            self.size += len(data)
+
+    def __enter__(self):
+        # Pre-read a bounded sample for file-type detection. These bytes will
+        # subsequently be replayed by read(), so the logical stream still starts
+        # at byte 0 for the processor. Ingest (hash+count) them once, upfront,
+        # so the hash/size cover the whole stream regardless of how much the
+        # processor ends up reading.
+        self._sample = self.source.read(SAMPLE_SIZE_BYTES)
+        self._ingest(self._sample)
+        self._is_in_context = True
+        return self
 
     def read(self, size: int = -1) -> bytes:
         if not self._is_in_context:
@@ -65,52 +83,57 @@ class StreamingProxy:
             )
 
         if size>MAX_FILE_SIZE_LIMIT_BYTES or size<0:
-            size = MAX_FILE_SIZE_LIMIT_BYTES+1 # not 100% accurate as of limit, but I believe having extra SAMPLE_SIZE_BYTES should not be an issue
+            size = MAX_FILE_SIZE_LIMIT_BYTES+1
 
-        # First replay bytes from the pre-read sample.
+        data = b''
+
+        # First replay bytes from the pre-read sample (already ingested).
         if self._sample_pos < len(self._sample):
-            if size < 0:
-                sample_data = self._sample[self._sample_pos:]
-                self._sample_pos = len(self._sample)
+            sample_remaining = len(self._sample) - self._sample_pos
+            sample_size = min(size, sample_remaining)
+            data = self._sample[
+                self._sample_pos:self._sample_pos + sample_size
+            ]
+            self._sample_pos += sample_size
 
-                # Now read the rest of the underlying stream.
-                data = self.source.read(MAX_FILE_SIZE_LIMIT_BYTES+1)
-                if data:
-                    sample_data += data
+        # If the caller requested more than remains in the sample, continue
+        # reading from the underlying stream.
+        remaining = size - len(data)
+        if remaining > 0:
+            source_data = self.source.read(remaining)
+            if source_data:
+                data += source_data
+                self._ingest(source_data)
 
-                data = sample_data
-            else:
-                sample_remaining = len(self._sample) - self._sample_pos
-                sample_size = min(size, sample_remaining)
-
-                data = self._sample[
-                    self._sample_pos:self._sample_pos + sample_size
-                ]
-                self._sample_pos += sample_size
-
-                # If the caller requested more than remains in the sample,
-                # continue reading from the underlying stream.
-                remaining = size - len(data)
-                if remaining > 0:
-                    source_data = self.source.read(remaining)
-                    if source_data:
-                        data += source_data
-
-        else:
-            # Sample has already been completely replayed.
-            if size<0:
-                data = self.source.read(MAX_FILE_SIZE_LIMIT_BYTES+1)
-            else:
-                data = self.source.read(size)
-
-        if data:
-            self.size += len(data)
-            self.hasher.update(data)
-
-            if self.size > MAX_FILE_SIZE_LIMIT_BYTES:
-                raise TextconvDataTooBig('FILE TOO BIG TO DISPLAY')
+        if self.size > MAX_FILE_SIZE_LIMIT_BYTES:
+            raise TextconvDataTooBig('FILE TOO BIG TO DISPLAY')
 
         return data
+
+    def _finalize_headers(self) -> None:
+        if self._headers_finalized:
+            return
+        self._headers_finalized = True
+
+        # Drain the remainder of the source stream so that (a) the
+        # bytes_consumed/hash headers describe the whole file even when a
+        # processor never read the stream, and (b) a pipe producer (e.g.
+        # `git cat-file`) is never left blocked on a full pipe buffer.
+        try:
+            while True:
+                chunk = self.source.read(64 * 1024)
+                if not chunk:
+                    break
+                if self.size < MAX_FILE_SIZE_LIMIT_BYTES:
+                    self.hasher.update(chunk)
+                self.size += len(chunk)
+        except Exception:
+            # Best effort: a broken stream must not hide the headers or the
+            # original error, so swallow drain failures.
+            pass
+
+        print( make_header(f'bytes_consumed: {int(self.size)}'), file=self.buffer_for_headers, end='\n' )
+        print( make_header(f'hash: {self.hexdigest}'), file=self.buffer_for_headers, end='\n' )
 
     @property
     def sample(self):
@@ -129,13 +152,7 @@ class StreamingProxy:
         pass
 
     # methods required by python so that I can use "with"
-    def __enter__(self):
-        self._is_in_context = True
-        return self
-
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print( make_header(f'bytes_consumed: {int(self.size)}'), file=self.buffer_for_headers, end='\n' )
-        print( make_header(f'hash: {self.hexdigest}'), file=self.buffer_for_headers, end='\n' )
         self._is_in_context = False
         return None
 
@@ -144,11 +161,17 @@ class StreamingProxy:
 def textconv_from_stream(inpFile: FileLikeObject,filename: str) -> str:
 
     outputs = None
+    error = None
     buf = StringIO()
+
+    # Construct the proxy outside the try so that it always exists: __init__ does
+    # no I/O, so this can never fail. The finally block below therefore always
+    # has an object to finalize headers on.
+    file = StreamingProxy(inpFile,buf)
 
     try:
 
-        with StreamingProxy(inpFile,buf) as file:
+        with file:
 
             filename = clean_filename_from_hash(filename)
 
@@ -168,25 +191,19 @@ def textconv_from_stream(inpFile: FileLikeObject,filename: str) -> str:
 
             outputs = processor(file,filename)
 
-        print(
-            '',
-            file=buf,
-            end='',
-            flush=True,
-        )
-        print(
-            outputs,
-            file=buf,
-            end='',
-            flush=True,
-        )
-    
     except Exception as e:
-        exception_text = make_exception_text(e)
+        error = e
         print( make_header('error'), file=buf, end='\n' )
-        print( f'{e}', file=buf, end='' )
-        print( exception_text, file=sys.stderr )
-    
+        print( make_exception_text(e), file=sys.stderr )
+    finally:
+        # Always emit bytes_consumed/hash (idempotent), then the content — so the
+        # header block stays at the top of the output on every path.
+        file._finalize_headers()
+        if error is not None:
+            print( f'{error}', file=buf, end='', flush=True )
+        else:
+            print( outputs, file=buf, end='', flush=True )
+
     return buf.getvalue()
 
 

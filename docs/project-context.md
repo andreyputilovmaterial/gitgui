@@ -1175,3 +1175,31 @@ detail view (`history-revision`).
   and its color is black by default and green (`--mdm-color-green`) on hover
   (cursor pointer).
 
+
+- Tools tab rework (2026-11-12): replaced the single "Search in history" tool with
+  two new dev/test tool pages. `page_tool_search_in_history/` (entry, router
+  import/route, page files) was deleted. New entries under `apptab_tools`:
+  - `page_test_input_types/` — every input type the app defines/uses (plain text,
+    search, number, date, textarea, select, `component-input-regextext`,
+    `component-input-numericrange`, `component-input-datetimerange`, checkboxes,
+    radios) with a live JSON echo. Routes: `tools-test-input-types`
+    (`#/tools/test-input-types`).
+  - `page_test_backend_jobs/` — one runnable example per backend job kind
+    (docs/streaming-jobs.md): sync text (`git status`), streamed binary
+    (`git cat-file blob HEAD:<file>`), interactive (`test`), piped
+    (`git archive | tar -t`), function job (`cat <file>` via
+    `handle_task_from_function`), textconv pipe (`git cat-file | textconv`) and
+    direct `/textconv` endpoint. Each shows live stdout/stderr/exit code; binary
+    jobs show bytes + download link + a UTF-8 preview. Routes:
+    `tools-test-backend-jobs` (`#/tools/test-backend-jobs`).
+  - The page reuses the reactive jobData returned by `executeGit*Command`
+    (it is already a Vue `reactive` proxy in `git__execute_commands`), so
+    stderr/exit_code update live; stdout is streamed by draining `jobData.getData()`.
+    This is the cleaner pattern the `handleGitGC` code in `page_pack_list_objects`
+    hand-rolls (it can later be refactored onto the same helper).
+  - Known fixture quirk surfaced by the test page: the backend `test` command's
+    stdout is `print()`-based and therefore block-buffered under `subprocess.Popen`
+    (arrives at the end), while its stderr is line-buffered and streams live. The
+    test page shows this difference directly; the fixture was intentionally left
+    unchanged (task scope is frontend-only).
+

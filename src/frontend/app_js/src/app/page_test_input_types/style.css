@@ -1,0 +1,32 @@
+
+.mdm-git-gui-test-inputs {
+    position: relative;
+    container-type: inline-size;
+}
+
+.mdm-git-gui-test-inputs .description {
+    margin: 0 0 15px;
+}
+
+.mdm-git-gui-test-inputs .mdmreport-controls-group {
+    margin-top: 7px;
+}
+
+.mdm-git-gui-test-inputs .echo-title {
+    margin: 30px 0 7px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.mdm-git-gui-test-inputs .echo {
+    margin: 0;
+    padding: 15px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #f6f6f6;
+    overflow: auto;
+    max-height: 420px;
+    white-space: pre-wrap;
+    font-family: monospace, monospace;
+    font-size: 100%;
+}

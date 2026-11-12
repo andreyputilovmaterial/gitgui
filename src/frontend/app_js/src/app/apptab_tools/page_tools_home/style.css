@@ -1,6 +1,5 @@
 .mdm-git-gui-tools-home {
     position: relative;
-    container-type: inline-size;
 }
 
 .mdm-git-gui-tools-home .description {
@@ -27,10 +26,4 @@
 
 .mdm-git-gui-tools-home-section .desc {
     margin: 0 0 15px;
-}
-
-@container (min-width: 640px) {
-    .mdm-git-gui-tools-home-sections {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
 }

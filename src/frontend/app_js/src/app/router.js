@@ -17,7 +17,8 @@ import PagePackcompression from './apptab_packcompression/index';
 import PageListPackObjects from './page_pack_list_objects/index';
 import PageTools from './apptab_tools/index';
 import PageToolsHome from './apptab_tools/page_tools_home/index';
-import PageToolSearchInHistory from './page_tool_search_in_history/index';
+import PageTestInputTypes from './page_test_input_types/index';
+import PageTestBackendJobs from './page_test_backend_jobs/index';
 
 // Shared props passed to every tab route component, so they keep receiving
 // repoStatus/repoActions exactly as before (they still declare them as props).
@@ -63,7 +64,8 @@ const router = createRouter({
         ]},
         { path: 'tools', name: 'tools', component: PageTools, redirect: { name: 'tools-home' }, children: [
             { path: '', name: 'tools-home', component: PageToolsHome, props: routeProps },
-            { path: 'search-in-history', name: 'tools-search-history', component: PageToolSearchInHistory, props: routeProps },
+            { path: 'test-input-types', name: 'tools-test-input-types', component: PageTestInputTypes, props: routeProps },
+            { path: 'test-backend-jobs', name: 'tools-test-backend-jobs', component: PageTestBackendJobs, props: routeProps },
         ]},
       ],
     },

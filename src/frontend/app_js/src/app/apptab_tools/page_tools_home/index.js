@@ -8,10 +8,16 @@ import './style.css';
 // `tools-<id>`) and push one entry here with that `routeName` — nothing else.
 const TOOLS = [
   {
-    id: 'search-in-history',
-    title: 'Search in history',
-    description: 'Find saved revisions by hash, author or commit message.',
-    routeName: 'tools-search-history',
+    id: 'test-input-types',
+    title: 'Test input types',
+    description: 'All input types this app defines or uses (text, regex, ranges, checkboxes, radios, …) with a live echo.',
+    routeName: 'tools-test-input-types',
+  },
+  {
+    id: 'test-backend-jobs',
+    title: 'Test backend jobs',
+    description: 'Run every backend job type: text, binary, interactive, pipes, function jobs and textconv.',
+    routeName: 'tools-test-backend-jobs',
   },
 ];
 
@@ -33,7 +39,7 @@ const View = {
   </div>
 </div>
 `,
-  setup(props) {
+  setup() {
     const router = useRouter();
     const tools = TOOLS;
     const error = ref('');

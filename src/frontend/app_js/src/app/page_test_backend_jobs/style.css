@@ -1,0 +1,93 @@
+
+.mdm-git-gui-test-backend-jobs {
+    position: relative;
+    container-type: inline-size;
+}
+
+.mdm-git-gui-test-backend-jobs .description {
+    margin: 0 0 15px;
+}
+
+.mdm-git-gui-test-jobs-examples {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.mdm-git-gui-test-jobs-example {
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.mdm-git-gui-test-jobs-example .title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 7px;
+}
+
+.mdm-git-gui-test-jobs-example .desc {
+    margin: 0 0 15px;
+    color: #666;
+}
+
+.mdm-git-gui-test-jobs-example .mdmreport-controls-group {
+    margin-top: 7px;
+}
+
+.mdm-git-gui-test-jobs-actions {
+    margin-top: 15px;
+}
+
+.mdm-git-gui-test-jobs-output {
+    margin-top: 15px;
+}
+
+.mdm-git-gui-test-jobs-streaming {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 7px;
+    color: #666;
+}
+
+.mdm-git-gui-test-jobs-exit {
+    margin: 0 0 7px;
+    color: #666;
+}
+
+.mdm-git-gui-test-jobs-output .stdout,
+.mdm-git-gui-test-jobs-output .stderr,
+.mdm-git-gui-test-jobs-output .preview {
+    margin: 7px 0 0;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #f6f6f6;
+    overflow: auto;
+    max-height: 320px;
+    white-space: pre-wrap;
+    font-family: monospace, monospace;
+    font-size: 100%;
+}
+
+.mdm-git-gui-test-jobs-output .stderr {
+    color: #a00;
+}
+
+.mdm-git-gui-test-jobs-output .stderr.producer {
+    color: #864;
+}
+
+.mdm-git-gui-test-jobs-binary-meta {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin: 7px 0;
+}
+
+@media (min-width: 760px) {
+    .mdm-git-gui-test-jobs-examples {
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    }
+}

@@ -1333,3 +1333,37 @@ detail view (`history-revision`).
       backend only handled `TERM`; `handle_job_status` now accepts both `TERM` and
       `DELETE` so the "Terminate" button stops returning HTTP 405.
 
+
+## Test-suite robustness: root vs standalone submodule (2026-11-13)
+
+- Fixed the `pytest -q` collection error recorded in `docs/roadmap.md`: a basename
+  collision between `tests/test_webserve_logging.py` (repo root) and
+  `src/lib/webinput/tests/test_webserve_logging.py` (webinput submodule). Both
+  were imported by pytest (default `prepend` import mode) as the same top-level
+  module `test_webserve_logging`, so the second one raised "import file mismatch".
+- Root cause behind the collision, plus a second silent bug: webinput's test used
+  an absolute `from src.helper_webserve_logging import ...`. Run from the repo
+  root, `src` resolves to gitgui's own `src` package (root is on `sys.path`), so
+  the webinput test was exercising gitgui's `helper_webserve_logging` (which keeps
+  an in-memory `records` log) rather than webinput's print-only variant — the two
+  files differ. It only worked standalone because pytest/cwd happened to put
+  webinput's own root on `sys.path`.
+- Fix (mirrors the `py_js_bundler` submodule's documented convention): made
+  `src/lib/webinput/tests/` a package (added `tests/__init__.py`) and changed the
+  import to `from ..src.helper_webserve_logging import WebserveLogger, logger`.
+  The module is now imported as `src.lib.webinput.tests.test_webserve_logging`
+  (embedded) or `webinput.tests.test_webserve_logging` (standalone), so the name
+  no longer collides with the root's top-level `test_webserve_logging`, and the
+  relative import always reaches webinput's own `src`.
+- Verified: root `pytest -q` → 511 passed, 1 skipped, 11 xfailed (clean);
+  webinput standalone `pytest -q` (both its own `.venv` and the root `.venv`) →
+  9 passed; `py_js_bundler` standalone → 405 passed; `pinliner` standalone →
+  22 passed, 11 xfailed. A `sys.path` probe confirms the webinput test now imports
+  webinput's own helper (`logger.name == "webinput.webserve"`, no
+  `MAX_LOG_RECORDS`).
+- Convention for future submodule tests: use a package (`tests/__init__.py`) plus
+  relative imports rather than absolute `src.*` imports — otherwise the parent
+  repo's same-named `src` package shadows the submodule's own, and identical test
+  basenames collide. `pinliner` (`tests/test_inliner.py`, unique basename) and
+  `qre` (`src/test_questions.py`, relative imports) already avoid both problems.
+

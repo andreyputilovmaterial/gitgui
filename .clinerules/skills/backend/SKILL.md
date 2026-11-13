@@ -24,6 +24,13 @@ The backend is the Python web server that serves the app UI and its `/command`,
 - `health`  — HTTP probe of `http://localhost:5180/health` (exit 0 = HTTP 200)
 - `logs`    — tail the backend log `.gitgui-dev-backend.log`
 
+## Output
+
+- Success messages (backend started/stopped/healthy/running) print **green**; the
+  key failure message prints **red**. Colors appear only on an interactive
+  terminal (stdout is a TTY) and are suppressed when output is piped or `NO_COLOR`
+  is set.
+
 ## Example
 
     python dev_backend.py restart

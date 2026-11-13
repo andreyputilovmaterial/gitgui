@@ -35,6 +35,55 @@ Two concepts are easy to conflate, so they are spelled out separately:
 
 ---
 
+## dev_backend.py: color-coded success/failure output (+ TIME_WAIT-safe port check)
+
+- **Requested:** 2026-11-13
+- **Implemented:** 2026-11-13
+- **Where:** `dev_backend.py`, `src/helper_backend_port.py`,
+  `.clinerules/skills/backend/SKILL.md`.
+
+### What & why
+
+`dev_backend.py` prints success messages in **green** and the key failure message
+in **red**, following the existing CLI output-coloring convention. Colors are
+emitted only when stdout is an interactive terminal and `NO_COLOR` is unset (VT
+processing is enabled on Windows 10+), so piped/agent output stays clean. The
+fixed-port pre-check in `src/helper_backend_port.py` now sets `SO_REUSEADDR`
+(POSIX only) so a port held by a `TIME_WAIT` socket from a just-stopped listener
+is no longer reported as "already in use".
+
+### Input (before) — `src/helper_backend_port.py`
+
+```python
+def _require_port_available(host, port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((host, port))
+        except OSError as exc:
+            raise Exception(...) from exc
+```
+
+### Output (after)
+
+```python
+def _require_port_available(host, port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if os.name != 'nt':
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind((host, port))
+        except OSError as exc:
+            raise Exception(...) from exc
+```
+
+### Repeat
+
+1. Gate ANSI colors on `sys.stdout.isatty()` + `NO_COLOR` so piped output stays clean.
+2. Keep success/error coloring in one small `_success`/`_error` helper pair.
+3. Mirror the real listener's socket options (`SO_REUSEADDR`) in any "is the port free" probe.
+
+---
+
 ## Dev backend tooling: a cross-platform `dev_backend.py` + a `--browser` launch mode
 
 - **Requested:** 2026-11-13 (agent- and human-manageable backend restarts on localhost:5180)

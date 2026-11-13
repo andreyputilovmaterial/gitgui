@@ -34,6 +34,8 @@ Design:
 - The default working tree / git directory is the repo itself (``.``), so a
   fresh checkout can be served without pointing at any external project.
 - Backend output goes to ``.gitgui-dev-backend.log`` (gitignored); ``logs`` tails it.
+- Success messages print green and the key failure message prints red on an
+  interactive terminal (respecting ``NO_COLOR``); piped output stays plain.
 """
 
 from __future__ import annotations
@@ -58,6 +60,49 @@ HEALTH_PATH = "/health"
 HEALTH_TIMEOUT_SECONDS = 2.0
 START_WAIT_SECONDS = 15.0
 START_POLL_SECONDS = 0.25
+
+# ANSI colors for human-readable success/failure messages. They are emitted only
+# when stdout is an interactive terminal (and not suppressed via NO_COLOR), so
+# piped or agent-parsed output stays clean.
+GREEN = "\033[32m"
+RED = "\033[31m"
+RESET = "\033[0m"
+
+
+def _colors_enabled() -> bool:
+    """Whether ANSI colors should be emitted on stdout right now."""
+    if os.environ.get("NO_COLOR"):
+        return False
+    if not sys.stdout.isatty():
+        return False
+    if os.name == "nt":
+        # Best-effort enable virtual-terminal processing on Windows 10+ consoles;
+        # harmless on older consoles (the escape codes are simply ignored).
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            stdout_handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+            mode = ctypes.c_uint32()
+            if kernel32.GetConsoleMode(stdout_handle, ctypes.byref(mode)):
+                # ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+                kernel32.SetConsoleMode(stdout_handle, mode.value | 0x0004)
+        except Exception:
+            pass
+    return True
+
+
+def _paint(text: str, color: str) -> str:
+    if not _colors_enabled():
+        return text
+    return f"{color}{text}{RESET}"
+
+
+def _success(text: str) -> str:
+    return _paint(text, GREEN)
+
+
+def _error(text: str) -> str:
+    return _paint(text, RED)
 
 
 def repo_root() -> Path:
@@ -346,7 +391,8 @@ def _print_status(status: dict, as_json: bool) -> int:
         print(json.dumps(status, indent=2))
     else:
         state = "running/healthy" if status["healthy"] else "not running"
-        print(f"port {status['port']}: {state}")
+        state_line = f"port {status['port']}: {state}"
+        print(_success(state_line) if status["healthy"] else _error(state_line))
         print(f"  pid: {status['pid']} (alive: {status['pid_alive']})")
         print(f"  health: {status['detail']}")
         if status["listeners"]:
@@ -383,31 +429,35 @@ def main(argv: list[str] | None = None) -> int:
         if args.json:
             print(json.dumps({"port": args.port, "healthy": healthy, "detail": detail}))
         else:
-            print(f"port {args.port}: " + ("healthy (HTTP 200)" if healthy else f"unhealthy — {detail}"))
+            message = (
+                f"port {args.port}: "
+                + ("healthy (HTTP 200)" if healthy else f"unhealthy — {detail}")
+            )
+            print(_success(message) if healthy else _error(message))
         return 0 if healthy else 1
 
     if command == "start":
         ok, message = start_backend(args.working_tree, args.git_directory_location, args.port)
-        print(message)
+        print(_success(message) if ok else _error(message))
         return 0 if ok else 1
 
     if command == "stop":
-        _, message = stop_backend(args.port)
-        print(message)
+        stopped, message = stop_backend(args.port)
+        print(_success(message) if stopped else message)
         return 0
 
     if command == "restart":
         stop_backend(args.port)
         time.sleep(0.3)  # give the OS a beat to release the listen socket
         ok, message = start_backend(args.working_tree, args.git_directory_location, args.port)
-        print(message)
+        print(_success(message) if ok else _error(message))
         return 0 if ok else 1
 
     if command == "logs":
         try:
             lines = log_file_path().read_text(encoding="utf-8").splitlines()
         except OSError:
-            print(f"no log file at {log_file_path()}")
+            print(_error(f"no log file at {log_file_path()}"))
             return 1
         print("\n".join(lines[-args.lines:]) if lines else "(empty log)")
         return 0

@@ -6,6 +6,7 @@ this here (rather than inline in ``main_gitgui_program.py``) keeps the startup
 module focused on wiring the app together.
 """
 
+import os
 import socket
 
 from .webserver_engine.webserve.src.find_free_port import find_free_port
@@ -37,6 +38,13 @@ def _require_port_available(host, port):
     the original reason stays visible in the traceback.
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if os.name != 'nt':
+            # The real listener (HTTPServer) sets SO_REUSEADDR; mirror that here
+            # so a port held only by a TIME_WAIT socket from a just-stopped
+            # server is not reported as "already in use". Skipped on Windows,
+            # where SO_REUSEADDR has different (permissive) semantics that would
+            # weaken the fixed-port "fail if occupied" guarantee.
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             s.bind((host, port))
         except OSError as exc:

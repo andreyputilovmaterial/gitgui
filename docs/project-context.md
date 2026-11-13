@@ -1392,3 +1392,26 @@ detail view (`history-revision`).
 - Tests: `tests/test_browser_launcher.py`, `tests/test_dev_backend.py` (pure parts
   only — no import of the heavy entry-point module).
 
+## dev_backend.py: color-coded output + TIME_WAIT-safe port check (2026-11-13)
+
+- Mirrors the `dev_backend.py: color-coded success/failure output (+ TIME_WAIT-safe
+  port check)` entry in `docs/maintenance-log.md`.
+- `dev_backend.py` now prints success messages **green** and the key failure
+  message **red**, gated on `sys.stdout.isatty()` + `NO_COLOR` (plus best-effort
+  Windows VT enablement), so piped/agent output stays plain. Color logic lives in
+  one `_success`/`_error` helper pair (via `_paint`/`_colors_enabled`), applied in
+  `_print_status` and the `health`/`start`/`stop`/`restart`/`logs` commands.
+  `stop` prints green only when it actually stopped something (the idempotent
+  "backend was not running" message stays plain).
+- `src/helper_backend_port.py`'s fixed-port probe `_require_port_available` now sets
+  `SO_REUSEADDR` before binding (POSIX only) to mirror the real listener
+  (`http.server.HTTPServer`/`ThreadingHTTPServer` set it via
+  `TCPServer.allow_reuse_address`), so a port held only by a `TIME_WAIT` socket from
+  a just-stopped backend is no longer reported as "already in use". Skipped on
+  Windows, where `SO_REUSEADDR` semantics differ.
+- `.clinerules/skills/backend/SKILL.md` gained an "Output" section documenting the
+  coloring.
+- Verified: `py_compile` clean; `tests/test_dev_backend.py` → 13 passed; piped
+  `status` output is plain; the `_success`/`_error` helpers emit `\x1b[32m`/`\x1b[31m`
+  on a TTY and stay plain under `NO_COLOR`.
+

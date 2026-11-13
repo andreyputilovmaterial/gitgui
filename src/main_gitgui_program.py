@@ -9,7 +9,12 @@ import os # for loading .env
 
 from .webserver_engine.webserve.src.webserver import Webserver # a wrapper around python http.server - no flask or django
 from .webserver_engine.webserve.src.webserver import HTTP403, HTTP404, WebResponse
-from .webserver_engine.webserve.src.launch_browser import launch_browser
+from .browser_launcher import (
+    BROWSER_MODE_DEFAULT,
+    BROWSER_MODE_NOOP,
+    BROWSER_MODE_PYWEBVIEW,
+    launch_browser_for_mode,
+)
 from .cli_proxy_caller import (
     initiate_worker_loop as cli_initiate_worker_loop,
     initiate_gc_loop as cli_initiate_gc_loop,
@@ -106,7 +111,24 @@ def main(*argcs,**kwargs):
             '<N> instead.'
         )
     )
+    parser.add_argument(
+        '--browser',
+        choices=[BROWSER_MODE_DEFAULT, BROWSER_MODE_NOOP, BROWSER_MODE_PYWEBVIEW],
+        default=BROWSER_MODE_DEFAULT,
+        help=(
+            'How to open the UI once the backend webserver is running: '
+            '"launch-system-default-browser" opens the OS default browser '
+            '(the default), "no-op" starts headless without opening a browser '
+            '(used by dev automation), and "pywebview" is reserved but not '
+            'implemented yet.'
+        )
+    )
     args = parser.parse_args(*argcs,**kwargs)
+
+    if args.browser == BROWSER_MODE_PYWEBVIEW:
+        raise NotImplementedError(
+            f'--browser {BROWSER_MODE_PYWEBVIEW} is not implemented yet'
+        )
 
     print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     config = {
@@ -225,7 +247,7 @@ def main(*argcs,**kwargs):
 
     # print(f'{STDOUT_COLOR_GREEN}starting webserver at {config.get("http_address")}{STDOUT_COLOR_RESET}')
 
-    launch_browser(f'{config.get("http_address")}/')
+    launch_browser_for_mode(args.browser, f'{config.get("http_address")}/')
     server.run()
 
 

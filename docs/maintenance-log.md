@@ -35,6 +35,110 @@ Two concepts are easy to conflate, so they are spelled out separately:
 
 ---
 
+## Dev backend tooling: a cross-platform `dev_backend.py` + a `--browser` launch mode
+
+- **Requested:** 2026-11-13 (agent- and human-manageable backend restarts on localhost:5180)
+- **Implemented:** 2026-11-13
+- **Where:** repo root (`dev_backend.py`), `src/browser_launcher.py` +
+  `src/main_gitgui_program.py` (new `--browser` flag), `.clinerules/skills/backend/`,
+  `.clinerules/30-dev-backend-tooling.md`, `.gitignore`, `tests/test_browser_launcher.py`,
+  `tests/test_dev_backend.py`.
+
+### Problem
+
+The desktop app is a Python backend + browser UI. The backend starts on
+`localhost`, default port 5180, but `find_free_port` **silently increments** the
+port when 5180 is taken (`src/helper_backend_port.py` → `find_free_port.py`), while
+the Vite dev server hard-codes `http://localhost:5180` as its proxy target.
+There was no idempotent way to check/start/stop/restart the backend, no health
+check, and no record of which process to kill — so an agent (or a human)
+resorted to platform-specific `lsof`/`sudo`/`kill` guessing, sometimes killed
+the wrong process, and "start" could appear to succeed on the wrong port.
+
+### Intent
+
+One deterministic, cross-platform control point for the dev backend, usable by
+both humans and agents: `status` / `start` / `stop` / `restart` / `health` /
+`logs`. Plus a `--browser` flag on the UI program so automation can start the
+server without popping a browser.
+
+### Reasoning
+
+- The tool is **Python** (already a hard app requirement), so it is identical on
+  Windows/macOS/Linux — no `.sh`+`.bat` pair, and no `lsof`/`sudo` on the happy path.
+- A **pid file** is the authoritative record of what `start` spawned (fully
+  portable); an OS-specific port→PID lookup is only a *fallback* for a backend
+  started outside the tool (e.g. the debugger).
+- `start` is idempotent and headless; the agent is pointed at the script via a
+  **Cline skill** (on-demand procedure) plus a one-line **rule** (always-on
+  pointer), so it stops improvising `lsof`/`kill`.
+- The browser-launch decision is extracted to `src/browser_launcher.py` so the
+  three modes are testable without importing the heavy UI entry-point module
+  (and its `GENERATED/` + `.env` dependencies).
+
+### Proposed plan (as implemented)
+
+1. `src/browser_launcher.py` — `launch_browser_for_mode(mode, url)` with modes
+   `launch-system-default-browser` (default), `no-op`, and `pywebview` (raises
+   `NotImplementedError`).
+2. `src/main_gitgui_program.py` — add `--browser` (choices above, default
+   `launch-system-default-browser`); validate `pywebview` early (fail before the
+   server starts); call `launch_browser_for_mode` instead of `launch_browser`.
+3. `dev_backend.py` — the subcommands above; pid file + port→PID fallback;
+   HTTP 200 health probe (HEAD on `/health`); headless start (`--browser no-op`);
+   output to `.gitgui-dev-backend.log`.
+4. `.gitignore` — ignore `.gitgui-dev-backend.pid` and `.gitgui-dev-backend.log`.
+5. `.clinerules/skills/backend/SKILL.md` + `.clinerules/30-dev-backend-tooling.md`
+   — tell the agent to use `dev_backend.py` and never `lsof`/`kill`/`sudo`.
+
+### Input (before) — `src/main_gitgui_program.py`
+
+```python
+from .webserver_engine.webserve.src.launch_browser import launch_browser
+...
+    parser.add_argument('--working-tree', type=str, required=True)
+    parser.add_argument('--git-directory-location', type=str, required=True)
+...
+    args = parser.parse_args(*argcs, **kwargs)
+...
+    launch_browser(f'{config.get("http_address")}/')
+    server.run()
+```
+
+### Output (after)
+
+```python
+from .browser_launcher import (
+    BROWSER_MODE_DEFAULT, BROWSER_MODE_NOOP, BROWSER_MODE_PYWEBVIEW,
+    launch_browser_for_mode,
+)
+...
+    parser.add_argument('--browser', choices=[BROWSER_MODE_DEFAULT, BROWSER_MODE_NOOP, BROWSER_MODE_PYWEBVIEW],
+                        default=BROWSER_MODE_DEFAULT, ...)
+    args = parser.parse_args(*argcs, **kwargs)
+    if args.browser == BROWSER_MODE_PYWEBVIEW:
+        raise NotImplementedError('--browser pywebview is not implemented yet')
+...
+    launch_browser_for_mode(args.browser, f'{config.get("http_address")}/')
+    server.run()
+```
+
+### Repeat (to apply the same convention elsewhere)
+
+1. Add a stdlib-only Python dev script at the repo root exposing idempotent
+   `status`/`start`/`stop`/`restart`/`health`/`logs` verbs with exit codes 0/1.
+2. Record the spawned PID in a gitignored pid file; use an OS-branched
+   port→PID lookup (`netstat` on Windows, `lsof` elsewhere) only as a fallback.
+3. Health-check via an existing cheap endpoint (HTTP 200), not a new route.
+4. Give the UI entry-point module a `--browser` flag whose values include a
+   `no-op` for headless automation and a reserved `pywebview` that fails early.
+5. Point the agent at the script with a skill (how-to, on demand) + a rule
+   (one-line always-on pointer), and forbid `lsof`/`kill`/`sudo` in that context.
+6. Add unit tests for the pure parts (mode dispatch, pid-file round-trip, health
+   probe, arg parsing) without importing the heavy entry-point module.
+
+---
+
 ## Build scripts: install only dev dependencies; split runtime vs dev requirements
 
 - **Requested:** 2026-11-10

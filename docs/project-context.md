@@ -1367,3 +1367,28 @@ detail view (`history-revision`).
   basenames collide. `pinliner` (`tests/test_inliner.py`, unique basename) and
   `qre` (`src/test_questions.py`, relative imports) already avoid both problems.
 
+## Dev backend tooling (2026-11-13)
+
+- Added cross-platform dev backend tooling mirroring the `Dev backend tooling`
+  entry in `docs/maintenance-log.md`: `dev_backend.py` (repo root) + a new
+  `--browser` launch mode on the UI program.
+- `dev_backend.py` is stdlib-only and exposes `status`/`start`/`stop`/`restart`/
+  `health`/`logs` (exit 0/1). It records the spawned PID in a gitignored
+  `.gitgui-dev-backend.pid`, falls back to a port→PID lookup (`netstat` on
+  Windows / `lsof` elsewhere) only for backends started outside the tool, and
+  health-checks via **HEAD** on the existing `/health` endpoint (gitgui's
+  `/health` returns 200 only for HEAD, 405 otherwise). `start`/`restart` are
+  idempotent, headless (`--browser no-op`), and pin the port with
+  `--config-webserver-port 5180` so the backend never drifts off the Vite proxy
+  target. Default `--working-tree` / `--git-directory-location` is the repo
+  itself (`.`), so a fresh checkout can be served with no extra args.
+- `src/browser_launcher.py` extracts the launch decision
+  (`launch-system-default-browser` default, `no-op`, reserved `pywebview`) so the
+  modes are testable without importing `main_gitgui_program`. `main_gitgui_program.py`
+  gained `--browser` and validates `pywebview` early (fails before the server
+  starts).
+- `.clinerules/skills/backend/SKILL.md` + `.clinerules/30-dev-backend-tooling.md`
+  point the agent at `dev_backend.py` and forbid `lsof`/`kill`/`sudo`/`taskkill`.
+- Tests: `tests/test_browser_launcher.py`, `tests/test_dev_backend.py` (pure parts
+  only — no import of the heavy entry-point module).
+

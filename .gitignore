@@ -54,3 +54,7 @@ Icon?
 
 # Keep .gitignore itself
 !.gitignore
+
+# --- Dev backend tooling (dev_backend.py) ---
+.gitgui-dev-backend.pid
+.gitgui-dev-backend.log

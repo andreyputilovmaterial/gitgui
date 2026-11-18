@@ -210,6 +210,8 @@ requirements are met.
   stdout (start/request/stop), WARNING+ → stderr (errors/notices) — and
   reproduces the old coloring. The submodule documents this change in
   `src/webserver_engine/webserve/docs/maintenance-log.md`.
+- webserve submodule bumped to `db702f7` (2026-11-18): don't re-encode the
+  empty body produced from `None` (`src/webserver.py`, one-line change).
 
 ## Modals (frontend)
 

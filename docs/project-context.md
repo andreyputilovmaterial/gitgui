@@ -946,6 +946,15 @@ detail view (`history-revision`).
 
 ## Rule additions
 
+- 2026-11-18: clarified commit ordering in `.clinerules/00-project-context.md`
+  (update `docs/project-context.md` *before* committing, so it lands in the same
+  commit as the work it describes — not as a separate follow-up commit) and added
+  a matching bullet to `.clinerules/22-when-making-commits.md` (commit code /
+  submodule-pointer bump and the project-context update together in one commit,
+  after pushing submodule commits per `21`). Fixes the recurring "two commits"
+  pattern: one for the submodule pointer bump, then a follow-up note in
+  `project-context.md`.
+
 - 2026-11-11: regrouped the git/github `.clinerules` into their own `2x`
   series: `08-commit-messages.md` → `20-git-commit-messages-wording.md`,
   `11-submodules-commits.md` → `21-git-submodules-commits-order.md`,

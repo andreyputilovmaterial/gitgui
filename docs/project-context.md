@@ -789,6 +789,19 @@ detail view (`history-revision`).
 - The block stacks on narrow widths and goes `1fr 1fr` at
   `@container (min-width: 700px)`; the root `.mdm-git-gui-historydiff` gained
   `container-type: inline-size` to provide that container query.
+- A `git diff --stat`-style block (`.mdm-git-gui-historydiff-stat`) now sits
+  between the commit-summary banners and the records filter. It is produced
+  with **no extra git call**: the existing `git diff` was changed from
+  `--raw -z --no-abbrev -M` to `--raw -z --stat --no-abbrev -M`, which makes
+  git emit the NUL-separated `--raw` section first and then the
+  newline-separated `--stat` section in a single invocation. Parsing lives in
+  `parse_diff_outputs.js` (`parseDiffOutputs` → `{ records, statLines }`), which
+  stops consuming raw headers at the first non-`:` part and treats the rest as
+  the stat text; `splitStatLineForColoring` colors `+`/`-` in the count/bar
+  column (and the summary line) green/red without touching a `+`/`-` inside a
+  file name, and leaves the `-` in a binary line's `Bin 0 -> 12 bytes` arrow
+  uncolored. The block is plain monospace text (`white-space: pre`), so it keeps
+  git's own compact two-column `path | count bar` layout and summary line.
 
 ## Streaming jobs (pipe) model
 

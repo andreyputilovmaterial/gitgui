@@ -46,6 +46,26 @@
   }
 }
 
+.mdm-git-gui-historydiff-stat {
+  margin: 0 0 var(--mdm-space-0-5x);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #222;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.mdm-git-gui-historydiff-stat .mdm-git-gui-historydiff-stat-add {
+  color: var(--mdm-color-green);
+  font-weight: 700;
+}
+
+.mdm-git-gui-historydiff-stat .mdm-git-gui-historydiff-stat-del {
+  color: var(--mdm-color-reject);
+  font-weight: 700;
+}
+
 .mdm-git-gui-diff-records .diff-record {
   grid-template-columns: subgrid;
 }

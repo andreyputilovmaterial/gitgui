@@ -7,6 +7,7 @@ import { makeFetchResponseErrorMessage, } from '../../common_defs/helper_functio
 
 
 import DiffRecord from './component_record.js';
+import { parseDiffOutputs, splitStatLineForColoring } from './parse_diff_outputs.js';
 
 import './style.css';
 
@@ -45,6 +46,14 @@ const View = {
     </div>
   </div>
   <div class="error">{{ error }}</div>
+  <div v-if="diffStatSegments.length" class="mdm-git-gui-historydiff-stat">
+    <div v-for="(segments, lineIndex) in diffStatSegments" :key="lineIndex" class="mdm-git-gui-historydiff-stat-line">
+      <template v-for="(segment, segmentIndex) in segments" :key="segmentIndex">
+        <span v-if="segment.cls" :class="segment.cls">{{ segment.txt }}</span>
+        <template v-else>{{ segment.txt }}</template>
+      </template>
+    </div>
+  </div>
   <template v-if="!changedFiles && !error">Querying data, please wait...</template>
   <template v-else-if="!!changedFiles">
     <component-filter-records-form
@@ -91,6 +100,10 @@ const View = {
 
     const error = ref('');
     const changedFiles = ref(null);
+    const diffStatLines = ref([]);
+    const diffStatSegments = computed(() =>
+      diffStatLines.value.map(line => splitStatLineForColoring(line))
+    );
 
     const getRevisionInfo = hash => {
       if (hash === 'worktree')
@@ -112,84 +125,8 @@ const View = {
     const hasText = value => value !== null && value !== undefined && `${value}`.trim().length > 0;
 
     const getFiles = async data => {
-      function parseDiffOutputs(data) {
-        const decoder = new TextDecoder();
-
-        function splitBytes(bytes, separator) {
-          const result = [];
-          let start = 0;
-
-          for (let i = 0; i <= bytes.length; i++) {
-            if (i === bytes.length || bytes[i] === separator) {
-              result.push(bytes.subarray(start, i));
-              start = i + 1;
-            }
-          }
-
-          return result;
-        }
-
-        function splitWhitespace(bytes) {
-          return decoder.decode(bytes).trim().split(/\s+/);
-        }
-
-        const parts = splitBytes(data, 0);
-        const results = [];
-
-        let i = 0;
-
-        while (i < parts.length) {
-          const headerBytes = parts[i++];
-
-          // Ignore trailing NUL
-          if (headerBytes.length === 0) {
-            continue;
-          }
-
-          const fields = splitWhitespace(headerBytes);
-
-          const old_mode = fields[0].substring(1);
-          const new_mode = fields[1];
-          const old_oid = fields[2];
-          const new_oid = fields[3];
-          const status = fields[4];
-
-          // R = rename, C = copy; both have two paths.
-          const isRenameOrCopy =
-            status.startsWith("R") || status.startsWith("C");
-
-          if (isRenameOrCopy) {
-            const old_path = decoder.decode(parts[i++]);
-            const new_path = decoder.decode(parts[i++]);
-
-            results.push({
-              old_mode,
-              new_mode,
-              old_oid,
-              new_oid,
-              status,
-              old_path,
-              new_path,
-              path: new_path,
-            });
-          } else {
-            const path = decoder.decode(parts[i++]);
-
-            results.push({
-              old_mode,
-              new_mode,
-              old_oid,
-              new_oid,
-              status,
-              path,
-            });
-          }
-        }
-
-        return results;
-      }
       async function executeGitDiff( hashLeft, hashRight ) {
-        // git diff --raw -z --no-abbrev -M ec18f2c b4c0edf
+        // git diff --raw -z --stat --no-abbrev -M ec18f2c b4c0edf
         const { leftIsWorktree, leftIsIndex, rightIsWorktree, rightIsIndex, } = {
           leftIsWorktree: hashLeft==='worktree',
           leftIsIndex: hashLeft==='index',
@@ -227,7 +164,7 @@ const View = {
         if( hashLeft===hashRight ) {
           return new Uint8Array([]);
         } else {
-          const jobData = await props.repoActions.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--no-abbrev', '-M',],...args]);
+          const jobData = await props.repoActions.executeGitBinaryCommand([...['git', 'diff', '--raw', '-z', '--stat', '--no-abbrev', '-M',],...args]);
           await jobData.promiseDownloadLinkReady;
           const response = await fetch( jobData.download_url );
           if( !response.ok ) throw new Error(await makeFetchResponseErrorMessage(response));
@@ -241,7 +178,9 @@ const View = {
       changedFiles.value = null;
       try {
         const result = await executeGitDiff(props.hashLeft,props.hashRight);
-        changedFiles.value = parseDiffOutputs(result);
+        const parsed = parseDiffOutputs(result);
+        changedFiles.value = parsed.records;
+        diffStatLines.value = parsed.statLines;
       } catch(e) {
         error.value = e;
         props.repoActions.logError(`Failed fetching diff for hash "${props.hashLeft}" and "${props.hashRight}": ${e}`);
@@ -258,6 +197,8 @@ const View = {
     return {
       error,
       changedFiles,
+      diffStatLines,
+      diffStatSegments,
       leftRevision,
       rightRevision,
       hasText,

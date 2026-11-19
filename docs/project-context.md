@@ -711,6 +711,13 @@ detail view (`history-revision`).
   wire it in: the submodule's own `build.sh` runs `build_assets.py`, and the outer
   `build.sh` invokes the submodule's `build.sh` before pinliner. Smoke-tested with
   `something_to_test.txt` (temporary).
+- `src/lib/webinput` submodule (project-selector UI) is now self-contained with a
+  pluggable "skin" rendering layer and its own frontend build: its `build.sh`
+  bundles a Vue skin via `py_js_bundler` (no Node), and `dev_webinput.py` runs a
+  headless keep-alive backend on `:5279` for the Vite dev loop (`npm run dev` in
+  `src/lib/webinput/src/frontend/app_js/`). Development patterns live inside
+  webinput's own `docs/` and `.clinerules/`; the outer repo only uses webinput's
+  public API (`webinput(form, config)` with `config['skin']`).
 - Records filter: fixed a pre-existing sort crash — sorting a `text` column
   (e.g. "message") threw `localeCompare` on `undefined` for records missing that
   field (the history "worktree"/"index" pseudo-records). `sortComparator` now

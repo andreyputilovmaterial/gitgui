@@ -52,6 +52,21 @@ modules.
   `src_dev_build/lib/pinliner` (bundling), `src/lib/webinput` (project-selector
   input UI).
 
+## Developing the webinput (project selector) frontend
+
+`webinput` (in `src/lib/webinput`) is a self-contained submodule; its public API
+is `webinput(form, config)` with `config['skin']` choosing the renderer (`html`
+server-rendered, or `vue` client-rendered). The outer project only calls that API
+(`src/main_gitgui_project_selector.py`); implementation details and dev patterns
+live inside webinput's own `docs/` and `.clinerules/`.
+
+- Build (no Node): `src/lib/webinput/build.sh` bundles the Vue skin via
+  `py_js_bundler` into `GENERATED/ASSETS.py`.
+- Dev loop (Vue): start a headless keep-alive backend with
+  `python src/lib/webinput/dev_webinput.py start` (:5279), then
+  `cd src/lib/webinput/src/frontend/app_js && npm install && npm run dev`.
+- See `src/lib/webinput/.clinerules/skills/webinput-backend` for the verbs.
+
 ## Three ways to launch a program
 
 Any entry-point program can be started three equivalent ways:

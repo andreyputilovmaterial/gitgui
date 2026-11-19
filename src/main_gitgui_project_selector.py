@@ -83,10 +83,26 @@ def main(*argcs,**kwargs):
         type = Path,
         required = True
     )
+    parser.add_argument(
+        '--skin',
+        choices = ['html','vue'],
+        default = None,
+        help = "Form skin: 'html' (simple server-rendered form, default) or 'vue' (frontend-rendered form)."
+    )
+    parser.add_argument(
+        '--browser',
+        choices = ['auto','system-default','pywebview','no-op'],
+        default = None,
+        help = "How to open the form: 'auto' (pywebview window if available, otherwise your web browser), 'system-default' (web browser), 'pywebview' (pywebview window), or 'no-op' (don't open anything — print the address and wait for you to open it)."
+    )
     args = parser.parse_args(*argcs,**kwargs)
 
     print(f'{STDOUT_COLOR_GREEN}starting {script_name} at {time_start}{STDOUT_COLOR_RESET}')
     config = {}
+    if args.skin:
+        config['skin'] = args.skin
+    if args.browser:
+        config['browser_mode'] = args.browser
 
     projects_db_filename = None
     if args.projects_file:

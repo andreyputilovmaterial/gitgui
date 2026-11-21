@@ -1,0 +1,6 @@
+/* The component renders both the full and the short form; the full form is the
+   default. Parent components switch to the short form with their own @container
+   rules (see e.g. page_files_local_list/style.css), never here. */
+.mdmreport-role-date-short {
+  display: none;
+}

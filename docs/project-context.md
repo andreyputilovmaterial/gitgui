@@ -1446,3 +1446,25 @@ detail view (`history-revision`).
   `status` output is plain; the `_success`/`_error` helpers emit `\x1b[32m`/`\x1b[31m`
   on a TTY and stay plain under `NO_COLOR`.
 
+## format_datetime: short/full forms + files-list responsive columns (2026-11-21)
+
+- `component-format-datetime` now renders **both** a full form (unchanged locale
+  date/time string) and a short form (date-only when not today, time-only when
+  today, both in the browser's local timezone), each behind a class hook:
+  `.mdmreport-role-date-full` / `.mdmreport-role-date-short`. The short span
+  carries the full string as its `title`. A new `format_datetime/style.css` only
+  sets the default (full shown, short hidden); parents flip to short with their
+  own `@container` rules — the switch lives in the parent, not in the component.
+- `page_files_local_list/style.css` now owns the switch for the files list (short
+  by default, full at `@container (min-width: 700px)`), and its column visibility
+  was rewritten mobile-first: base shows only the status/view-file action columns
+  plus the file/folder name; `min-width` 500 → modified at, 600 → file size,
+  800 → created at. Extra 7px gap between adjacent attribute columns via
+  `padding-left: 10px` on `.modifiedat` (only ≥600, once size is adjacent) and
+  `.createdat` (always follows modified at).
+- Verified in the Vite dev server at container widths 400/550/650/750/900/1200px:
+  each breakpoint shows/hides the right columns and flips short/full correctly;
+  the short span's `title` holds the full date/time; frontend unit tests pass
+  (68). All date/time rendering still goes through `component-format-datetime`
+  (the only `Intl.DateTimeFormat` in the codebase is inside it).
+

@@ -34,19 +34,62 @@
   max-content;
 }
 
-/* On narrower containers drop the size + timestamp columns so the file path
-   keeps enough room; the record stays on a single row. Target the column
-   classes so both files and directories (which use empty placeholder spans)
-   lose the column. */
-@container (max-width: 699px) {
+/* Mobile-first column visibility. The narrowest layout keeps only the status
+   and view-file action columns plus the file/folder name; the file-attribute
+   columns (file size, modified at, created at) are added back as the container
+   grows. Target the column classes so both files and directories (which use
+   empty placeholder spans) gain/lose the column together. */
+.mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-size,
+.mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-modifiedat,
+.mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-createdat {
+  display: none;
+}
+@container (min-width: 500px) {
+  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-modifiedat {
+    display: inline;
+  }
+}
+@container (min-width: 600px) {
+  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-size {
+    display: inline;
+  }
+}
+@container (min-width: 800px) {
   .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-createdat {
+    display: inline;
+  }
+}
+
+/* The date/time columns render through component-format-datetime, which offers
+   a full form and a short form. This list is the parent, so it decides which
+   form is shown: short by default, full once the container is wide enough. */
+.mdm-git-gui-fileslistview .mdmreport-role-date-full {
+  display: none;
+}
+.mdm-git-gui-fileslistview .mdmreport-role-date-short {
+  display: inline;
+}
+@container (min-width: 700px) {
+  .mdm-git-gui-fileslistview .mdmreport-role-date-full {
+    display: inline;
+  }
+  .mdm-git-gui-fileslistview .mdmreport-role-date-short {
     display: none;
   }
 }
-@container (max-width: 499px) {
-  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-size,
-  .mdm-git-gui-fileslistview .files-record .mdm-ui-record-col-modifiedat {
-    display: none;
+
+/* Extra 7px gap between adjacent file-attribute columns (size -> modified ->
+   created) so the numeric/date values breathe, without widening the indents
+   around the action columns or the file/folder name. Only a column that follows
+   another visible attribute column gets the extra left padding: "created at"
+   always follows "modified at", and "modified at" gets it once "file size"
+   appears next to it. */
+.mdm-git-gui-fileslistview .files-record .createdat {
+  padding-left: 10px; /* 3px base + 7px extra */
+}
+@container (min-width: 600px) {
+  .mdm-git-gui-fileslistview .files-record .modifiedat {
+    padding-left: 10px; /* 3px base + 7px extra */
   }
 }
 
